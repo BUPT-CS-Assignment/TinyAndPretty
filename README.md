@@ -1,7 +1,7 @@
 # **TinyAndPretty 自动化配置手册**
 ![avatar](https://badgen.net/badge/Language/C++11/orange)
-[![avatar](https://badgen.net/github/last-commit/micromatch/micromatch)](https://github.com/NoUITeam/TinyAndPretty)
-[![avatar](https://badgen.net/github/license/micromatch/micromatch)](https://github.com/NoUITeam/TinyAndPretty)
+![stars](https://badgen.net/badge/Dev%20Env./Linux/green)
+![license](https://badgen.net/badge/License/Apache-2.0/blue)
 
 ## 一.目录文件说明 ##
 ```
