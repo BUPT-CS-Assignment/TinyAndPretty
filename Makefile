@@ -13,10 +13,17 @@ MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
 OBJ_DIR = $(BUILD_DIR)/$(NAME)-obj
 
+ifeq ($(MODS),)
+SOURCES = $(shell find src -name "*.cpp" ! -name "*main.cpp")
+else 
+SOURCES = $(shell find $(addprefix src/,$(MODS)) -name "*.cpp" ! -name "*main.cpp")
+endif
+
+
 ifeq ($(MODE),debug)
-SOURCES = $(shell find src -name "*.cpp" ! -name "main.cpp")
+SOURCES += src/test-main.cpp
 else
-SOURCES = $(shell find src -name "*.cpp" ! -name "test-main.cpp")
+SOURCES += src/main.cpp
 endif
 
 OBJS = $(subst cpp,o,$(subst src,$(OBJ_DIR),$(SOURCES)))
@@ -39,7 +46,7 @@ $(PACKAGE): $(OBJS)
 
 run : .detect $(PACKAGE) 
 	@echo  "$(C_BLUE)[$(shell date +%F%n%T)] RUNNING...$(C_END)"
-	@$(PACKAGE)
+	@$(PACKAGE) $(MAINARGS)
 	@echo  "$(C_GREEN)[$(shell date +%F%n%T)] SUCCESSFUL RUNNING$(C_END)"
 
 
