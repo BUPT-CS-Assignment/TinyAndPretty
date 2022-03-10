@@ -1,10 +1,9 @@
 # **TinyAndPretty 自动化配置手册**
 ![avatar](https://badgen.net/badge/Language/C++11/orange)
-![avatar](https://badgen.net/github/last-commit/micromatch/micromatch)
-![avatar](https://badgen.net/github/license/micromatch/micromatch)
+[![avatar](https://badgen.net/github/last-commit/micromatch/micromatch)](https://github.com/NoUITeam/TinyAndPretty)
+[![avatar](https://badgen.net/github/license/micromatch/micromatch)](https://github.com/NoUITeam/TinyAndPretty)
 
 ## 一.目录文件说明 ##
-# #
 ```
 .
 ├── include             //存放头文件（接口声明）
@@ -29,7 +28,6 @@
 ```
 
 ## 二.自动化指令说明 ##
-# #
 在项目文件夹根目录下使用如下指令，可快速使用相应功能。
 * i . 编译全部工程. 
 ```
@@ -57,7 +55,6 @@
 ```
 
 ## 三.添加模块说明 ##
-# #
 `src/`目录下的每一个文件夹为一个独立的模块，脚本将自动检测该***目录下*** 的子文件夹并进行编译链接。
 * i . 请在`include`文件夹下创建`$(MODULE_NAME)`子目录，用于存放该模块的头文件（即接口）
 * ii . 在该文件夹下定义`interface.h`文件，标识为该模块的调用接口。如若对该模块进行调用，请在代码中进行如下引用
