@@ -9,8 +9,8 @@
   },
   "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
   "C_Cpp_Runner.cppCompilerPath": "/usr/bin/core_perl/g++",
-  "C_Cpp_Runner.cStandard": "",
-  "C_Cpp_Runner.cppStandard": "",
+  "C_Cpp_Runner.cStandard": "c17",
+  "C_Cpp_Runner.cppStandard": "c++14",
   "C_Cpp_Runner.msvcBatchPath": "",
   "C_Cpp_Runner.warnings": [
     "-Wall",

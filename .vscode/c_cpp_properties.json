@@ -6,8 +6,8 @@
         "${workspaceFolder}/**"
       ],
       "compilerPath": "/usr/bin/gcc",
-      "cStandard": "${default}",
-      "cppStandard": "${default}",
+      "cStandard": "c17",
+      "cppStandard": "c++14",
       "intelliSenseMode": "linux-gcc-x64",
       "compilerArgs": []
     }

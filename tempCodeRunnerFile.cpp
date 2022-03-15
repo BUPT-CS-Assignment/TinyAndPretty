@@ -1,1 +1,0 @@
-//CREATE test{ID:int,Name:varchar32,School:varchar255};
