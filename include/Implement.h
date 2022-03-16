@@ -2,6 +2,7 @@
 #define __IMPLEMENT_H__
 #include<iostream>
 #include<string.h>
+#include<Basic.hpp>
 using namespace std;
 /*
 
@@ -13,5 +14,7 @@ using namespace std;
 */ 
 string* Split(string str,char c,int &length);
 bool to_Int(string str,int& res);
+string Trim(string str);
+bool OverflowCheck(string str,__DataType__ type);
 
 #endif

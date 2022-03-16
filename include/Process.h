@@ -1,45 +1,51 @@
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 #include <iostream>
-#include "DataBase.h"
+#include <Basic.hpp>
 
 class InputStream{
 private:
-    __OPERATE__  __Operate;   //操作
-    string __Statement;   //内容
-    string __Input;   //所有输入
-    /*
-        元命令/操作命令解析
-    */
-    __COMMAND__  Parser(string input);
-    __OPERATE__  Instruct(string input);
+    string __Input;
 public:
-    //初始化
     InputStream();
-    //读入函数
-    __COMMAND__ Read();
+    string read();
     string getInput();
-    string getStatement();
-    void ClearStatement();
-    __OPERATE__ getOperation();
+    void clear_input();
+};
+
+class Parser{
+private:
+    string __Statement;
+    __COMMAND__  __Command;
+    __OPERATE__  __Operate;
+    __OPERATE__ operate_type(string input);
+public:
+    Parser();
+    void analyse(string input);
+    __COMMAND__ getCommand();
+    __OPERATE__ getOperate();
+    string getStatment();
+
 };
 
 class Executor{
 private:
     string __Statement;
-    DataBase* __DataBase;
-    int __Index_front;
-    int __Index_tail;
-    string __Name;
+    int __Index_Front;
+    int __Index_Tail;
+    string __Table_Name;
+    string __Parameter;
     void execute_create_table();
     void execute_insert_row();
     void execute_print_table();
     void execute_delete_row();
     void execute_remove_table();
 public:
-    Executor(DataBase* database);
-    void Execute(__OPERATE__ operate,string statement);
-    bool Analyse(string left);
+    bool pre_process(string symbol);
+    Executor();
+    void execute(__COMMAND__ command,string statement);
+    void execute(__OPERATE__ operate,string statement);
+
 };
 
 #endif

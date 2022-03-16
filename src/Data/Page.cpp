@@ -1,59 +1,62 @@
-#include <Data.h>
+#include<Data/Table.h>
+#include<Data/Page.h>
+#include<Data/Row.h>
 #include <Implement.h>
 
 //构造函数
-Page::Page(int folio){
-    __Folio = folio;
-    __MaxRows = MAX_ROWS_SINGLE_PAGE;
-    __Rows = new Row*[__MaxRows];
-    __Index = 0;
+Table::Page::Page(int page_num,Table* t){
+    this->t = t;
+    __Page_Num = page_num;
+    __Rows = new Row*[MAX_ROWS_SINGLE_PAGE];
     __Cursor = 0;
 }   
 
 //插入行
-void Page::Insert(Row* Node){
+void Table::Page::insert(Row* Node){
     __Rows[__Cursor] = Node;
     ++ __Cursor;
 }
 
 //删除指定行
-bool Page::Delete(int row_number){
+bool Table::Page::delete_row(int row_number){
     if(row_number > __Cursor-1){
-        cout<<"Row Number --"<<row_number<<"-- Out Of Bounds '"<<__Cursor-1<<"' At Page '"<<__Folio<<"'."<<endl;
+        cout<<"Row Number --"<<row_number<<"-- Out Of Bounds '"<<__Cursor-1<<"' At Page '"<<__Page_Num<<"'."<<endl;
         return false;
     }
-    delete[] __Rows[row_number];
-    for(int i = row_number+1;i<__Cursor;i++){
-        __Rows[i-1] = __Rows[i];
+    __Rows[row_number]->erase();
+    //delete[] __Rows[row_number];
+    for(int i = row_number;i<__Cursor -1;i++){
+        __Rows[i] = __Rows[i+1];
     }
     __Cursor--;
     return true;
 }
 
 //判断页面是否已满
-bool Page::IsFull(){
-    return __Cursor >= __MaxRows;
+bool Table::Page::isFull(){
+    return __Cursor >= MAX_ROWS_SINGLE_PAGE;
 }
 
 //返回光标位置
-int Page::getCursor(){
+int Table::Page::getCursor(){
     return __Cursor;
 }
 
 //删除整页
-bool Page::Remove(){
+bool Table::Page::remove_page(){
     for(int i = 0;i<__Cursor;i++){
-        delete[] __Rows[i];
+        __Rows[i]->erase();
+        //delete[] __Rows[i];
     }
     return true;
 }
 
 //打印整页
-void Page::Print(Table table){
+void Table::Page::print_page(){
     for(int i = 0;i<__Cursor;i++){
-        cout<<"["<<i<<"]\t"<<__Rows[i]->Format(table);
+        cout<<"["<<i<<"]\t"<<__Rows[i]->format();
     }
-    for(int i = 0;i<table.getElementNumber();i++){
+    for(int i = 0;i<t->__Data_Num;i++){
         cout<<"\t";
-    }cout<<"[Page : "<<__Folio<<"]\t\n"<<endl;
+    }cout<<"[Page : "<<__Page_Num<<"]\t\n"<<endl;
 }

@@ -5,7 +5,15 @@
     "new": "cpp",
     "iostream": "cpp",
     "ostream": "cpp",
-    "string": "cpp"
+    "string": "cpp",
+    "memory": "cpp",
+    "variant": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "vector": "cpp",
+    "fstream": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
   "C_Cpp_Runner.cppCompilerPath": "/usr/bin/core_perl/g++",

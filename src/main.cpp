@@ -1,9 +1,8 @@
-#include<DataBase.h>
+#include<Basic.hpp>
 
 
 int main(/*int argv , char* argc[]*/) {
-    DataBase LiteDB;
-    LiteDB.Run();
+    __START__();
 }
 
 /*
