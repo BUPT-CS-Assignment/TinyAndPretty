@@ -1,6 +1,6 @@
 #ifndef __TABLE_H__
 #define __TABLE_H__
-#include<Basic.hpp>
+#include<Basic.h>
 
 class Table{
 class Page;

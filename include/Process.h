@@ -1,7 +1,7 @@
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 #include <iostream>
-#include <Basic.hpp>
+#include <Basic.h>
 
 class InputStream{
 private:
