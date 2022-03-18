@@ -1,5 +1,5 @@
 #include<Implement.h>
-#include<regex>
+
 
 string* Split(string str,char c,int &length){
     int count = 1;   // 拆分部分数量
@@ -49,6 +49,7 @@ bool to_Int(string str,int& res){
     return true;
 }
 
+
 bool OverflowCheck(string str,__DataType__ type){
     if(type == __Short){
         if(str.compare("32767") > 0 ||
@@ -67,28 +68,42 @@ bool OverflowCheck(string str,__DataType__ type){
             cout<<"Overflow! <Type : uint>"<<endl; 
             return false;
         }
-    }else if(type == __Char){
-        if(str.length() != 1){
-            cout<<"Overflow! <Type : char>"<<endl; 
-            return false;
-        }
-    }else if(type == __VarChar11){
-        if(str.length() >= 11){
-            cout<<"Overflow! <Type : varchar11>"<<endl; 
-            return false;
-        }
-    }else if(type == __VarChar32){
-        if(str.length() > 32){
-            cout<<"Overflow! <Type : varchar32>"<<endl; 
-            return false;
-        }
-    }else if(type == __VarChar255){
-        if(str.length() > 255){
-            cout<<"Overflow! <Type : varchar255>"<<endl; 
+    }else{
+        int length[10];
+        length[__Char] = 1; 
+        length[__VarChar11] = 11;
+        length[__VarChar32] = 32;
+        length[__VarChar255] = 255;
+        if(str.length() > length[type]){
+            cout<<"Overflow! <Type : "<<__Type__[type]<<">"<<endl; 
             return false;
         }
     }
-    return true;
-
-            
+    return true;        
 }
+
+template<class T>
+void sort(T* array,int l, int r){
+    if(l>=r) return;
+    int blank = l +rand()%(r-l+1);
+    int i = l,j = r;
+    T key = array[blank];
+    while(i<j){
+        while(j>blank){
+            if(array[j]>key){
+                array[blank]=array[j];
+                blank = j;
+            }else j--;
+        }
+        while(i<blank){
+            if(array[i]<key){
+                array[blank]=array[i];
+                blank = i;
+            }else i++;
+        }
+    }
+    array[blank]=key;
+    qsort(N,l,blank-1);
+    qsort(N,blank+1,r);
+}
+

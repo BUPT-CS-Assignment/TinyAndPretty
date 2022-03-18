@@ -16,5 +16,6 @@ string* Split(string str,char c,int &length);
 bool to_Int(string str,int& res);
 string Trim(string str);
 bool OverflowCheck(string str,__DataType__ type);
+template<class T> void sort(T* t,int l, int r);
 
 #endif
