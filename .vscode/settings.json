@@ -17,7 +17,7 @@
     "iosfwd": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
-  "C_Cpp_Runner.cppCompilerPath": "/usr/bin/core_perl/g++",
+  "C_Cpp_Runner.cppCompilerPath": "D:/Dev-Cpp/MinGW64/bin/g++.exe",
   "C_Cpp_Runner.cStandard": "c17",
   "C_Cpp_Runner.cppStandard": "c++14",
   "C_Cpp_Runner.msvcBatchPath": "",
@@ -42,5 +42,6 @@
     "**/.*/**",
     "**/.vscode",
     "**/.vscode/**"
-  ]
+  ],
+  "C_Cpp_Runner.debuggerPath": "gdb"
 }

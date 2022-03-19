@@ -1,97 +1,88 @@
 #include "BalanceTree.h"
 
-template<class T>
-Node<T>::Node(__NodeType__ type){
+template<class DAT,class Idx>
+Node<DAT,Idx>::Node(__NodeType__ type){
+    /**
+     * @brief 节点类构造函数 <parm>节点类型
+     */
     __type = type;
-    __parent = __right = NULL;
-    __index = new Index*[__ORDER__ ];
-    __keys = (type == __LEAF__? new T*[__ORDER__ ] : NULL);
-    __child = (type == __INTERNAL__? new Node<T>*[__ORDER__ + 1] : NULL);
+    __parent = __left =  __right = NULL;
+    __index = new Idx*[__ORDER__ ];
+    //判断节点类型进行内存分配
+    __data = (type == __LEAF__? new DAT*[__ORDER__ ] : NULL);
+    __child = (type == __INTERNAL__? new Node<DAT,Idx>*[__ORDER__ + 1] : NULL);
     __cursor = 0;
 }
 
-template<class T>
-bool Node<T>::isFull(){
+template<class DAT,class Idx>
+bool Node<DAT,Idx>::isFull(){
+    /**
+     * @brief 判断节点是否已满
+     */
     return __cursor >= __ORDER__; 
 }
 
-template<class T>
-void Node<T>::insert(T* t,Index* index,Node<T>* node){
-    if(isFull()) return;
-    //找到需要插入的位置
-    if(index == NULL){
-        __child[0] = node;
-        return;
-    }
-    int p = 0;
-    if(__cursor == 0 || *index < *__index[0]){
-        p = 0;
-    }else if(*index > *__index[__cursor -1]){
-        p = __cursor;
-    }else{
-        for(int i = 0;i < __cursor -1; i++){
-            if(*index > *__index[i] && *index < *__index[i+1] ){
-                p = i+1;
-                break;
-            }
+template<class DAT,class Idx>
+Node<DAT,Idx>* Node<DAT,Idx>::node_divide(int div_position){
+    /**
+     * @brief 根据参数位置分裂节点 <parm>分裂位置
+     */
+    Node<DAT,Idx>* new_node = NULL;
+    if(this->__type == __LEAF__){
+        new_node = new Node<DAT,Idx>(__LEAF__); //新增叶节点
+        //数据转移
+        for(int i = div_position; i < __cursor; i++){
+            new_node->insert(__index[i], __data[i]);
+            __data[i] = NULL;
+        }
+        //调整叶节点间指针
+        new_node->__right = __right;
+        new_node->__left = this;
+        if(__right != NULL)   __right->__left = new_node;
+        __right = new_node;
+        
+    }else if(this->__type == __INTERNAL__){
+        new_node = new Node<DAT,Idx>(__INTERNAL__); //新增内部节点
+        //数据转移(提取中间索引)
+        //最左侧节点指针初始化
+        new_node->__child[0] = __child[div_position + 1];
+        new_node->__child[0]->__parent = new_node;
+        __child[div_position + 1] = NULL;
+        //节点/孩子节点指针插入
+        for(int i = div_position + 1; i < __cursor; i++){
+            new_node->insert(__index[i],__child[i+1]);
+            __child[i+1] = NULL;
         }
     }
-    //移动原节点位置
+    __cursor = div_position;   //更新原节点光标
+    return new_node;
+}
+
+
+template<class DAT,class Idx>
+void Node<DAT,Idx>::remove(){
+    /**
+     * @brief 移除节点
+     */
     if(__type == __INTERNAL__){
-        for(int i = __cursor; i > p; i--){
-            __index[i] = __index[i-1];
-            __child[i+1] = __child[i];
-        }
-        __child[p+1] = node;
+        for(int i = 0; i< __cursor + 1; i++)    __child[i] = NULL;
     }else{
-        for(int i = __cursor; i > p; i--){
-            __index[i] = __index[i-1];
-            __keys[i] = __keys[i-1];
-        }
-        __keys[p] = t;
+        for(int i = 0; i < __cursor; i++)   __index[i] = __data[i] = NULL;
+
     }
-    //插入信索引
-    __index[p] = new Index(index);
-    __cursor ++;
+    delete __data;  delete __child; delete __index;
+    if(__left != NULL) __left ->__right = this->__right;
+    __parent = __left = __right = NULL;   
 }
 
-template<class T>
-void Node<T>::remove(){
-    if(__type == __INTERNAL__){
-        for(int i = 0; i<= __cursor; i++){
-            __child[i] = NULL;
-        }
-    }else{
-        for(int i = 0; i < __cursor; i++){
-            __keys[i] = NULL;
-        }
-    }
-    delete[] __keys;
-    delete[] __child;
-    delete[] __index;
-    __parent = __right = NULL;   
-}
-
-template<class T>
-int Node<T>::find_position(Index* index){
-    if(__cursor == 0) return -1;
-    if(*__index[0] > *index) return 0;
-    if(*__index[__cursor-1] < *index) return __cursor;
-    for(int i = 1; i < __cursor; i ++){
-        if(*__index[i-1] < *index && *__index[i] > *index){
-            return i;
-        }
-    }
-    return -1;
-}
-
-template<class T>
-void Node<T>::print_node(){
+template<class DAT,class Idx>
+void Node<DAT,Idx>::print_node(){
+    /**
+     * @brief 打印节点索引信息
+     */
     for(int i = 0;i < __cursor; i++){
         cout<<*(__index[i])<<" ";
-    }cout<<endl;
-
-    
+    }cout<<endl;    
 }
 
 
