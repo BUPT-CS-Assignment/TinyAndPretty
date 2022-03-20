@@ -1,23 +1,24 @@
 #include "BalanceTree.h"
+/**
+ * @brief 数据删除相关函数
+ *  
+ */
 
 template<class DAT,class Idx>
 void BalanceTree<DAT,Idx>::insert_data(Idx* idx,DAT* data){
     /**
      * @brief 插入数据单元 <parm>数据指针, 索引指针
      */
-
-    cout<<"input:"<<*idx<<endl;/////////////////////out_test
     //根节点为空, 创建根节点
     if(__Root__ == NULL){
         __Root__ = new Node<DAT,Idx> ( __LEAF__ );
         __Root__ -> insert(data,idx);
+        __Data__ = __Root__;
         return;
     }
     Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
-    cout<<"L:";node->print_node();/////////////////////out_test
     node->insert(data,idx);
     insert_adjust(node);
-    __Root__->print_node();/////////////////////out_test
 }
 
 template<class DAT,class Idx>
@@ -28,10 +29,8 @@ void BalanceTree<DAT,Idx>::insert_adjust(Node<DAT,Idx>* node){
     if(node == NULL || ! node->isFull()) return;
     Node<DAT,Idx>* resource = node->__parent;   //定位父亲节点
     Idx* new_idx = new Idx(*node->__index[__ORDER__/2]);  //确定新索引
-    //new_idx = node->;   
-    node->print_node();/////////////////////out_test
     //节点分裂
-    Node<DAT,Idx>* new_node = node->node_divide(__ORDER__/2);
+    Node<DAT,Idx>* new_node = node->divide();
     //父节点操作
     if(resource == NULL){
         resource = new Node<DAT,Idx>(__INTERNAL__); //新建父节点索引
@@ -51,7 +50,7 @@ void Node<DAT,Idx>::insert(Idx* idx,DAT* data){
      */
     if(isFull() || idx == NULL) return;
     //找到需要插入的位置
-    int insert_position = find_position(idx);
+    int insert_position = find_insert_position(idx);
     //原数据/索引后移
     for(int i = __cursor; i > insert_position; i--){
         __index[i] = __index[i-1];
@@ -69,7 +68,7 @@ void Node<DAT,Idx>::insert(Idx* idx,Node<DAT,Idx>* node){
      * @brief 插入孩子节点指针 <parm>索引指针, 节点指针
      */
     if(isFull()) return;
-    int insert_position = find_position(idx);
+    int insert_position = find_insert_position(idx);
     for(int i = __cursor; i > insert_position; i--){
         __index[i] = __index[i-1];
         __child[i+1] = __child[i];
