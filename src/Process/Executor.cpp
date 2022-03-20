@@ -1,6 +1,6 @@
 #include<Process.h>
 #include<unistd.h> 
-#include<Data/Table.h>
+#include <Data.h>
 #include<Implement.h>
 
 Executor::Executor(){
@@ -43,7 +43,7 @@ void Executor::execute(__COMMAND__ command,string statement){
             printf("Unknown Command '%s'\n",Trim(statement).c_str());
             break;
         case __HELP :
-            printf("This is a help prompt.\n");
+            __HELP__();
             break;
         case __SAVE :
             printf("Saving to files...");
@@ -57,32 +57,38 @@ void Executor::execute(__COMMAND__ command,string statement){
 
 bool Executor::pre_process(string symbol){
     if(symbol.compare("{") == 0){
-        __Index_Front = __Statement.find('{');
-        __Index_Tail = __Statement.find('}');
+        __Index_Front = __Statement.find_first_of('{');
+        __Index_Tail = __Statement.find_last_of('}');
     }else if(symbol.compare("(") == 0){
-        __Index_Front = __Statement.find('(');
-        __Index_Tail = __Statement.find(')');
+        __Index_Front = __Statement.find_first_of('(');
+        __Index_Tail = __Statement.find_last_of(')');
     }
     if(__Index_Front < 0 || __Index_Tail < 0){
         cout<<"Unknown Statement."<<endl;
         return false;
     }
     __Table_Name = Trim(__Statement.substr(0,__Index_Front));
-
     __Parameter = Trim(__Statement.substr(__Index_Front+1, __Index_Tail - __Index_Front - 1));
+
     return true;
 }
 
 
 void Executor::execute_create_table(){
-    if(!pre_process("{")) return;
+    if(!pre_process("(")) return;
+    for(int i = 0;i<__CURSOR__;i++){
+        if(__TABLES__[i]->getName() == __Table_Name){
+            cout<<"Table '"<<__Table_Name<<"' Already Exists."<<endl;
+            cout<<"Create Table '"<<__Table_Name<<"' Failed."<<endl;
+            return;
+        }
+    }
     Table* new_table = new Table(__CURSOR__, __Table_Name);
     if(new_table->init(__Parameter)){
         __TABLES__[__CURSOR__] = new_table;
         ++ __CURSOR__ ;
         cout<<"Create Table '"<<__Table_Name<<"' Success."<<endl;
     }else{
-        new_table -> remove_table();
         cout<<"Create Table '"<<__Table_Name<<"' Failed."<<endl;
     }
 }
@@ -102,7 +108,7 @@ void Executor::execute_insert_row(){
 }
 
 /*
-    DELETE table_name(page_number:row_number);
+    DELETE table_name(row_index);
 
 */
 
@@ -111,28 +117,13 @@ void Executor::execute_delete_row(){
     if(!pre_process("(")) return;
     int index = __TABLE_LOCATED_BY_NAME__(__Table_Name);
     if(index!=-1){
-        int length,page_number,row_number;
-        string* words = Split(__Parameter,':',length);
-        if(!to_Int(words[0],page_number)) return;
-        if(length == 1){
-            if( ! __TABLES__[index]->delete_page(page_number)){
-                cout<<"Delete Page From '"<<__Table_Name<<"' Failed."<<endl;
-                return;
-            }
-            cout<<"Delete Page From '"<<__Table_Name<<"' Success."<<endl;
+        string row_index = __Parameter;
+        if(! __TABLES__[index]->delete_data(row_index)){
+            cout<<"Delete Page From '"<<__Table_Name<<"' Failed."<<endl;
             return;
         }
-        if(length != 2){
-            cout<<"Parameter Mismatch."<<endl;
-            return;
-        }
-        if(!to_Int(words[1],row_number)) return;
-        if( ! __TABLES__[index]->delete_row(page_number,row_number)){
-            cout<<"Delete Row From '"<<__Table_Name<<"' Failed."<<endl;
-            return;
-        }
-        cout<<"Delete Row From '"<<__Table_Name<<"' Success."<<endl;
-        return ;
+        cout<<"Delete Page From '"<<__Table_Name<<"' Success."<<endl;
+        return;
     }
     cout<<"No Such Table Named '"<<__Table_Name<<"'."<<endl;
 }

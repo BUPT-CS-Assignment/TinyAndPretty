@@ -1,9 +1,10 @@
-//#include<Basic.h>
+#include<Basic.h>
 #include<BalanceTree.h>
 
 
 int main(/*int argv , char* argc[]*/) {
-    //__START__();
+    __START__();
+    /*
     BalanceTree<int,int> B(0);
     for(int i = 1;i <= 50; i++){
         B.insert_data(new int(i),new int(i));
@@ -12,12 +13,12 @@ int main(/*int argv , char* argc[]*/) {
         B.delete_data(new int(i));
         B.print_tree();
     }
-
+    */
 }
 
 /*
 测试数据  @  
-CREATE test{ID:int,Name:varchar32,School:varchar255};
+CREATE test(ID:INT,NAME:TEXT,SCHOOL:LONGTEXT,KEY(ID));
 INSERT test(1001,Name_01,School_01);
 INSERT test(1002,Name_02,School_02);
 INSERT test(1003,Name_03,School_03);
@@ -26,7 +27,6 @@ INSERT test(1005,Name_05,School_05);
 INSERT test(1006,Name_06,School_06);
 INSERT test(1007,Name_07,School_07);
 PRINT test;
-DELETE test(1:0);
 DELETE test(0);
 REMOVE test;
 

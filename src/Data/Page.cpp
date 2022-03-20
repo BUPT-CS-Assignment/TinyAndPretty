@@ -1,6 +1,4 @@
-#include<Data/Table.h>
-#include<Data/Page.h>
-#include<Data/Row.h>
+#include <Data.h>
 #include <Implement.h>
 
 //构造函数
@@ -9,23 +7,28 @@ Table::Page::Page(int page_num,Table* t){
     __Page_Num = page_num;
     __Rows = new Row*[MAX_ROWS_SINGLE_PAGE];
     __Cursor = 0;
+    __Index = "";
 }   
 
 //插入行
 void Table::Page::insert(Row* Node){
-    __Rows[__Cursor] = Node;
-    ++ __Cursor;
+    __Rows[__Cursor ++] = Node;
+    q_sort(__Rows,0,__Cursor-1);
 }
 
 //删除指定行
-bool Table::Page::delete_row(int row_number){
-    if(row_number > __Cursor-1){
-        cout<<"Row Number --"<<row_number<<"-- Out Of Bounds '"<<__Cursor-1<<"' At Page '"<<__Page_Num<<"'."<<endl;
-        return false;
+bool Table::Page::delete_row(string index){
+    int p = -1;
+    for(int i = 0; i < __Cursor; i++){
+        if(__Rows[i]->getIndex() == index){
+            p = i;
+            break;
+        }
     }
-    __Rows[row_number]->erase();
+    if(p == -1) return false;
+    __Rows[p]->erase();
     //delete[] __Rows[row_number];
-    for(int i = row_number;i<__Cursor -1;i++){
+    for(int i = p;i<__Cursor -1;i++){
         __Rows[i] = __Rows[i+1];
     }
     __Cursor--;
@@ -46,7 +49,6 @@ int Table::Page::getCursor(){
 bool Table::Page::remove_page(){
     for(int i = 0;i<__Cursor;i++){
         __Rows[i]->erase();
-        //delete[] __Rows[i];
     }
     return true;
 }
@@ -58,5 +60,9 @@ void Table::Page::print_page(){
     }
     for(int i = 0;i<t->__Data_Num;i++){
         cout<<"\t";
-    }cout<<"[Page : "<<__Page_Num<<"]\t\n"<<endl;
+    }cout<<"[Page Index : "<<__Index<<"]\t\n"<<endl;
+}
+
+string Table::Page::getIndex(){
+    return __Index;
 }

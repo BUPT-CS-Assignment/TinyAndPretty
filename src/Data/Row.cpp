@@ -1,6 +1,4 @@
-#include<Data/Table.h>
-#include<Data/Page.h>
-#include<Data/Row.h>
+#include <Data.h>
 #include <Implement.h>
 
 
@@ -8,30 +6,28 @@ Table::Row::Row(Table* t){
     /*
         根据表元素格式初始化行，分配内存空间
     */
-   this->t = t;
+    this->t = t;
+    __Index = "";
     __Content = new void*[t->__Data_Num];
     for(int i = 0; i < t->__Data_Num; i ++){
         switch(t->__Data_Type[i]){
-            case __Short :
-                __Content[i] = new short;   
-                break;
-            case __Int :
+            case __INT :
                 __Content[i] = new int;   
                 break;
-            case __UInt :
-                __Content[i] = new unsigned int;   
+            case __INT64 :
+                __Content[i] = new long long;   
                 break;
-            case __Char :
-                __Content[i] = new char;   
+            case __REAL :
+                __Content[i] = new double;   
                 break;
-            case __VarChar11 :
-                __Content[i] = new char[12];   
+            case __TEXT :
+                __Content[i] = new char[TEXT_LENGTH + 1];   
                 break;
-            case __VarChar32 :
-                __Content[i] = new char[33];   
+            case __LONGTEXT :
+                __Content[i] = new char[LONGTEXT_LENGTH + 1];   
                 break;
-            case __VarChar255 :
-                __Content[i] = new char[256];   
+            default:
+                __Content[i] = NULL;
                 break;
         }
     }
@@ -52,34 +48,15 @@ bool Table::Row::padding(string statement){
     //写入内存
     for(int i = 0; i < t->__Data_Num; i ++){
         __DataType__ type = t->__Data_Type[i];
-        if(type == __Short){
-            int number = 0;
-            if(!OverflowCheck(words[i],__Short) || ! to_Int(words[i],number)) return false;
-            *((int*)__Content[i]) = number;
-        }else if(type == __Int){
-            int number = 0;
-            if(!OverflowCheck(words[i],__Int) || ! to_Int(words[i],number)) return false;
-            *((int*)__Content[i]) = number;
-        }else if(type == __UInt){
-            int number = 0;
-            if(!OverflowCheck(words[i],__UInt) || ! to_Int(words[i],number)) return false;
-            *((int*)__Content[i]) = number;
-        }else if(type == __Char){
-            if(!OverflowCheck(words[i],__Char)) return false;
-            char c = words[i][0];
-            *(char*)__Content[i] = c;
-            //char* temp = (char*)__Content[i];
-            //strcpy(temp,c);
-        }else if(type == __VarChar11){
-            if(!OverflowCheck(words[i],__VarChar11)) return false;
-            char* temp = (char*)__Content[i];
-            strcpy(temp,words[i].c_str());
-        }else if(type == __VarChar32){
-            if(!OverflowCheck(words[i],__VarChar32)) return false;
-            char* temp = (char*)__Content[i];
-            strcpy(temp,words[i].c_str());
+        if(type == t->__Index_Type) __Index = words[i];
+        if(!parm_check(words[i],type)) return false;
+        if(type == __INT){
+            *((int*)__Content[i]) = stoi(words[i]);
+        }else if(type == __INT64){
+            *((long long*)__Content[i]) = stoll(words[i]);
+        }else if(type == __REAL){
+            *((long long*)__Content[i]) = stod(words[i]);
         }else{
-            if(!OverflowCheck(words[i],__VarChar255)) return false;
             char* temp = (char*)__Content[i];
             strcpy(temp,words[i].c_str());
         }
@@ -96,21 +73,16 @@ char* Table::Row::format(){
     string temp = "";
     for(int i = 0; i < t->__Data_Num ;i++){
         switch(t->__Data_Type[i]){
-            case __Short :
-                temp = temp + to_string(*((short*)__Content[i]));
-                break;
-            case __Int :
+            case __INT :
                 temp = temp + to_string(*((int*)__Content[i]));
                 break;
-            case __UInt :
-                temp = temp + to_string(*((unsigned int*)__Content[i]));
+            case __INT64 :
+                temp = temp + to_string(*((long long*)__Content[i]));
                 break;
-            case __Char :
-                temp = temp + *(char*)__Content[i];
+            case __REAL :
+                temp = temp + to_string(*((double*)__Content[i]));
                 break;
-            case __VarChar11 :
-            case __VarChar32 :
-            case __VarChar255 :
+            default:
                 temp = temp + (char*)__Content[i];
                 break;
         }
@@ -127,21 +99,39 @@ void Table::Row::erase(){
     */
     for(int i = 0;i<t->__Data_Num;i++){
         switch(t->__Data_Type[i]){
-            case __Short :
-                delete[] (short*)__Content[i];
-                break;
-            case __Int :
+            case __INT :
                 delete[] (int*)__Content[i];
                 break;
-            case __UInt :
-                delete[] (unsigned int*)__Content[i];
+            case __INT64 :
+                delete[] (long long*)__Content[i];
                 break;
-            case __Char :
-            case __VarChar11 :
-            case __VarChar32 :
-            case __VarChar255 :
+            case __REAL :
+                delete[] (double*)__Content[i];
+                break;
+            default : 
                 delete[] (char*)__Content[i];
                 break;
         }
     }
+    __Index = "";
+}
+
+string Table::Row::getIndex(){
+    return __Index;
+}
+
+bool Table::Row::operator<(Row& row){
+    return __Index < row.__Index;
+}
+bool Table::Row::operator>(Row& row){
+    return __Index > row.__Index;
+}
+bool Table::Row::operator==(Row& row){
+    return __Index == row.__Index;
+}
+bool Table::Row::operator<=(Row& row){
+    return __Index <= row.__Index;
+}
+bool Table::Row::operator>=(Row& row){
+    return __Index >= row.__Index;
 }

@@ -30,80 +30,49 @@ string Trim(string str){
     return temp;
 }
 
-bool to_Int(string str,int& res){
-    str = Trim(str);
-    int positive = 1;
-    if(str[0] == '-'){
-        positive = -1;
-        str = str.substr(1,str.length()-1);
-    }
+bool parm_check(string str,__DataType__ type){
     if(str.length() == 0){
         cout<<"Parameter Empty."<<endl;
         return false;
     }
-    if(regex_search(str,regex("\\D+")) > 0){
-        cout<<"Parameter '"<<str<<"' Mismatch Number-Type."<<endl;
-        return false;
+    if(type == __INT){
+        if(!regex_match(str,regex("^-?\\d+"))){
+            cout<<"Parameter '"<<str<<"' Mismatch Type 'INT'."<<endl;
+            return false;
+        }
+        if(str.compare("2147483647") > 0 ||
+          (str[0] == '-' && str.compare("-2147483648") > 0)){
+            cout<<"Overflow! <Type : INT>"<<endl; 
+            return false;
+        }
+    }else if(type == __INT64){
+        if(!regex_match(str,regex("^-?\\d+"))){
+            cout<<"Parameter '"<<str<<"' Mismatch Type 'INT64'."<<endl;
+            return false;
+        }
+        if(str.compare("9223372036854775807") > 0 ||
+          (str[0] == '-' && str.compare("-9223372036854775808") > 0)){
+            cout<<"Overflow! <Type : INT64>"<<endl; 
+            return false;
+        }
+    }else if(type == __REAL){
+        if(!regex_match(str,regex("^-?\\d+\\.?\\d+"))){
+            cout<<"Parameter '"<<str<<"' Mismatch Type 'REAL'."<<endl;
+            return false;
+        }
+    }else if(type == __TEXT){
+        if(str.length() > TEXT_LENGTH){
+            cout<<"Overflow! <Type : TEXT>"<<endl; 
+            return false;
+        }
+    }else{
+        if(str.length() > LONGTEXT_LENGTH){
+            cout<<"Overflow! <Type : LONGTEXT>"<<endl; 
+            return false;
+        }
     }
-    res = positive * stoi(str.c_str());
     return true;
 }
 
 
-bool OverflowCheck(string str,__DataType__ type){
-    if(type == __Short){
-        if(str.compare("32767") > 0 ||
-          (str[0] == '-' && str.compare("-32768") > 0)){
-            cout<<"Overflow! <Type : short>"<<endl; 
-            return false;
-        }
-    }else if(type == __Int){
-        if(str.compare("2147483647") > 0 ||
-          (str[0] == '-' && str.compare("-2147483648") > 0)){
-            cout<<"Overflow! <Type : int>"<<endl; 
-            return false;
-        }
-    }else if(type == __UInt){
-        if(str.compare("4294967295") > 0 || str[0] == '-' ){
-            cout<<"Overflow! <Type : uint>"<<endl; 
-            return false;
-        }
-    }else{
-        unsigned int length[10];
-        length[__Char] = 1; 
-        length[__VarChar11] = 11;
-        length[__VarChar32] = 32;
-        length[__VarChar255] = 255;
-        if(str.length() > length[type]){
-            cout<<"Overflow! <Type : "<<__Type__[type]<<">"<<endl; 
-            return false;
-        }
-    }
-    return true;        
-}
-
-template<class T>
-void sort(T* array,int l, int r){
-    if(l>=r) return;
-    int blank = l +rand()%(r-l+1);
-    int i = l,j = r;
-    T key = array[blank];
-    while(i<j){
-        while(j>blank){
-            if(array[j]>key){
-                array[blank]=array[j];
-                blank = j;
-            }else j--;
-        }
-        while(i<blank){
-            if(array[i]<key){
-                array[blank]=array[i];
-                blank = i;
-            }else i++;
-        }
-    }
-    array[blank]=key;
-    qsort(array,l,blank-1);
-    qsort(array,blank+1,r);
-}
 

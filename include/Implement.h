@@ -1,7 +1,6 @@
 #ifndef __IMPLEMENT_H__
 #define __IMPLEMENT_H__
 #include<iostream>
-#include<string.h>
 #include<Basic.h>
 using namespace std;
 /*
@@ -13,9 +12,32 @@ using namespace std;
 
 */ 
 string* Split(string str,char c,int &length);
-bool to_Int(string str,int& res);
+bool parm_check(string str,__DataType__ type);
 string Trim(string str);
-bool OverflowCheck(string str,__DataType__ type);
-template<class T> void sort(T* t,int l, int r);
+
+template<class T>
+void q_sort(T** array,int l, int r){
+    if(l>=r) return;
+    int blank = l +rand()%(r-l+1);
+    int i = l,j = r;
+    T* key = array[blank];
+    while(i<j){
+        while(j>blank){
+            if(*array[j]>*key){
+                array[blank]=array[j];
+                blank = j;
+            }else j--;
+        }
+        while(i<blank){
+            if(*array[i]<*key){
+                array[blank]=array[i];
+                blank = i;
+            }else i++;
+        }
+    }
+    array[blank]=key;
+    q_sort(array,l,blank-1);
+    q_sort(array,blank+1,r);
+}
 
 #endif

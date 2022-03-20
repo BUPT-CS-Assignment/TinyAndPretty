@@ -231,7 +231,10 @@ void Node<DAT,Idx>::remove(){
     if(__type == __INTERNAL__){
         for(int i = 0; i< __cursor + 1; i++)    __child[i] = NULL;
     }else{
-        for(int i = 0; i < __cursor; i++)   __index[i] = __data[i] = NULL;
+        for(int i = 0; i < __cursor; i++){
+            __index[i] = NULL;
+            __data[i] = NULL;
+        }   
     }
     delete __data;  delete __child; delete __index;
     if(__left != NULL) __left ->__right = this->__right;
@@ -273,8 +276,14 @@ DAT* BalanceTree<DAT,Idx>::search_position(Idx* idx){
      */
     Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
     if(node == NULL) return NULL;
-    int p = node->find_insert_position(idx);
-    if(p == -1) return NULL;
+    if(*idx < *node->__index[0]) return NULL; //需要新建数据页
+    int p = 0;
+    for(int i = 1; i < node->__cursor; i ++){
+        if(*node->__index[i-1] <= *idx && *idx < *node->__index[i]){
+            p = i-1;    break;
+        }
+        p = node->__cursor - 1;
+    }
     return node->__data[p];
 }
 
@@ -346,12 +355,12 @@ void BalanceTree<DAT,Idx>::insert_data(Idx* idx,DAT* data){
     //根节点为空, 创建根节点
     if(__Root__ == NULL){
         __Root__ = new Node<DAT,Idx> ( __LEAF__ );
-        __Root__ -> insert(data,idx);
+        __Root__ -> insert(idx,data);
         __Data__ = __Root__;
         return;
     }
     Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
-    node->insert(data,idx);
+    node->insert(idx,data);
     insert_adjust(node);
 }
 

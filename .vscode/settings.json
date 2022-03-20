@@ -14,7 +14,9 @@
     "unordered_set": "cpp",
     "vector": "cpp",
     "fstream": "cpp",
-    "iosfwd": "cpp"
+    "iosfwd": "cpp",
+    "compare": "cpp",
+    "type_traits": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
   "C_Cpp_Runner.cppCompilerPath": "D:/Dev-Cpp/MinGW64/bin/g++.exe",

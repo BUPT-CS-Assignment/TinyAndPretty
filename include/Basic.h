@@ -34,10 +34,12 @@ using namespace std;
             Row  @  单行数据类(数据基类)  
 
 */
-#define MAX_ROWS_SINGLE_PAGE 5
+#define MAX_ROWS_SINGLE_PAGE 20
 #define MAX_PAGES_SINGLE_TABLE 100
 #define MAX_TABLES 50
-enum __DataType__{__Short,__Int,__UInt,__Char,__VarChar11,__VarChar32,__VarChar255};
+#define TEXT_LENGTH 32
+#define LONGTEXT_LENGTH 255
+enum __DataType__{__INT,__INT64,__REAL,__TEXT,__LONGTEXT};
 enum __COMMAND__{__UNK,__EXIT,__HELP,__OPERATE,__SAVE};
 enum __OPERATE__{__UNKNOWN,__TABLE_CREATE,__INSERT,__DELETE,__REPLACE,__PRINT,
                  __TABLE_REMOVE,__SHOW};
@@ -58,5 +60,8 @@ extern int __CURSOR__;
 void __DATABASE_INIT__();
 int __TABLE_LOCATED_BY_NAME__(string name);
 void __START__();
+void __MESSAGE__();
+void __HELP__();
+
 
 #endif
