@@ -38,7 +38,6 @@ using namespace std;
 #define MAX_PAGES_SINGLE_TABLE 100
 #define MAX_TABLES 50
 enum __DataType__{__Short,__Int,__UInt,__Char,__VarChar11,__VarChar32,__VarChar255};
-string __Type__[]{"short","int","uint","char","varchar11","varchar32","varchar255"};
 enum __COMMAND__{__UNK,__EXIT,__HELP,__OPERATE,__SAVE};
 enum __OPERATE__{__UNKNOWN,__TABLE_CREATE,__INSERT,__DELETE,__REPLACE,__PRINT,
                  __TABLE_REMOVE,__SHOW};
@@ -50,11 +49,12 @@ class Executor;
 class Table;
 class File;
 class Exception;
-class BalanceTree;
 class Implement;
 
+extern string const __Type__[];
 extern Table** __TABLES__;
 extern int __CURSOR__;
+
 void __DATABASE_INIT__();
 int __TABLE_LOCATED_BY_NAME__(string name);
 void __START__();

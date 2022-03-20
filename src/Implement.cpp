@@ -42,7 +42,7 @@ bool to_Int(string str,int& res){
         return false;
     }
     if(regex_search(str,regex("\\D+")) > 0){
-        cout<<"Parameter '"<<str<<"' Mismatch Type : 'int'."<<endl;
+        cout<<"Parameter '"<<str<<"' Mismatch Number-Type."<<endl;
         return false;
     }
     res = positive * stoi(str.c_str());
@@ -69,7 +69,7 @@ bool OverflowCheck(string str,__DataType__ type){
             return false;
         }
     }else{
-        int length[10];
+        unsigned int length[10];
         length[__Char] = 1; 
         length[__VarChar11] = 11;
         length[__VarChar32] = 32;
@@ -103,7 +103,7 @@ void sort(T* array,int l, int r){
         }
     }
     array[blank]=key;
-    qsort(N,l,blank-1);
-    qsort(N,blank+1,r);
+    qsort(array,l,blank-1);
+    qsort(array,blank+1,r);
 }
 

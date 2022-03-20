@@ -1,8 +1,18 @@
-#include<Basic.h>
+//#include<Basic.h>
+#include<BalanceTree.h>
 
 
 int main(/*int argv , char* argc[]*/) {
-    __START__();
+    //__START__();
+    BalanceTree<int,int> B(0);
+    for(int i = 1;i <= 50; i++){
+        B.insert_data(new int(i),new int(i));
+    }
+    for(int i = 5; i <= 30; i+=2){
+        B.delete_data(new int(i));
+        B.print_tree();
+    }
+
 }
 
 /*

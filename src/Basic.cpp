@@ -1,5 +1,12 @@
 #include<Process.h>
 #include<Data/Table.h>
+//#include<Basic.h>
+
+string const __Type__[]={
+    "short","int","uint",
+    "char","varchar11","varchar32","varchar255"
+    };
+
 
 Table** __TABLES__;
 int __CURSOR__;
