@@ -52,11 +52,11 @@ void __HELP__(){
     cout<<" "<<endl;
     cout<<"Data Type Support >"<<endl;
     cout<<" "<<endl;
-    cout<<"\t|  INT     |  [int]"<<endl;
-    cout<<"\t|  INT64   |  [long int]"<<endl;
-    cout<<"\t|  REAL    |  [double]"<<endl;
-    cout<<"\t|  TEXT    |  [varchar(32)]"<<endl;
-    cout<<"\t| LONGTEXT |  [varchar(255)]"<<endl;
+    cout<<"\t[  INT     ]  ->  int"<<endl;
+    cout<<"\t[  INT64   ]  ->  long int"<<endl;
+    cout<<"\t[  REAL    ]  ->  double"<<endl;
+    cout<<"\t[  TEXT    ]  ->  varchar(32)"<<endl;
+    cout<<"\t[ LONGTEXT ]  ->  varchar(255)"<<endl;
     cout<<" "<<endl;
     cout<<"Command Insturction >"<<endl;
     cout<<" "<<endl;
@@ -65,8 +65,8 @@ void __HELP__(){
     cout<<"\t[HELP] .help"<<endl;
     cout<<"   "<<endl;
     cout<<"\t[TABLE CREATE] CREATE table_name(data_title : data_type, ... );"<<endl;
-    cout<<"\t    * The first parm will be set as PRIMARY KEY by default."<<endl;
-    cout<<"\t    * Add 'KEY(key_name)' as a parm to designate."<<endl;
+    cout<<"\t * The first parm will be set as PRIMARY KEY by default."<<endl;
+    cout<<"\t * Add 'KEY(key_name)' as a parm to designate."<<endl;
     cout<<"   "<<endl;
     cout<<"\t[TABLE REMOVE] REMOVE table_name;"<<endl;
     cout<<"   "<<endl;
