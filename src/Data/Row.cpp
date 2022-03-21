@@ -7,7 +7,6 @@ Table::Row::Row(Table* t){
         根据表元素格式初始化行，分配内存空间
     */
     this->t = t;
-    __Index = "";
     __Content = new void*[t->__Data_Num];
     for(int i = 0; i < t->__Data_Num; i ++){
         switch(t->__Data_Type[i]){
@@ -48,7 +47,9 @@ bool Table::Row::padding(string statement){
     //写入内存
     for(int i = 0; i < t->__Data_Num; i ++){
         __DataType__ type = t->__Data_Type[i];
-        if(type == t->__Index_Type) __Index = words[i];
+        if(type == t->__Index_Type){
+            __Index = *(new Index(words[i],type));
+        } 
         if(!parm_check(words[i],type)) return false;
         if(type == __INT){
             *((int*)__Content[i]) = stoi(words[i]);
@@ -113,10 +114,9 @@ void Table::Row::erase(){
                 break;
         }
     }
-    __Index = "";
 }
 
-string Table::Row::getIndex(){
+Index& Table::Row::getIndex(){
     return __Index;
 }
 

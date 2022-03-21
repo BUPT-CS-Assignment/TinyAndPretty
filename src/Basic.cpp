@@ -48,26 +48,34 @@ void __MESSAGE__(){
 }
 
 void __HELP__(){
-    cout<<"----------------------------------------------"<<endl;
-    cout<<" Data Type Support :"<<endl;
-    cout<<" | INT"<<endl;
-    cout<<" | INT64"<<endl;
-    cout<<" | REAL"<<endl;
-    cout<<" | TEXT"<<endl;
-    cout<<" | LONGTEXT"<<endl;
-    cout<<"----------------------------------------------"<<endl;
-    cout<<" Command Info :"<<endl;
-    cout<<" --EXIT--"<<endl;
-    cout<<" | .exit"<<endl;
-    cout<<" --HELP--"<<endl;
-    cout<<" | .help"<<endl;
-    cout<<" --TABLE CREATE--"<<endl;
-    cout<<" | CREATE table_name(data_title : data_type, ... ,KEY(key_name));"<<endl;
-    cout<<" --TABLE REMOVE--"<<endl;
-    cout<<" | REMOVE table_name;"<<endl;
-    cout<<" --INSERT DATA--"<<endl;
-    cout<<" | INSERT table_name(data_01, ...);"<<endl;
-    cout<<" --DELETE DATA--"<<endl;
-    cout<<" | DELETE table_name(data_index);"<<endl;
-    cout<<"----------------------------------------------\n"<<endl;
+    cout<<"LiteDB version: 22.3.21 <Preview>"<<endl;
+    cout<<" "<<endl;
+    cout<<"Data Type Support >"<<endl;
+    cout<<" "<<endl;
+    cout<<"\t|  INT     |  [int]"<<endl;
+    cout<<"\t|  INT64   |  [long int]"<<endl;
+    cout<<"\t|  REAL    |  [double]"<<endl;
+    cout<<"\t|  TEXT    |  [varchar(32)]"<<endl;
+    cout<<"\t| LONGTEXT |  [varchar(255)]"<<endl;
+    cout<<" "<<endl;
+    cout<<"Command Insturction >"<<endl;
+    cout<<" "<<endl;
+    cout<<"\t[EXIT] .exit"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[HELP] .help"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[TABLE CREATE] CREATE table_name(data_title : data_type, ... );"<<endl;
+    cout<<"\t    * The first parm will be set as PRIMARY KEY by default."<<endl;
+    cout<<"\t    * Add 'KEY(key_name)' as a parm to designate."<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[TABLE REMOVE] REMOVE table_name;"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[STRUCTURE CHECK] DESCRIBE table_name;"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[PAGE REMOVE] REMOVE table_name(page_index);"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[INSERT DATA] INSERT table_name(data_01, ...);"<<endl;
+    cout<<"   "<<endl;
+    cout<<"\t[DELETE DATA] DELETE table_name(data_index);"<<endl;
+    cout<<"   \n"<<endl;
 }

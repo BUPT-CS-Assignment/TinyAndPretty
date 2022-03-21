@@ -1,4 +1,4 @@
-#include <Data.h>
+#include<Data.h>
 #include<Implement.h>
 
 //数据表创建
@@ -8,7 +8,8 @@ Table::Table(int ID, string name){
     __Data_Num = 0;
     __Page_ID = 0;
     __Name = name;
-    __Pages = new BalanceTree<Page,string>(ID);
+    __Pages = new BalanceTree<Page,Index>(ID);
+
 }
 
 /*
@@ -18,6 +19,7 @@ Table::Table(int ID, string name){
                       School:varchar255,
                       KEY(xxx)
                       );
+    *省略KEY()则默认首元素为主键
 
 */
 bool Table::init(string statement){
@@ -87,7 +89,6 @@ bool Table::init(string statement){
 }
 
 
-
 bool Table::insert(string statement){
     /*
         在数据表中插入数据行
@@ -98,7 +99,7 @@ bool Table::insert(string statement){
         return false;
     } 
     //查找插入数据页指针
-    Page* data = __Pages->search_position(new string(new_row->getIndex()));
+    Page* data = __Pages->locate_insert_data(&(new_row->getIndex()));
     ///////数据页可插入
     if(data!= NULL && !data->isFull()){
         data->insert(new_row);
@@ -106,49 +107,47 @@ bool Table::insert(string statement){
     }
     //////新建页后插入
     Page* new_page = new Page(__Page_ID ++ ,this);
-    __Pages->insert_data(new string(new_row->getIndex()),new_page);
     //////////////////
     if(data != NULL && data->isFull()){
         for(int i = MAX_ROWS_SINGLE_PAGE/2;i < MAX_ROWS_SINGLE_PAGE; i++){
             new_page->insert(data->__Rows[i]);
             data->__Rows[i] = NULL;
             data->__Cursor--;
-        }new_page->insert(new_row);
+        }
+        new_page->insert(new_row);
         new_page->__Index = new_page->__Rows[0]->getIndex();
+        __Pages->insert_data(&(new_page->__Index),new_page);
         return true;
     }
     new_page->insert(new_row);
     new_page->__Index = new_row->getIndex();
+    __Pages->insert_data(&(new_row->getIndex()),new_page);
     return true;
 }
 
 
-void Table::print_table(){
-    /*
-    cout<<"\t";
-    for(int i = 0;i<__Data_Num;i++){
-        cout<<"["<<__Data_ID[i]<<"]\t";
-    }cout<<endl;
-    for(int i =0;i<__Cursor;i++){
-        __Pages[i]->print_page();
-    }*/
-    cout<<"< Table Print Function >"<<endl;
-}
 
-
-bool Table::delete_data(string index){
-    Page* data = __Pages->search_position(&index);
+bool Table::delete_row(Index& index){
+    Page* data = __Pages->locate_insert_data(&index);
+    if(data == NULL){
+        cout<<"<Data Not Found>"<<endl;
+        return false;
+    }
     if(!data->delete_row(index)) return false;
+    Index temp = *(new Index(data->__Index));
     if(data->__Cursor == 0){
         data->remove_page();
-        __Pages->delete_data(&index);
+        __Pages->delete_data(&temp);
     } 
     return true;
 }
 
-bool Table::delete_page(string index){
-    Page* data = __Pages->search_position(&index);
-    if(data == NULL) return false;
+bool Table::delete_page(Index& index){
+    Page* data = __Pages->locate_data(&index);
+    if(data == NULL){
+        cout<<"<Page Not Found>"<<endl;
+        return false;
+    }
     data->remove_page();
     __Pages->delete_data(&index);
     return true;
@@ -165,11 +164,59 @@ bool Table::remove_table(){/*
     return true;
 }
 
+void Table::print_table(){
+    /*
+    cout<<"+-----------------------------------------"<<endl;
+    cout<<"|             "<<__Name<<"               "<<endl;
+    */
+    cout<<"+-----------------------------------------"<<endl;
+    cout<<"| [R]    ";
+    for(int i = 0;i<__Data_Num;i++){
+        cout<<"["<<__Data_ID[i]<<"]";
+        if(__Data_Type[i]==__Index_Type) cout<<"[P]";
+        cout<<"\t";
+    }cout<<endl;
+    cout<<"+-----------------------------------------"<<endl;
+    Node<Page,Index>* head = __Pages->getHead();
+    if(head == NULL) return;
+    while(head != NULL){
+        for(int i = 0; i >= 0 ; i++){
+            Page* page = head->getData(i);
+            if(page == NULL) break;
+            page->print_page();
+        }
+        head = head->getNext();
+    }
+    cout<<"+-----------------------------------------\n"<<endl;
+}
+
+void Table::print_structure(){
+    /*
+    cout<<"+-----------------------"<<endl;
+    cout<<"|   "<<__Name<<"   "<<endl;
+    */
+    cout<<"+-----------+-----------"<<endl;
+    cout<<"|   Filed   |   Type   "<<endl;
+    cout<<"+-----------+-----------"<<endl;
+    for(int i = 0; i < __Data_Num; i++){
+        cout<<"| ";
+        cout<<setw(10)<<left<<__Data_ID[i]<<"| "<<setw(10)<<left<<__Type__[__Data_Type[i]];
+        if(__Data_Type[i] == __Index_Type)  cout<<"[PRIMARY KEY]";
+        cout<<endl;
+    }
+    cout<<"+-----------------------\n"<<endl;
+}
+
+
 __DataType__* Table::getDataType(){
     return __Data_Type;
 }
 
+__DataType__ Table::getIndexType(){
+    return __Index_Type;
+}
 
 string Table::getName(){
     return __Name;
 }
+

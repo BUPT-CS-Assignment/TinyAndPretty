@@ -38,19 +38,28 @@ private:
     int __ID__; //树结构标识
     Node<DAT,Idx>* __Data__; //首节点指针
     Node<DAT,Idx>* __Root__; //根节点指针
-    Node<DAT,Idx>* insert_node_locate(Idx*,Node<DAT,Idx>* start);  //定位数据插入节点位置
+    Node<DAT,Idx>* find_insert_leaf_node(Idx*,Node<DAT,Idx>* start);  //定位数据插入节点位置
     void insert_adjust(Node<DAT,Idx>*);    //数据插入调整
     Idx* common_index_locate(Node<DAT,Idx>*,Node<DAT,Idx>*,Node<DAT,Idx>*); //寻找共同祖先索引
     void delete_adjust(Node<DAT,Idx>*); //删除节点后进行树结构调整
     Node<DAT,Idx>* node_merge(Node<DAT,Idx>*,Idx*, Node<DAT,Idx>*); //拉取父索引后合并
+    //
+    Node<DAT,Idx>* findHead(Node<DAT,Idx>* node){
+        if(node == NULL) return NULL;
+        if(node->__type == __LEAF__) return node;
+        return findHead(node->__child[0]); 
+    }
 public:
     BalanceTree(int id);    //树创建
-    DAT* search_position(Idx*); //数据查找
+    DAT* locate_insert_data(Idx*); //数据查找
+    DAT* locate_data(Idx*); //数据查找
     void insert_data(Idx*,DAT*); //数据插入
     void delete_data(Idx*);   //数据删除
     void check_all();   //遍历树
-    DAT* getHeader();   //获取首个数据节点
     void print_tree();  //打印整树
+    Node<DAT,Idx>* getHead(){
+        return findHead(__Root__);
+    }
 
 };
 
@@ -90,6 +99,13 @@ private:
     void print_node();  //打印节点数据
     void delete_index(int); //根据位置抹除索引及子节点
     bool find_node(Node<DAT,Idx>*); //寻找节点
+    ///////////////////////////
+public:
+    DAT* getData(int pos){
+        if(pos >= __cursor) return NULL;
+        return __data[pos];
+    }
+    Node<DAT,Idx>* getNext(){return __right;}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,7 +118,6 @@ private:
 template<class DAT,class Idx>
 BalanceTree<DAT,Idx>::BalanceTree(int id){
     __ID__ = id;
-    __Data__ = NULL;
     __Root__ = NULL;
 }
 
@@ -111,13 +126,9 @@ void BalanceTree<DAT,Idx>::print_tree(){
     /**
      * @brief 打印树结构
      */
-    __Root__->print_node();
+    check_all();
 }
-template<class DAT,class Idx>
-DAT* BalanceTree<DAT,Idx>::getHeader(){
-    if(__Data__ == NULL) return NULL;
-    return __Data__->__data[0];
-}
+
 
 template<class DAT,class Idx>
 void BalanceTree<DAT,Idx>::check_all(){
@@ -125,10 +136,10 @@ void BalanceTree<DAT,Idx>::check_all(){
         cout<<" <Tree Empty> "<<endl;
         return;
     }
-    Node<DAT,Idx>* node = __Data__;
+    Node<DAT,Idx>* node = getHead();
     while(node != NULL){
         for(int i = 0;i < node->__cursor; i++){
-            cout<<*node->__data[i]<<" -> ";
+            cout<<*node->__index[i]<<" -> ";
         }
         node = node->__right;
     }
@@ -258,7 +269,7 @@ void Node<DAT,Idx>::print_node(){
  */
 
 template<class DAT,class Idx>
-Node<DAT,Idx>* BalanceTree<DAT,Idx>::insert_node_locate(Idx* idx,Node<DAT,Idx>* start){
+Node<DAT,Idx>* BalanceTree<DAT,Idx>::find_insert_leaf_node(Idx* idx,Node<DAT,Idx>* start){
     /**
      * @brief 根据索引定位数据查找/插入的叶节点 <parm>索引指针, 起始节点指针
      */
@@ -266,15 +277,15 @@ Node<DAT,Idx>* BalanceTree<DAT,Idx>::insert_node_locate(Idx* idx,Node<DAT,Idx>* 
     if(start->__type == __LEAF__) return start;
     int p = start->find_insert_position(idx);
     if(p == -1) return NULL;
-    return insert_node_locate(idx,start->__child[p]);
+    return find_insert_leaf_node(idx,start->__child[p]);
 }
 
 template<class DAT,class Idx>
-DAT* BalanceTree<DAT,Idx>::search_position(Idx* idx){
+DAT* BalanceTree<DAT,Idx>::locate_insert_data(Idx* idx){
     /**
      * @brief 根据索引查找数据单元位置 <parm>索引指针
      */
-    Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
+    Node<DAT,Idx>* node = find_insert_leaf_node(idx,__Root__);
     if(node == NULL) return NULL;
     if(*idx < *node->__index[0]) return NULL; //需要新建数据页
     int p = 0;
@@ -285,6 +296,22 @@ DAT* BalanceTree<DAT,Idx>::search_position(Idx* idx){
         p = node->__cursor - 1;
     }
     return node->__data[p];
+}
+
+template<class DAT,class Idx>
+DAT* BalanceTree<DAT,Idx>::locate_data(Idx* idx){
+    /**
+     * @brief 根据索引定位数据页 <parm>索引指针
+     */
+    Node<DAT,Idx>* node = find_insert_leaf_node(idx,__Root__);
+    if(node == NULL) return NULL;
+    for(int i = 0; i < node->__cursor; i ++){
+        if(*node->__index[i] == *idx){
+            return node->__data[i];
+        }
+    }
+    return NULL;
+
 }
 
 template<class DAT,class Idx>
@@ -334,7 +361,6 @@ Idx* BalanceTree<DAT,Idx>::common_index_locate(Node<DAT,Idx>* A,Node<DAT,Idx>* B
         if(start->__child[i]->find_node(A)) A_pos = i; 
         if(start->__child[i]->find_node(B)) B_pos = i; 
     }
-    cout<<A_pos<<"/"<<B_pos<<endl;
     if(A_pos == -1 || B_pos == -1) return NULL;
     if(B_pos - A_pos == 1) return start->__index[A_pos];
     if(A_pos == B_pos) return common_index_locate(A,B,start->__child[B_pos]);
@@ -359,7 +385,7 @@ void BalanceTree<DAT,Idx>::insert_data(Idx* idx,DAT* data){
         __Data__ = __Root__;
         return;
     }
-    Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
+    Node<DAT,Idx>* node = find_insert_leaf_node(idx,__Root__);
     node->insert(idx,data);
     insert_adjust(node);
 }
@@ -430,25 +456,29 @@ void Node<DAT,Idx>::insert(Idx* idx,Node<DAT,Idx>* node){
 
 template<class DAT,class Idx>
 void BalanceTree<DAT,Idx>::delete_data(Idx* idx){
-    Node<DAT,Idx>* node = insert_node_locate(idx,__Root__);
+    Node<DAT,Idx>* node = find_insert_leaf_node(idx,__Root__);
     if(node == NULL) return;
     if(!node->delete_data(idx)) return;
     if(node->isSatisfied()) return;
     //合并节点优先///////////////////////////////////////////////////////////////////
     if(node->__left !=NULL && node->isMerge(node->__left)){
+        cout<<"l merge"<<endl;
         //左合并
         node = node->left_merge(node->__left);
         delete_adjust(node->__parent);
     }else if(node->__right != NULL && node->isMerge(node->__right)){
+        cout<<"r merge"<<endl;
         //右合并
         node->right_merge(node->__right);
         delete_adjust(node->__parent);
     }else if(node->__left != NULL && node->__left->isLend()){ //左节点可借
+        cout<<"l lend"<<endl;
         node->left_lend(NULL);
         Idx* common_idx = common_index_locate(node->__left,node,__Root__); //找到共同父索引
         *common_idx = *(new Idx(*node->__index[0]));    //更新共同父索引
 
     }else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
+        cout<<"r lend"<<endl;
         node->right_lend(NULL);
         Idx* common_idx = common_index_locate(node,node->__right,__Root__); //找到共同父索引
         *common_idx = *(new Idx(*node->__right->__index[0])); //更新共同父索引
@@ -486,8 +516,8 @@ bool Node<DAT,Idx>::delete_data(Idx* idx){
      */
     int p = find_delete_position(idx);
     if(p == -1) return false;
-    delete[] __data[p];
-    delete[] __index[p];
+    __data[p] = NULL;
+    __index[p] = NULL;
     for(int i = p; i<__cursor; i++){
         __data[i] = __data[i+1];
         __index[i] = __index[i+1];

@@ -39,9 +39,10 @@ bool parm_check(string str,__DataType__ type){
         if(!regex_match(str,regex("^-?\\d+"))){
             cout<<"Parameter '"<<str<<"' Mismatch Type 'INT'."<<endl;
             return false;
-        }
-        if(str.compare("2147483647") > 0 ||
-          (str[0] == '-' && str.compare("-2147483648") > 0)){
+        }try{
+            stoi(str);
+            return true;
+        }catch(out_of_range &e){
             cout<<"Overflow! <Type : INT>"<<endl; 
             return false;
         }
@@ -49,15 +50,22 @@ bool parm_check(string str,__DataType__ type){
         if(!regex_match(str,regex("^-?\\d+"))){
             cout<<"Parameter '"<<str<<"' Mismatch Type 'INT64'."<<endl;
             return false;
-        }
-        if(str.compare("9223372036854775807") > 0 ||
-          (str[0] == '-' && str.compare("-9223372036854775808") > 0)){
+        }try{
+            stoll(str);
+            return true;
+        }catch(out_of_range &e){
             cout<<"Overflow! <Type : INT64>"<<endl; 
             return false;
         }
     }else if(type == __REAL){
         if(!regex_match(str,regex("^-?\\d+\\.?\\d+"))){
             cout<<"Parameter '"<<str<<"' Mismatch Type 'REAL'."<<endl;
+            return false;
+        }try{
+            stod(str);
+            return true;
+        }catch(out_of_range &e){
+            cout<<"Overflow! <Type : REAL>"<<endl; 
             return false;
         }
     }else if(type == __TEXT){

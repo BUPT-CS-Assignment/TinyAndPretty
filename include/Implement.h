@@ -23,13 +23,13 @@ void q_sort(T** array,int l, int r){
     T* key = array[blank];
     while(i<j){
         while(j>blank){
-            if(*array[j]>*key){
+            if(*(array[j])<*key){
                 array[blank]=array[j];
                 blank = j;
             }else j--;
         }
         while(i<blank){
-            if(*array[i]<*key){
+            if(*(array[i])>*key){
                 array[blank]=array[i];
                 blank = i;
             }else i++;

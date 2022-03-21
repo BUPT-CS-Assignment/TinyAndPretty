@@ -40,6 +40,8 @@ private:
     void execute_print_table();
     void execute_delete_row();
     void execute_remove_table();
+    void execute_show_tables();
+    void execute_describe_table();
 public:
     bool pre_process(string symbol);
     Executor();

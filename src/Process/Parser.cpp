@@ -40,11 +40,12 @@ __OPERATE__  Parser::operate_type(string input){
     string command = input.substr(0,input.find(" "));
     //
     /******************/
-    if(command.compare("CREATE") == 0) return __TABLE_CREATE;
-    if(command.compare("REMOVE") == 0) return __TABLE_REMOVE; 
+    if(command.compare("CREATE") == 0) return __CREATE;
+    if(command.compare("REMOVE") == 0) return __REMOVE; 
     if(command.compare("INSERT") == 0) return __INSERT;
     if(command.compare("DELETE") == 0) return __DELETE;
-    if(command.compare("PRINT") == 0) return __PRINT;
+    if(command.compare("CHECK") == 0) return __CHECK;
+    if(command.compare("DESCRIBE") == 0) return __DESCRIBE;
     return __UNKNOWN;
 }
 

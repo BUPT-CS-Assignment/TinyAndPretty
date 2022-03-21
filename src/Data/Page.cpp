@@ -7,7 +7,6 @@ Table::Page::Page(int page_num,Table* t){
     __Page_Num = page_num;
     __Rows = new Row*[MAX_ROWS_SINGLE_PAGE];
     __Cursor = 0;
-    __Index = "";
 }   
 
 //插入行
@@ -17,7 +16,7 @@ void Table::Page::insert(Row* Node){
 }
 
 //删除指定行
-bool Table::Page::delete_row(string index){
+bool Table::Page::delete_row(Index& index){
     int p = -1;
     for(int i = 0; i < __Cursor; i++){
         if(__Rows[i]->getIndex() == index){
@@ -25,9 +24,11 @@ bool Table::Page::delete_row(string index){
             break;
         }
     }
-    if(p == -1) return false;
+    if(p == -1){
+        cout<<"<Data Not Found>"<<endl;
+        return false;
+    } 
     __Rows[p]->erase();
-    //delete[] __Rows[row_number];
     for(int i = p;i<__Cursor -1;i++){
         __Rows[i] = __Rows[i+1];
     }
@@ -56,13 +57,13 @@ bool Table::Page::remove_page(){
 //打印整页
 void Table::Page::print_page(){
     for(int i = 0;i<__Cursor;i++){
-        cout<<"["<<i<<"]\t"<<__Rows[i]->format();
-    }
-    for(int i = 0;i<t->__Data_Num;i++){
-        cout<<"\t";
-    }cout<<"[Page Index : "<<__Index<<"]\t\n"<<endl;
+        cout<<"| ["<<i<<"]\t"<<__Rows[i]->format();
+    }cout<<"|";
+    for(int i = 0;i<=t->__Data_Num;i++){
+        cout<<" - - - -";
+    }cout<<" [Page Index : "<<__Index<<"]\t\n|"<<endl;
 }
 
-string Table::Page::getIndex(){
+Index& Table::Page::getIndex(){
     return __Index;
 }

@@ -4,6 +4,7 @@
 #include<string.h>
 #include<cstdlib>
 #include<regex>
+#include<iomanip>
 using namespace std;
 
 /*
@@ -34,15 +35,15 @@ using namespace std;
             Row  @  单行数据类(数据基类)  
 
 */
-#define MAX_ROWS_SINGLE_PAGE 20
+#define MAX_ROWS_SINGLE_PAGE 3
 #define MAX_PAGES_SINGLE_TABLE 100
 #define MAX_TABLES 50
 #define TEXT_LENGTH 32
 #define LONGTEXT_LENGTH 255
 enum __DataType__{__INT,__INT64,__REAL,__TEXT,__LONGTEXT};
 enum __COMMAND__{__UNK,__EXIT,__HELP,__OPERATE,__SAVE};
-enum __OPERATE__{__UNKNOWN,__TABLE_CREATE,__INSERT,__DELETE,__REPLACE,__PRINT,
-                 __TABLE_REMOVE,__SHOW};
+enum __OPERATE__{__UNKNOWN,__CREATE,__INSERT,__DELETE,__REPLACE,__CHECK,
+                 __REMOVE,__SHOW,__DESCRIBE};
 
 
 class InputStream;
