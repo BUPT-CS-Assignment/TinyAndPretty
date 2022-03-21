@@ -74,8 +74,8 @@ void __HELP__(){
     cout<<"   "<<endl;
     cout<<"\t[PAGE REMOVE] REMOVE table_name(page_index);"<<endl;
     cout<<"   "<<endl;
-    cout<<"\t[INSERT DATA] INSERT table_name(data_01, ...);"<<endl;
+    cout<<"\t[DATA INSERT] INSERT table_name(data_01, ...);"<<endl;
     cout<<"   "<<endl;
-    cout<<"\t[DELETE DATA] DELETE table_name(data_index);"<<endl;
+    cout<<"\t[DATA DELETE] DELETE table_name(data_index);"<<endl;
     cout<<"   \n"<<endl;
 }
