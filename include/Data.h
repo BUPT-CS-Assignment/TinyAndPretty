@@ -77,7 +77,7 @@ public:
     Page(int page_num,Table* t); //构造函数
     bool isFull();  //判断满页
     int getCursor();    //获取光标位置
-    void insert(Row* new_row); //插入行
+    bool insert(Row* new_row); //插入行
     bool delete_row(Index& index);    //按索引删除
     bool remove_page(); //删除整页
     void print_page();  //打印整页

@@ -87,7 +87,7 @@ char* Table::Row::format(){
                 temp = temp + (char*)__Content[i];
                 break;
         }
-        temp = temp + (i== t->__Data_Num-1?"\n":"\t");
+        temp = temp + (i== t->__Data_Num-1?"\n":"\t ");
     }
     char* row = new char[temp.length()+1];
     strcpy(row,temp.c_str());

@@ -35,36 +35,46 @@ bool Table::init(string statement){
     __Data_ID = new string[__Data_Num];
     bool key_assigned = false;
     string assign_key = "";
-    for(int i =0;i<__Data_Num;i++){
+    int data_number = __Data_Num, pos = 0;
+    for(int i =0;i<data_number;i++){
         string temp = words[i];
         //匹配语句
         if(regex_match(temp,regex("\\w+[:]\\w+"))){
             int index = temp.find(":");
-            __Data_ID[i] = Trim(temp.substr(0,index));
+            __Data_ID[pos] = Trim(temp.substr(0,index));
             string elementType = Trim(temp.substr(index+1,temp.length()-index));
             if(elementType.compare("INT") == 0){
-                __Data_Type[i] = __INT;
+                __Data_Type[pos++] = __INT;
             }else if(elementType.compare("INT64") == 0){
-                __Data_Type[i] = __INT64;
+                __Data_Type[pos++] = __INT64;
             }else if(elementType.compare("REAL") == 0){
-                __Data_Type[i] = __REAL;
+                __Data_Type[pos++] = __REAL;
             }else if(elementType.compare("TEXT") == 0){
-                __Data_Type[i] = __TEXT;
+                __Data_Type[pos++] = __TEXT;
             }else if(elementType.compare("LONGTEXT") == 0){
-                __Data_Type[i] = __LONGTEXT;
+                __Data_Type[pos++] = __LONGTEXT;
             }else{
                 cout<<"Unknown Element Type."<<endl;
                 remove_table();
                 return false;
             }
         }else if(regex_match(temp,regex("^KEY[(]\\w+[)]$"))){
-            i--;    __Data_Num--;
+            __Data_Num--;
             //匹配索引项
-            key_assigned = true;
-            int index_f = temp.find("(");
-            int index_t = temp.find(")");
-            assign_key = temp.substr(index_f + 1,index_t - index_f -1);
-            cout<<"PRIMARY_KEY for Table '"<<__Name<<"' : "<<assign_key<<endl;
+            if(key_assigned){
+                int index_f = temp.find("(");
+                int index_t = temp.find(")");
+                if(assign_key != temp.substr(index_f + 1,index_t - index_f -1)){
+                    cout<<"PRIMARY_KEY Already Assigned : "<<assign_key<<endl;
+                    return false;
+                }
+            }else{
+                key_assigned = true;
+                int index_f = temp.find("(");
+                int index_t = temp.find(")");
+                assign_key = temp.substr(index_f + 1,index_t - index_f -1);
+                cout<<"PRIMARY_KEY for Table '"<<__Name<<"' : "<<assign_key<<endl;
+            }
         }else{
             cout<<"Malform Parameter."<<endl;
             return false;
@@ -102,7 +112,10 @@ bool Table::insert(string statement){
     Page* data = __Pages->locate_insert_data(&(new_row->getIndex()));
     ///////数据页可插入
     if(data!= NULL && !data->isFull()){
-        data->insert(new_row);
+        if(!data->insert(new_row)){
+            cout<<"Primary Key '"<<new_row->getIndex()<<"' Already Exsits."<<endl;
+            return false;
+        }
         return true;
     }
     //////新建页后插入
@@ -169,14 +182,14 @@ void Table::print_table(){
     cout<<"+-----------------------------------------"<<endl;
     cout<<"|             "<<__Name<<"               "<<endl;
     */
-    cout<<"+-----------------------------------------"<<endl;
-    cout<<"| [R]    ";
+    cout<<"+-------+---------------------------------"<<endl;
+    cout<<"| [R]   |";
     for(int i = 0;i<__Data_Num;i++){
-        cout<<"["<<__Data_ID[i]<<"]";
+        cout<<" "<<__Data_ID[i];
         if(__Data_Type[i]==__Index_Type) cout<<"[P]";
         cout<<"\t";
     }cout<<endl;
-    cout<<"+-----------------------------------------"<<endl;
+    cout<<"+-------+---------------------------------"<<endl;
     Node<Page,Index>* head = __Pages->getHead();
     if(head == NULL) return;
     while(head != NULL){
@@ -187,7 +200,7 @@ void Table::print_table(){
         }
         head = head->getNext();
     }
-    cout<<"+-----------------------------------------\n"<<endl;
+    cout<<"+-------+---------------------------------"<<endl;
 }
 
 void Table::print_structure(){
@@ -200,11 +213,10 @@ void Table::print_structure(){
     cout<<"+-----------+-----------"<<endl;
     for(int i = 0; i < __Data_Num; i++){
         cout<<"| ";
-        cout<<setw(10)<<left<<__Data_ID[i]<<"| "<<setw(10)<<left<<__Type__[__Data_Type[i]];
-        if(__Data_Type[i] == __Index_Type)  cout<<"[PRIMARY KEY]";
-        cout<<endl;
+        cout<<setw(10)<<left<<__Data_ID[i]+(__Data_Type[i]==__Index_Type?"[P]":"");
+        cout<<"| "<<__Type__[__Data_Type[i]]<<endl;
     }
-    cout<<"+-----------------------\n"<<endl;
+    cout<<"+-----------+-----------\n"<<endl;
 }
 
 

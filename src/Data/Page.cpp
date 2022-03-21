@@ -10,9 +10,13 @@ Table::Page::Page(int page_num,Table* t){
 }   
 
 //插入行
-void Table::Page::insert(Row* Node){
+bool Table::Page::insert(Row* Node){
+    for(int i = 0; i < __Cursor; i++){
+        if(__Rows[i]->getIndex() == Node->getIndex()) return false;
+    }
     __Rows[__Cursor ++] = Node;
     q_sort(__Rows,0,__Cursor-1);
+    return true;
 }
 
 //删除指定行
@@ -57,11 +61,11 @@ bool Table::Page::remove_page(){
 //打印整页
 void Table::Page::print_page(){
     for(int i = 0;i<__Cursor;i++){
-        cout<<"| ["<<i<<"]\t"<<__Rows[i]->format();
-    }cout<<"|";
-    for(int i = 0;i<=t->__Data_Num;i++){
+        cout<<"| ["<<i<<"]\t| "<<__Rows[i]->format();
+    }cout<<"| - - - +";
+    for(int i = 0;i<t->__Data_Num;i++){
         cout<<" - - - -";
-    }cout<<" [Page Index : "<<__Index<<"]\t\n|"<<endl;
+    }cout<<" [Page Index : "<<__Index<<"]\t"<<endl;
 }
 
 Index& Table::Page::getIndex(){
