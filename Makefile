@@ -7,7 +7,7 @@ INCLUDE_DIR = $(WORK_DIR)/include
 
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
 
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -O2 -Wall -Werror
+CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -O2 -Wall
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
@@ -21,6 +21,7 @@ endif
 
 
 ifeq ($(MODE),debug)
+CXXFLAGS += -D DEBUG -g
 SOURCES += src/test-main.cpp
 else
 SOURCES += src/main.cpp
