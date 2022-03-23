@@ -146,7 +146,8 @@ bool Memorizer::page_read_in(__uint16_t page_offset){
             Row* new_row = new Row(__Page->t);
             __Page->__Rows[i] = new_row;
             for(int i = 0; i < __Page->t->__ParmNum; i++){
-                fread(new_row->__RowContent[i],__TypeSize__[__Page->t->getKeyType()],1,__ReadPtr);
+                __DataType__ type = __Page->t->__ParmType[i];
+                fread(new_row->__RowContent[i],__TypeSize__[type],1,__ReadPtr);
                 new_row->index_update();
             }
         }
@@ -190,7 +191,8 @@ bool Memorizer::page_write_back(__uint16_t page_offset){
         for(__uint16_t i = 0; i < __Page->__CursorOffset; i++){
             Row* cur_row = __Page->__Rows[i];
             for(int i = 0; i < __Page->t->__ParmNum; i++){
-                fwrite(cur_row->__RowContent[i],__TypeSize__[__Page->t->__Key],1,__WritePtr);
+                __DataType__ type = __Page->t->__ParmType[i];
+                fwrite(cur_row->__RowContent[i], __TypeSize__[type],1,__WritePtr);
             }
         }
         fclose(__WritePtr);
@@ -200,3 +202,6 @@ bool Memorizer::page_write_back(__uint16_t page_offset){
     }
     return true; 
 }
+
+
+
