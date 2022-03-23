@@ -16,6 +16,7 @@ using namespace std;
  *      [A]__child - 子节点数组  
  * 
  */
+
 enum __NodeType__{__INTERNAL__, __LEAF__};  //节点类型(内部节点, 叶节点)
 
 /**
@@ -104,6 +105,10 @@ public:
     DAT* getData(int pos){
         if(pos >= __cursor) return NULL;
         return __data[pos];
+    }
+    Idx* getIndex(int pos){
+        if(pos >= __cursor) return NULL;
+        return __index[pos];
     }
     Node<DAT,Idx>* getNext(){return __right;}
 };
@@ -462,23 +467,23 @@ void BalanceTree<DAT,Idx>::delete_data(Idx* idx){
     if(node->isSatisfied()) return;
     //合并节点优先///////////////////////////////////////////////////////////////////
     if(node->__left !=NULL && node->isMerge(node->__left)){
-        cout<<"l merge"<<endl;
+        //cout<<"l merge"<<endl;
         //左合并
         node = node->left_merge(node->__left);
         delete_adjust(node->__parent);
     }else if(node->__right != NULL && node->isMerge(node->__right)){
-        cout<<"r merge"<<endl;
+        //cout<<"r merge"<<endl;
         //右合并
         node->right_merge(node->__right);
         delete_adjust(node->__parent);
     }else if(node->__left != NULL && node->__left->isLend()){ //左节点可借
-        cout<<"l lend"<<endl;
+        //cout<<"l lend"<<endl;
         node->left_lend(NULL);
         Idx* common_idx = common_index_locate(node->__left,node,__Root__); //找到共同父索引
         *common_idx = *(new Idx(*node->__index[0]));    //更新共同父索引
 
     }else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
-        cout<<"r lend"<<endl;
+        //cout<<"r lend"<<endl;
         node->right_lend(NULL);
         Idx* common_idx = common_index_locate(node,node->__right,__Root__); //找到共同父索引
         *common_idx = *(new Idx(*node->__right->__index[0])); //更新共同父索引
@@ -506,8 +511,6 @@ void BalanceTree<DAT,Idx>::delete_data(Idx* idx){
     }
     */
 }
-
-
 
 template<class DAT,class Idx>
 bool Node<DAT,Idx>::delete_data(Idx* idx){

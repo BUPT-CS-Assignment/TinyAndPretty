@@ -27,6 +27,12 @@ void Parser::analyse(string input){
         __Command = __HELP;
     }else if(input.compare(".save") == 0){
         __Command = __SAVE;
+    }else if(input.compare(".openall") == 0){
+        __Command = __LOADALL;
+    }else if(input.substr(0,input.find(" ")).compare(".open") == 0){
+        __Command = __LOAD;
+        int index = input.find(" ");
+        __Statement = input.substr(index+1,input.length()-index-1);
     }else{
         __Command = __UNK;
         __Statement = input;

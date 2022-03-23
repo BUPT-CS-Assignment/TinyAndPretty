@@ -16,7 +16,11 @@
     "fstream": "cpp",
     "iosfwd": "cpp",
     "compare": "cpp",
-    "type_traits": "cpp"
+    "type_traits": "cpp",
+    "thread": "cpp",
+    "array": "cpp",
+    "sstream": "cpp",
+    "regex": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
   "C_Cpp_Runner.cppCompilerPath": "D:/Dev-Cpp/MinGW64/bin/g++.exe",

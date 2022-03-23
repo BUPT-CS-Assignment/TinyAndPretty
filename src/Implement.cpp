@@ -58,7 +58,7 @@ bool parm_check(string str,__DataType__ type){
             return false;
         }
     }else if(type == __REAL){
-        if(!regex_match(str,regex("^-?\\d+\\.?\\d+"))){
+        if(!regex_match(str,regex("^-?\\d+\\.\\d+")) && !regex_match(str,regex("^-?\\d+"))){
             cout<<"Parameter '"<<str<<"' Mismatch Type 'REAL'."<<endl;
             return false;
         }try{

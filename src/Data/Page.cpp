@@ -2,27 +2,36 @@
 #include <Implement.h>
 
 //构造函数
-Table::Page::Page(int page_num,Table* t){
+Page::Page(Table* t){
     this->t = t;
-    __Page_Num = page_num;
-    __Rows = new Row*[MAX_ROWS_SINGLE_PAGE];
-    __Cursor = 0;
+    __Rows = new Row*[t->__MaxRowPerPage];
+    __CursorOffset = 0;
+    __IsFull = 0;
+}   
+
+Page::Page(__uint16_t offset, Table* t){
+    this->t = t;
+    __PageOffset = offset;
+    __Rows = new Row*[t->__MaxRowPerPage];
+    __CursorOffset = 0;
+    __IsFull = 0;
 }   
 
 //插入行
-bool Table::Page::insert(Row* Node){
-    for(int i = 0; i < __Cursor; i++){
+bool Page::insert(Row* Node){
+    for(__uint16_t i = 0; i < __CursorOffset; i++){
         if(__Rows[i]->getIndex() == Node->getIndex()) return false;
     }
-    __Rows[__Cursor ++] = Node;
-    q_sort(__Rows,0,__Cursor-1);
+    __Rows[__CursorOffset ++] = Node;
+    q_sort(__Rows,0,__CursorOffset-1);
+    if(__CursorOffset >= t->__MaxRowPerPage) __IsFull = 1;
     return true;
 }
 
 //删除指定行
-bool Table::Page::delete_row(Index& index){
+bool Page::delete_row(Index& index){
     int p = -1;
-    for(int i = 0; i < __Cursor; i++){
+    for(__uint16_t i = 0; i < __CursorOffset; i++){
         if(__Rows[i]->getIndex() == index){
             p = i;
             break;
@@ -33,41 +42,30 @@ bool Table::Page::delete_row(Index& index){
         return false;
     } 
     __Rows[p]->erase();
-    for(int i = p;i<__Cursor -1;i++){
+    for(__uint16_t i = p;i<__CursorOffset -1;i++){
         __Rows[i] = __Rows[i+1];
     }
-    __Cursor--;
+    __CursorOffset--;
     return true;
 }
 
-//判断页面是否已满
-bool Table::Page::isFull(){
-    return __Cursor >= MAX_ROWS_SINGLE_PAGE;
-}
-
-//返回光标位置
-int Table::Page::getCursor(){
-    return __Cursor;
-}
 
 //删除整页
-bool Table::Page::remove_page(){
-    for(int i = 0;i<__Cursor;i++){
+bool Page::remove_page(){
+    for(__uint16_t i = 0;i<__CursorOffset;i++){
         __Rows[i]->erase();
     }
+    __CursorOffset = 0;
     return true;
 }
 
 //打印整页
-void Table::Page::print_page(){
-    for(int i = 0;i<__Cursor;i++){
+void Page::print_page(){
+    for(__uint16_t i = 0;i<__CursorOffset;i++){
         cout<<"| ["<<i<<"]\t| "<<__Rows[i]->format();
     }cout<<"| - - - +";
-    for(int i = 0;i<t->__Data_Num;i++){
+    for(int i = 0;i<t->__ParmNum;i++){
         cout<<" - - - -";
-    }cout<<" [Page Index : "<<__Index<<"]\t"<<endl;
+    }cout<<" [Page Index : "<<__PageIndex<<"]\t"<<endl;
 }
 
-Index& Table::Page::getIndex(){
-    return __Index;
-}

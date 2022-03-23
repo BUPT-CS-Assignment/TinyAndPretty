@@ -1,9 +1,15 @@
 #include<Process.h>
-#include <Data.h>
-//#include<Basic.h>
+#include<Data.h>
+#include<Storage.h>
+
+////////////////////////////////////////////////////////////////
+string __HOME_DIRECTORY__ = "/home/jianxf/LiteDB/Tables/";
+////////////////////////////////////////////////////////////////
 
 string const __Type__[]={"INT","INT64","REAL","TEXT","LONGTEXT"};
+int const __TypeSize__ []={4,8,8,32,255};
 
+string __FILE_SUFFIX__ = ".ld3";
 Table** __TABLES__;
 int __CURSOR__;
 
@@ -19,6 +25,9 @@ int __TABLE_LOCATED_BY_NAME__(string name){
     }
     return -1;
 }
+
+
+
 
 void __START__(){
     __DATABASE_INIT__();
@@ -40,6 +49,17 @@ void __START__(){
         i.clear_input();
     }
 }
+
+void __LOAD_FILE__(string fileName){
+    string filePath = __HOME_DIRECTORY__ + fileName + __FILE_SUFFIX__;
+    Memorizer M;
+    if(!M.load(filePath)){
+        cout<<"Load File '"<<filePath<<"' Failed."<<endl;
+        return;
+    }
+    cout<<"Load File '"<<filePath<<"' Success."<<endl;
+}
+
 
 void __MESSAGE__(){
     cout<<"Welcome to LiteDB terminal. Command end with ';'."<<endl;
@@ -64,9 +84,13 @@ void __HELP__(){
     cout<<"   "<<endl;
     cout<<"\t[HELP] .help"<<endl;
     cout<<"   "<<endl;
+    cout<<"\t[OPEN FILE] .open table_name"<<endl;
+    cout<<"\t * Just enter the table name, without suffix."<<endl;
+    cout<<"   "<<endl;
     cout<<"\t[TABLE CREATE] CREATE table_name(data_title : data_type, ... );"<<endl;
     cout<<"\t * The first parm will be set as PRIMARY KEY by default."<<endl;
     cout<<"\t * Add 'KEY(key_name)' as a parm to designate."<<endl;
+    cout<<"\t * Type 'LONGTEXT' is not allowed to be set as the PRIMARY KEY"<<endl;
     cout<<"   "<<endl;
     cout<<"\t[TABLE REMOVE] REMOVE table_name;"<<endl;
     cout<<"   "<<endl;

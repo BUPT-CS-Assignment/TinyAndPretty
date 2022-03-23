@@ -1,7 +1,8 @@
 #include<Process.h>
-#include<unistd.h> 
-#include <Data.h>
+ 
+#include<Data.h>
 #include<Implement.h>
+#include<Storage.h>
 
 Executor::Executor(){
     __Statement = "";
@@ -51,6 +52,9 @@ void Executor::execute(__COMMAND__ command,string statement){
         case __HELP :
             __HELP__();
             break;
+        case __LOAD :
+            __LOAD_FILE__(statement);
+            break;
         case __SAVE :
             printf("Saving to files...");
             sleep(2);
@@ -92,6 +96,7 @@ void Executor::execute_create_table(){
             return;
         }
     }
+    ///////////////////////////////////////////////////////////文件操作
     Table* new_table = new Table(__CURSOR__, __Table_Name);
     if(new_table->init(__Parameter)){
         __TABLES__[__CURSOR__] = new_table;
@@ -132,7 +137,7 @@ void Executor::execute_delete_row(){
     }
     int index = __TABLE_LOCATED_BY_NAME__(__Table_Name);
     if(index!=-1){
-        Index row_index(__Parameter, __TABLES__[index]->getIndexType());
+        Index row_index(__Parameter, __TABLES__[index]->getKeyType());
         if(! __TABLES__[index]->delete_row(row_index)){
             cout<<"Delete From '"<<__Table_Name<<"' Failed."<<endl;
             return;
@@ -151,7 +156,7 @@ void Executor::execute_remove_table(){
             cout<<"No Such Table Named '"<<__Statement<<"'."<<endl;
             return;
         }
-        Index page_index(__Parameter, __TABLES__[index]->getIndexType());
+        Index page_index(__Parameter, __TABLES__[index]->getKeyType());
         if(! __TABLES__[index]->delete_page(page_index)){
             cout<<"Delete From '"<<__Table_Name<<"' Failed."<<endl;
             return;

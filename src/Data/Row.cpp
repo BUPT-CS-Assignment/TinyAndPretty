@@ -2,37 +2,39 @@
 #include <Implement.h>
 
 
-Table::Row::Row(Table* t){
+Row::Row(Table* t){
     /*
         根据表元素格式初始化行，分配内存空间
     */
     this->t = t;
-    __Content = new void*[t->__Data_Num];
-    for(int i = 0; i < t->__Data_Num; i ++){
-        switch(t->__Data_Type[i]){
+    __RowContent = new void*[t->__ParmNum];
+    for(int i = 0; i < t->__ParmNum; i ++){
+        switch(t->__ParmType[i]){
             case __INT :
-                __Content[i] = new int;   
+                __RowContent[i] = new int;   
                 break;
             case __INT64 :
-                __Content[i] = new long long;   
+                __RowContent[i] = new long long;   
                 break;
             case __REAL :
-                __Content[i] = new double;   
+                __RowContent[i] = new double;   
                 break;
             case __TEXT :
-                __Content[i] = new char[TEXT_LENGTH + 1];   
+                __RowContent[i] = new char[TEXT_LENGTH];   
+                memset(__RowContent[i],'\0',TEXT_LENGTH); 
                 break;
             case __LONGTEXT :
-                __Content[i] = new char[LONGTEXT_LENGTH + 1];   
+                __RowContent[i] = new char[LONGTEXT_LENGTH];
+                memset(__RowContent[i],'\0',LONGTEXT_LENGTH);   
                 break;
             default:
-                __Content[i] = NULL;
+                __RowContent[i] = NULL;
                 break;
         }
     }
 }
     
-bool Table::Row::padding(string statement){
+bool Row::padding(string statement){
     /*
         填充行元素
         Format  @  '(element_1,_element_2,element_3,...)'
@@ -40,98 +42,116 @@ bool Table::Row::padding(string statement){
     int l = 0;
     string* words = Split(statement,',',l); 
     //判断元素匹配
-    if(l != t->__Data_Num){
+    if(l != t->__ParmNum){
+        cout<<t->__ParmNum<<endl;
         cout<<"Parameter Number Mismatch."<<endl;   
         return false;
     }
     //写入内存
-    for(int i = 0; i < t->__Data_Num; i ++){
-        __DataType__ type = t->__Data_Type[i];
-        if(type == t->__Index_Type){
-            __Index = *(new Index(words[i],type));
+    for(int i = 0; i < t->__ParmNum; i ++){
+        __DataType__ type = t->__ParmType[i];
+        if(type == t->getKeyType()){
+            __RowIndex = *(new Index(words[i],type));
         } 
         if(!parm_check(words[i],type)) return false;
         if(type == __INT){
-            *((int*)__Content[i]) = stoi(words[i]);
+            *((int*)__RowContent[i]) = stoi(words[i]);
         }else if(type == __INT64){
-            *((long long*)__Content[i]) = stoll(words[i]);
+            *((long long*)__RowContent[i]) = stoll(words[i]);
         }else if(type == __REAL){
-            *((long long*)__Content[i]) = stod(words[i]);
+            *((double*)__RowContent[i]) = stod(words[i]);
         }else{
-            char* temp = (char*)__Content[i];
-            strcpy(temp,words[i].c_str());
+            strcpy((char*)__RowContent[i],words[i].c_str());
         }
     }
     return true;
 }  
 
-char* Table::Row::format(){
+char* Row::format(){
     /*
         格式化字符串
         Format  @  'element_1,_element_2,element_3,...'
     
     */
     string temp = "";
-    for(int i = 0; i < t->__Data_Num ;i++){
-        switch(t->__Data_Type[i]){
+    for(int i = 0; i < t->__ParmNum ;i++){
+        switch(t->__ParmType[i]){
             case __INT :
-                temp = temp + to_string(*((int*)__Content[i]));
+                temp = temp + to_string(*((int*)__RowContent[i]));
                 break;
             case __INT64 :
-                temp = temp + to_string(*((long long*)__Content[i]));
+                temp = temp + to_string(*((long long*)__RowContent[i]));
                 break;
             case __REAL :
-                temp = temp + to_string(*((double*)__Content[i]));
+                temp = temp + to_string(*((double*)__RowContent[i]));
                 break;
             default:
-                temp = temp + (char*)__Content[i];
+                temp = temp + (char*)__RowContent[i];
                 break;
         }
-        temp = temp + (i== t->__Data_Num-1?"\n":"\t ");
+        temp = temp + (i== t->__ParmNum-1?"\n":"\t ");
     }
     char* row = new char[temp.length()+1];
     strcpy(row,temp.c_str());
     return row;
 }
 
-void Table::Row::erase(){
+void Row::erase(){
     /*
         删除行
     */
-    for(int i = 0;i<t->__Data_Num;i++){
-        switch(t->__Data_Type[i]){
+    for(int i = 0;i<t->__ParmNum;i++){
+        switch(t->__ParmType[i]){
             case __INT :
-                delete[] (int*)__Content[i];
+                delete[] (int*)__RowContent[i];
                 break;
             case __INT64 :
-                delete[] (long long*)__Content[i];
+                delete[] (long long*)__RowContent[i];
                 break;
             case __REAL :
-                delete[] (double*)__Content[i];
+                delete[] (double*)__RowContent[i];
                 break;
             default : 
-                delete[] (char*)__Content[i];
+                delete[] (char*)__RowContent[i];
                 break;
         }
     }
 }
 
-Index& Table::Row::getIndex(){
-    return __Index;
+void Row::index_update(){
+    __DataType__ type = t->__ParmType[t->__Key];
+    switch(type){
+        case __INT :
+            __RowIndex.INDEX.i_index = *((int*)__RowContent[t->__Key]); break;
+        case __INT64 :
+            __RowIndex.INDEX.l_index = *((long long*)__RowContent[t->__Key]); break;
+        case __REAL :
+            __RowIndex.INDEX.d_index = *((double*)__RowContent[t->__Key]); break;
+        case __TEXT :
+            strcpy(__RowIndex.INDEX.t_index,(char*)__RowContent[t->__Key]); break;
+        default:
+            break;
+    }
+
 }
 
-bool Table::Row::operator<(Row& row){
-    return __Index < row.__Index;
+Index& Row::getIndex(){
+    
+    return __RowIndex;
 }
-bool Table::Row::operator>(Row& row){
-    return __Index > row.__Index;
+
+bool Row::operator<(Row& row){
+    return __RowIndex < row.__RowIndex;
 }
-bool Table::Row::operator==(Row& row){
-    return __Index == row.__Index;
+bool Row::operator>(Row& row){
+    return __RowIndex > row.__RowIndex;
 }
-bool Table::Row::operator<=(Row& row){
-    return __Index <= row.__Index;
+bool Row::operator==(Row& row){
+    return __RowIndex == row.__RowIndex;
 }
-bool Table::Row::operator>=(Row& row){
-    return __Index >= row.__Index;
+bool Row::operator<=(Row& row){
+    return __RowIndex <= row.__RowIndex;
+}
+bool Row::operator>=(Row& row){
+    return __RowIndex >= row.__RowIndex;
 }
