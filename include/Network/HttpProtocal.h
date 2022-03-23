@@ -26,6 +26,7 @@ public :
 };
 
 
+
 #define HTTP_STATUS_200 "HTTP/1.1 200 OK\r\n"
 #define HTTP_STATUS_300 "HTTP/1.1 300 Multiple Choice\r\n"
 #define HTTP_STATUS_400 "HTTP/1.1 400 Bad Request\r\n"
@@ -45,13 +46,16 @@ public :
 };
 
 class HttpRequest {
-public : 
     StringDict  params;
     HttpHeader headers;
     std::string method , body , path , version;
+public : 
 
     HttpRequest(const char *str);
-    std::string& Path() { return path;}
+    std::string_view Path()     const { return path;}
+    std::string_view Method()   const { return method;}
+    std::string_view Version()  const { return version;}
+    std::string_view Body()     const { return body;}
 };
 
 
@@ -68,6 +72,7 @@ public :
 
 #include "SimpleJson.hpp"
 using namespace SimpleJson;
+
 class JsonResponse : public HttpResponseBase{
 public :
     Json body;

@@ -1,7 +1,5 @@
 #ifndef __SJSON__
 #define __SJSON__
-#include <bits/stdc++.h>
-
 
 namespace SimpleJson {
 

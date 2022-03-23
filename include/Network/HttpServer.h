@@ -23,9 +23,4 @@ public:
     void stop();
 };
 
-class HttpTask {
-public :
-}
-
-
 #endif

@@ -16,7 +16,7 @@ private :
     URLParser(const URLParser&&) ;
     URLParser& operator = (const URLParser&&) ;
 public :
-    std::unordered_map<std::string , EntryFunc >url_table;
+    std::unordered_map<std::string_view , EntryFunc >url_table;
     
     static URLParser &getInstance() {
         static URLParser instance;
