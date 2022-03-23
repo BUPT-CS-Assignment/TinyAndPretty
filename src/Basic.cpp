@@ -5,19 +5,21 @@
 ////////////////////////////////////////////////////////////////
 string __HOME_DIRECTORY__ = "/home/jianxf/LiteDB/Tables/";
 ////////////////////////////////////////////////////////////////
-
 string const __Type__[]={"INT","INT64","REAL","TEXT","LONGTEXT"};
 int const __TypeSize__ []={4,8,8,32,255};
-
+////////////////////////////////////////////////////////////////
 string __FILE_SUFFIX__ = ".ld3";
+////////////////////////////////////////////////////////////////
 Table** __TABLES__;
 int __CURSOR__;
 
+////////////////////////////////////////////////////////////////
 void __DATABASE_INIT__(){
     __TABLES__ = new Table*[MAX_TABLES];
     __CURSOR__ = 0;
 }
 
+////////////////////////////////////////////////////////////////
 int __TABLE_LOCATED_BY_NAME__(string name){
     for(int i = 0; i < __CURSOR__ ; i++){
         string temp = __TABLES__[i]->getName();
@@ -27,8 +29,7 @@ int __TABLE_LOCATED_BY_NAME__(string name){
 }
 
 
-
-
+////////////////////////////////////////////////////////////////
 void __START__(){
     __DATABASE_INIT__();
     __MESSAGE__();
@@ -50,6 +51,7 @@ void __START__(){
     }
 }
 
+////////////////////////////////////////////////////////////////
 void __LOAD_FILE__(string fileName){
     string filePath = __HOME_DIRECTORY__ + fileName + __FILE_SUFFIX__;
     Memorizer M;
@@ -60,13 +62,14 @@ void __LOAD_FILE__(string fileName){
     cout<<"Load File '"<<filePath<<"' Success."<<endl;
 }
 
-
+////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
     cout<<"Welcome to LiteDB terminal. Command end with ';'."<<endl;
     cout<<"Server version: 22.3.21 <Preview>"<<endl;
     cout<<"Enter '.help' for viewing help infomation.\n"<<endl;
 }
 
+////////////////////////////////////////////////////////////////
 void __HELP__(){
     cout<<"LiteDB version: 22.3.21 <Preview>"<<endl;
     cout<<" "<<endl;

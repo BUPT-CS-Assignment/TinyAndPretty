@@ -120,6 +120,7 @@ void Row::erase(){
 
 void Row::index_update(){
     __DataType__ type = t->__ParmType[t->__Key];
+    __RowIndex = *new Index(type);
     switch(type){
         case __INT :
             __RowIndex.INDEX.i_index = *((int*)__RowContent[t->__Key]); break;

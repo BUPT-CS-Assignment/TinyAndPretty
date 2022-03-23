@@ -20,6 +20,7 @@ Page::Page(__uint16_t offset, Table* t){
 //插入行
 bool Page::insert(Row* Node){
     for(__uint16_t i = 0; i < __CursorOffset; i++){
+        cout<<__Rows[i]->getIndex() <<" : "<< Node->getIndex()<<endl;
         if(__Rows[i]->getIndex() == Node->getIndex()) return false;
     }
     __Rows[__CursorOffset ++] = Node;

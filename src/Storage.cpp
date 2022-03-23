@@ -38,10 +38,8 @@ bool Memorizer::load(string filePath){
         __Table = new Table(id,name);
         __TABLES__[__CURSOR__++] = __Table;
         fread(&__Table->__TableHeadSize,sizeof(__uint16_t),1,__FilePtr);
-        cout<<__Table->__TableHeadSize<<endl;
         //////////////////////////////////////////////////////////////////////
         fread(&__Table->__TotalPage,sizeof(__uint16_t),1,__FilePtr);
-        cout<<__Table->__TotalPage<<endl;
         fread(&__Table->__EmptyPage,sizeof(__uint16_t),1+MAX_EMPTY_PAGE,__FilePtr);
         /////////////////////////////////////////////////////////////////////////
         fread(&__Table->__ParmNum,sizeof(__uint16_t),1,__FilePtr);
@@ -163,8 +161,6 @@ bool Memorizer::page_read_in(__uint16_t page_offset){
 bool Memorizer::page_flush(__uint16_t page_offset){
     if(__Page == NULL) return false;
     string filePath = __HOME_DIRECTORY__ +  __Page->t->__TableName + __FILE_SUFFIX__;
-    FILE* __FilePtr = fopen(filePath.c_str(),"ab+");
-    fclose(__FilePtr);
     try{
         __uint64_t bytes_offset = __Page->t->__TableHeadSize + page_offset * BYTES_PER_PAGE;
         FILE* __WritePtr = fopen(filePath.c_str(),"r+");
@@ -181,8 +177,6 @@ bool Memorizer::page_flush(__uint16_t page_offset){
 bool Memorizer::page_write_back(__uint16_t page_offset){
     if(__Page == NULL) return false;
     string filePath = __HOME_DIRECTORY__ +  __Page->t->__TableName + __FILE_SUFFIX__;
-    FILE* __FilePtr = fopen(filePath.c_str(),"ab+");
-    fclose(__FilePtr);
     try{
         __uint64_t bytes_offset = __Page->t->__TableHeadSize + page_offset * BYTES_PER_PAGE;
         FILE* __WritePtr = fopen(filePath.c_str(),"r+");

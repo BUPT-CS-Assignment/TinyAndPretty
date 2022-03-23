@@ -164,13 +164,12 @@ bool Table::insert(string statement){
             cout<<"Primary Key '"<<new_row->getIndex()<<"' Already Exsits."<<endl;
             return false;
         }
-        //page->print_page(); 
         M.page_write_back(*page_offset);
     }else{
-        //////新建页后插入/////////////////////////////////////////////
+    //////新建页后插入/////////////////////////////////////////////////
         Page* new_page = new Page(this);
-        M.change_page(new_page);
         __uint16_t* new_page_offset = new __uint16_t(get_empty_page_offset());
+        cout<<"new page offset : "<<endl;
         for(int i = __MaxRowPerPage/2;i <__MaxRowPerPage; i++){
             new_page->insert(page->__Rows[i]);
             page->__Rows[i]->erase();
@@ -180,6 +179,8 @@ bool Table::insert(string statement){
         new_page->__PageIndex = *new Index(new_page->__Rows[0]->getIndex());
         __Pages->insert_data(&(new_page->__PageIndex),new_page_offset);
         M.page_write_back(*page_offset);
+        /////////////////////////////////////////////////////////////
+        M.change_page(new_page);
         M.page_flush(*new_page_offset);
         M.page_write_back(*new_page_offset);
         __TotalPage ++ ;
