@@ -22,25 +22,25 @@
  * free meomery
  * call pointer at the head of the file;
  * 
- * 
  */
+
 class Memorizer{
-private:
-    Table* __Table;
-    Page* __Page;
 public:
     Memorizer();
-    Memorizer(Table*);
-    Memorizer(Page*);
-    Memorizer(Table*,Page*);
-    void change_page(Page*);
-    bool load(string);
+    Table* TableLoad(string);
+    void TableStore(Table*);
+    void TableUpdate(Table*);
+    void IndexLoad();
+    void IndexStore();
+    void IndexUpdate();
+    /////////////////////////
     bool storage();
     bool update();
-    bool page_flush(__uint16_t page_offset);
-    bool page_read_in(__uint16_t page_offset);
-    bool page_write_back(__uint16_t page_offset);
+    void PageFlush(__uint16_t, Table*);
+    Page* PageLoad(__uint16_t, Table*);
+    void PageStore(__uint16_t, Page*);
 
+    
 };
 
 

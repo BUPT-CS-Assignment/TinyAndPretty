@@ -12,7 +12,7 @@ using namespace std;
 
 */ 
 string* Split(string str,char c,int &length);
-bool parm_check(string str,__DataType__ type);
+bool parm_check(string str,DATA_TYPE type);
 string Trim(string str);
 
 template<class T>

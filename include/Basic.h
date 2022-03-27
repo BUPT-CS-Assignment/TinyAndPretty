@@ -28,9 +28,9 @@ using namespace std;
                  Exception(error)
 */
 /*
-    __DataType__  @  数据库支持的数据类型
-    __COMMAND__  @  元命令类型
-    __OPERATE__  @  操作命令类型
+    DATA_TYPE  @  数据库支持的数据类型
+    COMMAND  @  元命令类型
+    OPERATION  @  操作命令类型
     Split(string str,char c,int& length)  @  字符串分割函数
     Table  @  数据表类 
         Page @  单页数据类
@@ -42,17 +42,41 @@ using namespace std;
 #define MAX_TABLES 50
 #define TEXT_LENGTH 32
 #define LONGTEXT_LENGTH 255
-#define BYTES_PER_PAGE 4000
-#define PAGE_HEAD_SIZE 37
+#define PAGE_SIZE 200
+#define PAGE_HEAD_SIZE 40
 #define TABLE_UPDATE_OFFSET 38  
 #define MAX_EMPTY_PAGE 20
 
-enum __DataType__ : __uint16_t{__INT,__INT64,__REAL,__TEXT,__LONGTEXT};
-enum __COMMAND__ : __uint16_t{__UNK,__EXIT,__HELP,__OPERATE,__SAVE,__LOAD,__LOADALL};
-enum __OPERATE__ : __uint16_t{__UNKNOWN,__CREATE,__INSERT,__DELETE,__REPLACE,
-                 __CHECK,__REMOVE,__SHOW,__DESCRIBE};
+enum DATA_TYPE : __uint16_t{
+                __INT,
+                __INT64,
+                __REAL,
+                __TEXT,
+                __LONGTEXT
+                };
+enum COMMAND : __uint16_t{
+                __UNKNOWN,
+                __EXIT,
+                __HELP,
+                __OPERATION,
+                __SAVE,
+                __LOAD,
+                __LOADALL
+                };
+enum OPERATION : __uint16_t{
+                CREATE_TABLE,
+                CREATE_INDEX,
+                INSERT_VALUES,
+                DELETE_VALUES,
+                UPDATE_VALUES,
+                SELECT_VALUES,
+                DESCRIBE_TABLE,
+                DROP_TABLE,
+                DROP_INDEX,
+                UNDEFINED
+                };
 
-union __INDEX__{
+union INDEX{
     int i_index;
     long long l_index;
     double d_index;
@@ -70,12 +94,14 @@ class Exception;
 class Implement;
 class Memorizer;
 
-extern string const __Type__[];
-extern int const __TypeSize__ [];
+extern string const kTypeName[];
+extern int const kTypeSize [];
 extern Table** __TABLES__;
 extern int __CURSOR__;
-extern string __HOME_DIRECTORY__;
-extern string __FILE_SUFFIX__;
+extern string kHomeDir;
+extern string kFramSuffix;
+extern string kDataSuffix;
+extern string kIndexSuffix;
 
 void __DATABASE_INIT__();
 int __TABLE_LOCATED_BY_NAME__(string name);

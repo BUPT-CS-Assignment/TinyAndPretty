@@ -8,12 +8,17 @@ class Index{
 friend class Table;
 friend class Row;
 friend class Memorizer;
-    __INDEX__       INDEX;
-    __DataType__    index_type;
+    INDEX       index_;
+    DATA_TYPE    type_;
 public:
-    Index(string index,__DataType__);
-    Index(__DataType__);
+    Index(string index,DATA_TYPE);
+    Index(DATA_TYPE);
+    Index(int);
+    Index(long long);
+    Index(double);
+    Index(string);
     Index();
+    int getSize();
     bool operator<(Index&);
     bool operator>(Index&);
     bool operator==(Index&);
@@ -52,43 +57,53 @@ friend class Memorizer;
 friend class Executor;
 private: 
     //FileHead
-    int             __TableID;      //表ID索引
-    string          __TableName;    //表名
-    __uint16_t      __TableHeadSize;//表头数据量
+    int             table_id_;      //表ID索引
+    char            table_name_[32]={0};    //表名
     //TableHead
-    __uint16_t     __TotalPage;    //页总数
-    __uint16_t     __EmptyPage[1+MAX_EMPTY_PAGE];    //记录空页
-    __uint16_t       __ParmNum;      //参数总数
-    __DataType__*   __ParmType;     //数据类型数组
-    string*         __ParmName;     //数据元素名称数组 
-    __uint16_t       __Key;          //索引位置
-    __uint16_t      __RowTakeup;    //单行字节数
-    __uint16_t       __MaxRowPerPage;//单页最大行数
+    __uint16_t      total_pages_;    //页总数
+    __uint16_t      empty_pages_[1+MAX_EMPTY_PAGE] = {0};    //记录空页
+    __uint16_t      parm_num_;      //参数总数
+    DATA_TYPE*      parm_types_;     //数据类型数组
+    char            (*parm_names_)[32];     //数据元素名称数组 
+    __uint16_t      prim_key_;          //索引位置
+    __uint16_t      row_take_up_;    //单行字节数
+    __uint16_t      max_rows_per_page_;//单页最大行数    
     //TableBody
-    
     //In-Memory
-    BalanceTree<__uint16_t, Index>*  __Pages;   //索引B+树
+    BalanceTree<__uint16_t, Index>*   pages_tree_;   //索引B+树
+    BalanceTree<Index, Index>** index_tree_;//非主键索引
+    /////////////////////////////////////////////////////
     Page* page_locate(Index);       //数据页搜索
+    string select_by_key(int[],int,int,string);
+    string select_by_traverse(int[],int,int,string);
 public:
     Table(int id, string name);     //构造函数
-    bool init(string statement);    //初始化表数据类型
+    bool Init(string statement);    //初始化表数据类型
     bool check_empty(int);
     __uint16_t  get_empty_page_offset();
     void add_empty_page(__uint16_t);
     /**
      *数据操作相关
      */
-    bool insert(string statement);  //数据行插入
-    void add_page(Page* Node);      //添加页
+    bool InsertValues(string conditions, string values);//条件插入
+    bool DeleteValues(string conditions);  //条件删除
+    string SelectValues(string conditions,string values);
+    
+
     bool delete_page(Index&);       //删除页
-    bool delete_row(Index&);        //删除指定行
+    bool DeleteRow(Index&);        //删除指定行
     bool remove_table();            //删除表
     void print_table();             //打印表
     void print_structure();         //打印表结构
     //
-    //__DataType__* getDataType(); //获取数据元素类型
+    //DATA_TYPE* getDataType(); //获取数据元素类型
     string getName();               //获取表名
-    __DataType__ getKeyType();
+    DATA_TYPE getKeyType();
+    bool delete_traversal(DATA_TYPE,string);
+    bool select_traversal();
+    string TraverseScan();
+    bool delete_traversal(string);
+    int parameter_locate(string name);
 };
 
 
@@ -120,19 +135,21 @@ friend class Row;
 friend class Memorizer;
 public:
     //File Head
-    __uint16_t      __PageOffset;   //页偏移量
-    Index           __PageIndex;    //页索引
+    bool            is_empty_;      //页空信息
+    Index           page_index_;    //页索引
+    bool            is_full_;       //已满信息
     //Page Head
-    bool            __IsFull;       //已满信息
-    __uint16_t      __CursorOffset; //行光标偏移量
+    __uint16_t      cursor_pos_; //行光标偏移量
     //In-Memory
-    Row** __Rows;   //行指针数组
-    Table* t;       //表指针
+    Row**           rows_;   //行指针数组
+    Table* table_ptr_;       //表指针
+    //////////////////////////////////////
+    string select_check_all(int[],int,int,string);
 public:
-    Page(Table* t); //构造函数
-    Page(__uint16_t,Table*);
-    bool insert(Row* new_row); //插入行
-    bool delete_row(Index& index);  //按索引删除
+    Page(Table* table_ptr_); //构造函数
+    bool InsertRow(Row* new_row); //插入行
+    bool DeleteRow(Index& index);  //按索引删除
+    Row* SelectRow(Index& index);
     bool remove_page(); //删除整页
     void print_page();  //打印整页
 };
@@ -152,23 +169,27 @@ public:
 class Row{
 friend class Index;
 friend class Memorizer;
+friend class Page;
 /**
  * @brief   [C]数据行 
  * 
  */
 private:
     //RowHaed
-    Index __RowIndex;
+    Index row_index_;
     //RowBody
-    void** __RowContent; //数据指针数组(未定义类型)
+    void** content_; //数据指针数组(未定义类型)
     //In-Memory
-    Table* t;
+    Table* table_ptr_;
 public:
-    Row(Table* t);  //构造函数
-    bool padding(string statement); //内容填充
-    char* format(); //格式化转化输出
-    void erase();   //内容清空
+    Row(Table* table_ptr_);  //构造函数
+    bool Padding(string conditions, string values); //内容填充
+    string Format(); //格式化转化输出
+    string get_value(int n);
+    string get_values(int[],int n);
+    void Erase();   //内容清空
     Index& getIndex();
+    bool value_update(int,string);
     void index_update();
     bool operator<(Row&);
     bool operator>(Row&);
