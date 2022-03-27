@@ -2,7 +2,7 @@
 #include<BalanceTree.h>
 
 /**
- * @brief 请修改Basic.cpp中 " __HOME_DIRECTORY__ " 数据表格根目录 ! 
+ * @brief 请修改Basic.cpp中 " kHomeDir " 数据表格根目录 ! 
  * 
  */
 
@@ -14,7 +14,7 @@ int main(/*int argv , char* argc[]*/) {
         B.insert_data(new int(i),new int(i));
     }
     for(int i = 5; i <= 30; i+=2){
-        B.delete_data(new int(i));
+        B.DeleteValues(new int(i));
         B.print_tree();
     }
     */
