@@ -154,17 +154,17 @@
   - ##### 查询原理
     **(working)**
 - ### Modules
-    **LiteDB** 项目包含以下结构模块  
-      |模块|内容|
-      |:---:|:---:|
-      |Basic|基本运行|
-      |Process|输入输出流, 命令解析与执行|
-      |Data|数据表, 数据页, 数据行基础操作|
-      |BalanceTree|底层索引B+树模板|
-      |Operation|增, 删, 查, 改基本操作|
-      |Storage|文件读写存储|
-      |Exception|异常处理|
-      |Implement|排序, 判溢出等小工具集|
+    **LiteDB** 项目包含以下结构模块
+    |模块|内容|
+    |:---:|:---:|
+    |Basic|基本运行|
+    |Process|输入输出流, 命令解析与执行|
+    |Data|数据表, 数据页, 数据行基础操作|
+    |BalanceTree|底层索引B+树模板|
+    |Operation|增, 删, 查, 改基本操作|
+    |Storage|文件读写存储|
+    |Exception|异常处理|
+    |Implement|排序, 判溢出等小工具集|
 
 - ### Directory
     
