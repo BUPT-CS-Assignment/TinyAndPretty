@@ -11,8 +11,9 @@ using namespace std;
 
 /*
     [C]Table - 数据表
-        [C]Page - 数据页
-        [Row] - 数据行  
+    [C]Page - 数据页
+    [C]Row - 数据行  
+    [C]Index - 动态索引
     [C]Executor - 命令执行器
     [C]Praser - 命令解析器
     [C]InputStream - 数据输入流
@@ -33,8 +34,8 @@ using namespace std;
     OPERATION  @  操作命令类型
     Split(string str,char c,int& length)  @  字符串分割函数
     Table  @  数据表类 
-        Page @  单页数据类
-            Row  @  单行数据类(数据基类)  
+    Page @  单页数据类
+    Row  @  单行数据类(数据基类)  
 
 */
 #define MAX_ROWS_SINGLE_PAGE 20
