@@ -8,7 +8,8 @@ InputStream::InputStream(){
 string InputStream::read(){
     string input = "";
     getline(cin,input);
-    if(input[0] == '.'){
+    int pos = input.find_first_not_of(' ');
+    if(input[pos] == '.'){
         __Input = input;
         return __Input;
     } 
