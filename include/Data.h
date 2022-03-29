@@ -94,6 +94,9 @@ private:
     //DELETE
     bool delete_by_key(int,string);
     bool delete_by_traverse(int,string);
+    //UPDATE
+    bool update_by_key(int[],string[], int, int, string);
+    bool update_by_traverse(int[],string[], int, int, string);
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
 public:
@@ -109,7 +112,7 @@ public:
     bool DeleteValues(string conditions);  //条件删除
     //SELECT
     string SelectValues(string conditions, string values);
-    
+    bool UpdateValues(string condition, string values);
     void print_table();             //打印表
     void print_structure();         //打印表结构
     //
@@ -162,6 +165,7 @@ class Page{
     bool InsertRow(Row *new_row); //插入行
     //SELECT
     string SelectRow(int[], int, int, string);
+    bool UpdateRow(int[], string[], int, int, string);
     //Row *SelectRow(Index &index);
     //DELETE
     bool DeleteRow(int,string);
@@ -202,9 +206,11 @@ public:
     string Format(); //格式化转化输出
     string get_value(int n);
     string get_values(int[], int n);
+    bool update_values(int[],string[],int);
+    bool update_value(int,string);
     void Erase();   //内容清空
     Index &getIndex();
-    bool value_update(int, string);
+    
     void index_update();
     bool operator<(Row &);
     bool operator>(Row &);
