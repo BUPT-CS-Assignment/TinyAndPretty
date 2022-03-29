@@ -90,17 +90,14 @@ private:
     __uint16_t  get_empty_page_offset();
     void add_empty_page(__uint16_t);
     //SELECT
-    //string select_by_key(int[], int, int, string);
     string select_by_key(Analyzer&);
-    //string select_by_traverse(int[], int, int, string);
     string select_by_traverse(Analyzer&);
     //DELETE
-    bool delete_by_key(int,string);
-    bool delete_by_traverse(int,string);
-    
+    bool delete_by_key(Analyzer&);
+    bool delete_by_traverse(Analyzer&);
     //UPDATE
-    bool update_by_key(int[],string[], int, int, string);
-    bool update_by_traverse(int[],string[], int, int, string);
+    bool update_by_key(Analyzer&,Analyzer&);
+    bool update_by_traverse(Analyzer&,Analyzer&);
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
 public:
@@ -116,10 +113,11 @@ public:
     bool DeleteValues(string conditions);  //条件删除
     //SELECT
     string SelectValues(string conditions, string values);
+    //UPDATE
     bool UpdateValues(string condition, string values);
+    /////////
     void print_table();             //打印表
     void print_structure();         //打印表结构
-    //
     //DATA_TYPE* getDataType(); //获取数据元素类型
     string getName();               //获取表名
     DATA_TYPE getKeyType();
@@ -168,12 +166,12 @@ class Page{
     //INSERT
     bool InsertRow(Row *new_row); //插入行
     //SELECT
-    //string SelectRow(int[], int, int, string);
     string SelectRow(Analyzer&);
-    bool UpdateRow(int[], string[], int, int, string);
-    //Row *SelectRow(Index &index);
+    //UPDATE
+    bool UpdateRow(Analyzer&,Analyzer&);
     //DELETE
-    bool DeleteRow(int,string);
+    bool DeleteRow(Analyzer&);
+    //Clear
     void Clear(__uint16_t);
     void print_page();  //打印整页
 };
@@ -233,15 +231,16 @@ private:
     int* cond_pos;
     char* cond_cmp;
     Index* cond_val;
+    string* cond_origin;
     //value match
     int parm_num;
     int* parm_pos;
-    //
+    //prim key support
     int key_pos;
 
 public:
     Analyzer(Table* table);
-    bool Extract(string conditions);
+    bool Extract(string, string);
     bool Match(Row* row);
     bool Locate(string params);
     int* getParmPos(){return parm_pos;}
@@ -249,9 +248,14 @@ public:
     bool KeySupport(){return key_pos>=0;}
     int getKeyPos(){return key_pos;}
     Index* getCondVal(int i){
-        if(i>=cond_num) return NULL;
-        return &cond_val[i]; 
+        if(i>=cond_num){
+            return NULL;
+        }
+        return &cond_val[i];
     }
+    int* getCondPos(){return cond_pos;}
+    int getCondNum(){return cond_num;}
+    string* getCondOrigin(){return cond_origin;}
 
 };
 
