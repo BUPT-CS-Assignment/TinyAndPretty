@@ -8,27 +8,29 @@ Analyzer::Analyzer(Table *table){
     cond_pos = new int[10];
     cond_cmp = new char[10];
     cond_val = new Index[10];
+    cond_origin = new string[10];
     parm_num = 0;
     key_pos = -1;
 }
 
-bool Analyzer::Extract(string conditions){
+bool Analyzer::Extract(string conditions, string pattern){
     if(conditions.length() == 0){
         cond_num = -1;
         return true;
     }
+    int l = pattern.length();
     while(true){
         if(conditions.length() == 0){
             return true;
         }
-        size_t pos = conditions.find(" AND ");
+        size_t pos = conditions.find(pattern);
         string temp;
         if(pos == conditions.npos){
             temp = conditions;
             conditions = "";
         }else{
             temp = conditions.substr(0, pos);
-            conditions = conditions.substr(pos + 5, conditions.length() - pos - 5);
+            conditions = conditions.substr(pos + l, conditions.length() - pos - l);
         }
         if(temp.find('=') != temp.npos){
             cond_cmp[cond_num] = '=';
@@ -49,6 +51,7 @@ bool Analyzer::Extract(string conditions){
             cout<<"<E> PARAMETER NOT FOUND"<<endl;
             return false;
         }
+        cond_origin[cond_num] = str[1];
         cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
         cond_num++;
     }
