@@ -221,7 +221,7 @@ OPERATION  Parser::operate_type(string input){
     if(input.compare(0,7,"SELECT ") == 0) return SELECT_VALUES;
     if(input.compare(0,7,"UPDATE ") == 0) return UPDATE_VALUES;
     if(input.compare(0,11,"DROP TABLE ") == 0) return DROP_TABLE;
-    if(input.compare(0,9,"DESCRIBE ") == 0) return DESCRIBE_TABLE;
+    if(input.compare(0,15,"DESCRIBE TABLE ") == 0) return DESCRIBE_TABLE;
     if(input.compare(0,13,"CREATE INDEX ")==0) return CREATE_INDEX;
     if(input.compare(0,11,"DROP INDEX ")==0) return DROP_INDEX;
     return UNDEFINED;
