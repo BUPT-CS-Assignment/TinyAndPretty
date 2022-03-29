@@ -1,5 +1,6 @@
 #include<Basic.h>
 #include<BalanceTree.h>
+#include<Data.h>
 
 /**
  * @brief 请修改Basic.cpp中 " kHomeDir " 数据表格根目录 ! 

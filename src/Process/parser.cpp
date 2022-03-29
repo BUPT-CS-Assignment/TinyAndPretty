@@ -167,7 +167,6 @@ bool Parser::parser_select_values(){
     
 }
 
-
 bool Parser::parser_update_values(){
     regex layout("UPDATE (.+) SET (.+) WHERE (.+)");
     regex layout2("UPDATE (.+) SET (.+)");
