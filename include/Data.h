@@ -55,6 +55,7 @@ class Table{
     friend class Index;
     friend class Memorizer;
     friend class Executor;
+    friend class Analyzer;
     struct ePage{
         __uint16_t offset;
         ePage* next;
@@ -89,11 +90,14 @@ private:
     __uint16_t  get_empty_page_offset();
     void add_empty_page(__uint16_t);
     //SELECT
-    string select_by_key(int[], int, int, string);
-    string select_by_traverse(int[], int, int, string);
+    //string select_by_key(int[], int, int, string);
+    string select_by_key(Analyzer&);
+    //string select_by_traverse(int[], int, int, string);
+    string select_by_traverse(Analyzer&);
     //DELETE
     bool delete_by_key(int,string);
     bool delete_by_traverse(int,string);
+    
     //UPDATE
     bool update_by_key(int[],string[], int, int, string);
     bool update_by_traverse(int[],string[], int, int, string);
@@ -164,7 +168,8 @@ class Page{
     //INSERT
     bool InsertRow(Row *new_row); //插入行
     //SELECT
-    string SelectRow(int[], int, int, string);
+    //string SelectRow(int[], int, int, string);
+    string SelectRow(Analyzer&);
     bool UpdateRow(int[], string[], int, int, string);
     //Row *SelectRow(Index &index);
     //DELETE
@@ -189,6 +194,7 @@ class Row{
     friend class Index;
     friend class Memorizer;
     friend class Page;
+    friend class Analyzer;
     /**
      * @brief   [C]数行 
      *
@@ -210,13 +216,43 @@ public:
     bool update_value(int,string);
     void Erase();   //内容清空
     Index &getIndex();
-    
     void index_update();
     bool operator<(Row &);
     bool operator>(Row &);
     bool operator==(Row &);
     bool operator<=(Row &);
     bool operator>=(Row &);
+};
+
+class Analyzer{
+friend class Row;
+private:
+    //condition match
+    Table* table_ptr_;
+    int cond_num;
+    int* cond_pos;
+    char* cond_cmp;
+    Index* cond_val;
+    //value match
+    int parm_num;
+    int* parm_pos;
+    //
+    int key_pos;
+
+public:
+    Analyzer(Table* table);
+    bool Extract(string conditions);
+    bool Match(Row* row);
+    bool Locate(string params);
+    int* getParmPos(){return parm_pos;}
+    int getParmNum(){return parm_num;}
+    bool KeySupport(){return key_pos>=0;}
+    int getKeyPos(){return key_pos;}
+    Index* getCondVal(int i){
+        if(i>=cond_num) return NULL;
+        return &cond_val[i]; 
+    }
+
 };
 
 

@@ -183,7 +183,7 @@ void Executor::execute_drop_index(){
 void Executor::execute_select_values(){
     int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
     if(index != -1){
-        cout << __TABLES__[index]->SelectValues(parser_->condition_, parser_->value_) << endl;
+        cout << __TABLES__[index]->SelectValues(parser_->value_, parser_->condition_) << endl;
         return;
     }
     cout << "No Such Table Named '" << parser_->object_ << "'." << endl;

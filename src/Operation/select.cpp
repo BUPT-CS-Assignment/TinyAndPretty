@@ -1,9 +1,11 @@
 #include<Data.h>
 #include<Implement.h>
 
-string Table::SelectValues(string condition, string value){
+string Table::SelectValues(string param, string condition){
     //条件解析
-    int cond_num = -1, cond_pos = -1, value_num = -1;
+    //int cond_num = -1; 
+    /*
+    int cond_pos = -1, value_num = -1;
     string *values = NULL;
     int *value_pos = NULL;
     string *conds = NULL;
@@ -25,18 +27,29 @@ string Table::SelectValues(string condition, string value){
                 return "";
             }
         }
+    }*/
+    Analyzer ANZ(this);
+    ANZ.Locate(param);
+    ANZ.Extract(condition);
+    if(ANZ.KeySupport()){
+        return select_by_key(ANZ);
     }
-    if(cond_pos == prim_key_){
-        return select_by_key(value_pos, value_num, prim_key_, conds[1]);
+    return select_by_traverse(ANZ);
+
+}
+string Table::select_by_key(Analyzer& ANZ){
+    Index* index = ANZ.getCondVal(ANZ.getKeyPos());
+    __uint16_t *offset = pages_tree_->InsertLocate(index);
+    if(offset == NULL){
+        cout << "<E> DATA NOT FOUND" << endl;
+        return "";
     }
-    else if(cond_pos == -1){
-        return select_by_traverse(value_pos, value_num, -1, "");
-    }
-    else{
-        return select_by_traverse(value_pos, value_num, cond_pos, conds[1]);
-    }
+    Memorizer RAM;
+    Page *page = RAM.PageLoad(*offset, this);
+    return "{"+ page->SelectRow(ANZ) + "}";
 }
 
+/*
 string Table::select_by_key(int values[], int value_num, int cond_pos, string cond_value){
     Index *index = new Index(cond_value, getKeyType());
     __uint16_t *offset = pages_tree_->InsertLocate(index);
@@ -47,8 +60,29 @@ string Table::select_by_key(int values[], int value_num, int cond_pos, string co
     Memorizer RAM;
     Page *page = RAM.PageLoad(*offset, this);
     return page->SelectRow(values,value_num,cond_pos,cond_value);
-}
+}*/
 
+string Table::select_by_traverse(Analyzer& ANZ){
+    //遍历搜索
+    Node<__uint16_t, Index> *head = pages_tree_->getHead();
+    if(head == NULL) return "";
+    string res = *new string("{");
+    Memorizer RAM;
+    while(head != NULL){
+        for(int i = 0; i >= 0; i++){
+            __uint16_t *page_offset = head->getData(i);
+            if(page_offset == NULL) break;
+            Page *page = RAM.PageLoad(*page_offset, this);
+            res = res + page->SelectRow(ANZ);
+        }
+        head = head->getNext();
+    }
+    if(res.length() > 1){
+        res = res.substr(0, res.length() - 1);
+    }
+    return res + "}";
+}
+/*
 string Table::select_by_traverse(int values[], int value_num, int cond_pos, string cond_value){
     //遍历搜索
     Node<__uint16_t, Index> *head = pages_tree_->getHead();
@@ -68,8 +102,8 @@ string Table::select_by_traverse(int values[], int value_num, int cond_pos, stri
         res = res.substr(0, res.length() - 1);
     }
     return res + "}";
-}
-
+}*/
+/*
 string Page::SelectRow(int values[], int value_num, int cond_pos, string cond_value){
     //页内搜索
     string str = *new string("");
@@ -94,10 +128,10 @@ string Page::SelectRow(int values[], int value_num, int cond_pos, string cond_va
     }
     return str;
 }
-
+*/
 string Row::get_values(int values[], int n){
     string str = *new string("{");
-    if(n == table_ptr_->parm_num_){
+    if(n == -1){
         for(int i = 0; i < table_ptr_->parm_num_; i++){
             str = str + get_value(i) + (i == table_ptr_->parm_num_ - 1 ? "}" : ",");
         }
@@ -109,6 +143,7 @@ string Row::get_values(int values[], int n){
     }
     return str;
 }
+
 
 string Row::get_value(int i){
     DATA_TYPE type = table_ptr_->parm_types_[i];
@@ -146,7 +181,15 @@ Row *Page::SelectRow(Index &index){
 */
 
 
-
+string Page::SelectRow(Analyzer& ANZ){
+    string str = *new string("");
+    for(int i = 0; i < cursor_pos_; i++){
+        if(ANZ.Match(rows_[i])){
+            str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ",";
+        }
+    }
+    return str;
+}
 
 
 

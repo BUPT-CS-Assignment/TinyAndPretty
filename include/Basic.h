@@ -90,6 +90,7 @@ class Executor;
 class Table;
 class Page;
 class Row;
+class Analyzer;
 class File;
 class Exception;
 class Implement;
