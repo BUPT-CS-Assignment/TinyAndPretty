@@ -5,13 +5,11 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": [
-        ""
-      ],
+      "args": [],
       "stopAtEntry": false,
-      "cwd": "c:/Users/user/Desktop/LiteDB",
+      "cwd": "/home/jianxf/LiteDB",
       "environment": [],
-      "program": "c:/Users/user/Desktop/LiteDB/build/Debug/outDebug",
+      "program": "/home/jianxf/LiteDB/build/Debug/outDebug",
       "internalConsoleOptions": "openOnSessionStart",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
