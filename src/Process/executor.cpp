@@ -114,7 +114,7 @@ void Executor::execute_delete_values(){
     string conditions = parser_->condition_;
     int index = __TABLE_LOCATED_BY_NAME__(table_name);
     if(index!=-1){
-        if(conditions.length() == 0) return execute_drop_table();
+        //if(conditions.length() == 0) return execute_drop_table();
         if(!__TABLES__[index]->DeleteValues(conditions)){
             cout<<"Delete From '"<<table_name<<"' Failed."<<endl;
             return;
@@ -130,7 +130,7 @@ void Executor::execute_drop_table(){
     string table_name = parser_->object_;
     int index = __TABLE_LOCATED_BY_NAME__(table_name);
     if(index !=-1){
-        __TABLES__[index]->remove_table();
+        //__TABLES__[index]->remove_table();
         for(int i = index;i<__CURSOR__ -1;i++){
             __TABLES__ [i] = __TABLES__ [i+1];
         }

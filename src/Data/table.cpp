@@ -5,7 +5,7 @@
 Table::Table(int id,string name){
     table_id_ = id;
     strcpy(table_name_,name.c_str());
-    total_pages_ = 0;
+    max_offset = 0;
     parm_num_ = 0;
     prim_key_ = 0;
     row_take_up_ = 0;
@@ -150,7 +150,7 @@ string Table::getName(){
 DATA_TYPE Table::getKeyType(){
     return parm_types_[prim_key_];
 }
-
+/*
 bool Table::check_empty(int page_num){
     int total = empty_pages_[0];
     if(total <= 0) return false;
@@ -159,20 +159,35 @@ bool Table::check_empty(int page_num){
     }
     return false;
 }
-
+*/
 __uint16_t Table::get_empty_page_offset(){
-    int total = empty_pages_[0];
-    if(total == 0) return total_pages_;
-    empty_pages_[0] -- ;
-    return empty_pages_[total];
+    /*
+    ePage* tail = &empty_pages;
+    while(tail!=NULL){
+        cout<<tail->offset<<"->";
+        tail = tail->next;
+    }cout<<endl;
+    */
+    if(empty_pages.next == NULL){
+        max_offset ++;
+        return max_offset-1;
+    }
+    ///////////////////////////////////////////
+    __uint16_t offset = empty_pages.next->offset;
+    ePage* temp = empty_pages.next;
+    empty_pages.next = empty_pages.next->next;
+    delete temp;
+    return offset;
 }
 
 void Table::add_empty_page(__uint16_t page_num){
-    empty_pages_[0]++;
-    empty_pages_[empty_pages_[0]] = page_num;
+    ePage* new_epage = new ePage();
+    new_epage->offset = page_num;
+    new_epage->next = empty_pages.next;
+    empty_pages.next = new_epage;
 }
 
-int Table::parameter_locate(string name){
+int Table::ParmLocate(string name){
     for(int i = 0; i < parm_num_; i++){
         if(parm_names_[i] == name){
             return i;

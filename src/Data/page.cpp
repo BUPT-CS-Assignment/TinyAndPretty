@@ -3,7 +3,7 @@
 
 //构造函数
 Page::Page(Table* table){
-    is_empty_ = false;
+    not_empty_ = true;
     is_full_ = false;
     table_ptr_ = table;
     page_index_ = *new Index(table->getKeyType());
