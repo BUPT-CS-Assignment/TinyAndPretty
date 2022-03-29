@@ -44,8 +44,7 @@ using namespace std;
 #define TEXT_LENGTH 32
 #define LONGTEXT_LENGTH 255
 #define PAGE_SIZE 200
-#define PAGE_HEAD_SIZE 40
-#define TABLE_UPDATE_OFFSET 38  
+#define PAGE_HEAD_SIZE 40 
 #define MAX_EMPTY_PAGE 20
 #define DATA_OFFSET 2
 

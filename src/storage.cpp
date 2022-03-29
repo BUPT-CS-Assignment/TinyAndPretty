@@ -17,8 +17,8 @@ void Memorizer::TableStore(Table* table){
     fseek(fp,0,SEEK_SET);
     fwrite(&table->table_id_, 4 , 1 ,fp);
     fwrite(table->table_name_, 32, 1,fp);
-    fwrite(&table->total_pages_, 2,1,fp);
-    fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
+    //fwrite(&table->max_offset, 2,1,fp);
+    //fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
     fwrite(&table->parm_num_,2,1,fp);
     fwrite(table->parm_types_,2,table->parm_num_,fp);
     fwrite(table->parm_names_,32,table->parm_num_,fp);
@@ -36,29 +36,35 @@ Table* Memorizer::TableLoad(string table_name){
         fp = fopen(filePath.c_str(),"r");
         fseek(fp,0,SEEK_SET);
         Table* table = new Table(0," ");
-        fread(&table->table_id_,4,1,fp);
-        fread(table->table_name_,32,1,fp);
-        fread(&table->total_pages_, 2,1,fp);
-        fread(table->empty_pages_,2,1 + MAX_EMPTY_PAGE,fp);
-        fread(&table->parm_num_,2,1,fp);
+        size_t res;
+        res = fread(&table->table_id_,4,1,fp);
+        res = fread(table->table_name_,32,1,fp);
+        //res = fread(&table->max_offset, 2,1,fp);
+        //res = fread(table->empty_pages_,2,1 + MAX_EMPTY_PAGE,fp);
+        res = fread(&table->parm_num_,2,1,fp);
         table->parm_types_ = new DATA_TYPE[table->parm_num_];
         table->parm_names_ = new char[table->parm_num_][32]{0};
-        fread(table->parm_types_,2,table->parm_num_,fp);
-        fread(table->parm_names_,32,table->parm_num_,fp);
-        fread(&table->prim_key_,2,1,fp);
-        fread(&table->row_take_up_,2,1,fp);
-        fread(&table->max_rows_per_page_,2,1,fp);
+        res = fread(table->parm_types_,2,table->parm_num_,fp);
+        res = fread(table->parm_names_,32,table->parm_num_,fp);
+        res = fread(&table->prim_key_,2,1,fp);
+        res = fread(&table->row_take_up_,2,1,fp);
+        res = fread(&table->max_rows_per_page_,2,1,fp);
+        if(res < 0) return NULL;
         fclose(fp);
         //主键索引树重构
-        if(table->total_pages_ == 0) return table;
+        //if(table->max_offset == 0) return table;
         fp = fopen(dataPath.c_str(),"r");
-        bool isEmpty = true;
-        for(__uint16_t i = 0; i < table->total_pages_; i++){
-            fseek(fp,PAGE_SIZE * i , SEEK_SET);
-            fread(&isEmpty,1,1,fp);
-            if(isEmpty) continue;
+        res = fread(&table->max_offset,2,1,fp);
+        bool notEmpty = true;
+        for(__uint16_t i = 0; i < table->max_offset; i++){
+            fseek(fp,DATA_OFFSET + PAGE_SIZE * i , SEEK_SET);
+            res = fread(&notEmpty,1,1,fp);
+            if(!notEmpty){
+                table->add_empty_page(i);
+                continue;
+            } 
             Index* index = new Index(table->getKeyType());
-            fread(&index->index_,index->getSize(),1,fp);
+            res = fread(&index->index_,index->getSize(),1,fp);
             table->pages_tree_->InsertData(index,new __uint16_t(i));
         }
         fclose(fp);
@@ -68,38 +74,41 @@ Table* Memorizer::TableLoad(string table_name){
     }
 }
 
+/*
 void Memorizer::TableUpdate(Table* table){
     if(table == NULL) return;
     //检测空文件/创建文件
     string filePath = kHomeDir + table->table_name_ + kFramSuffix;
     FILE* fp = fopen(filePath.c_str(),"r+");
     fseek(fp,36,SEEK_SET);
-    fwrite(&table->total_pages_,2,1,fp);
-    fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
+    fwrite(&table->max_offset,2,1,fp);
+    //fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
     fclose(fp);
-}
+}*/
 
 Page* Memorizer::PageLoad(__uint16_t offset, Table* table){
     string filePath = kHomeDir + table->table_name_ + kDataSuffix;
     try{
         FILE* fp = fopen(filePath.c_str(),"r");
-        fseek(fp,offset * PAGE_SIZE,SEEK_SET);
-        bool isEmpty;
-        fread(&isEmpty,1,1,fp);
-        if(isEmpty) return NULL;
+        size_t res;
+        fseek(fp,DATA_OFFSET + offset * PAGE_SIZE,SEEK_SET);
+        bool notEmpty;
+        res = fread(&notEmpty,1,1,fp);
+        if(!notEmpty) return NULL;
         Page* page = new Page(table);
-        page->is_empty_ = false;
-        fread(&page->page_index_.index_,page->page_index_.getSize(),1,fp);
-        fread(&page->is_full_,1,1,fp);
-        fread(&page->cursor_pos_,2,1,fp);
+        page->not_empty_ = true;
+        res = fread(&page->page_index_.index_,page->page_index_.getSize(),1,fp);
+        res = fread(&page->is_full_,1,1,fp);
+        res = fread(&page->cursor_pos_,2,1,fp);
         for(__uint16_t i = 0; i < page->cursor_pos_; i++){
             Row* row = new Row(table);
             for(__uint16_t j = 0; j < table->parm_num_; j++){
-                fread(row->content_[j],kTypeSize[table->parm_types_[j]],1,fp);
+                res = fread(row->content_[j],kTypeSize[table->parm_types_[j]],1,fp);
                 row->index_update();
             }
             page->rows_[i] = row;
         }
+        if(res < 0) return NULL;
         fclose(fp);
         return page;
     }catch(exception &e){
@@ -114,7 +123,9 @@ void Memorizer::PageFlush(__uint16_t offset, Table* table){
         fp = fopen(filePath.c_str(),"ab+");
         fclose(fp);
         fp = fopen(filePath.c_str(),"r+");
-        fseek(fp,offset * PAGE_SIZE,SEEK_SET);
+        fwrite(&table->max_offset,2,1,fp);
+        fseek(fp,DATA_OFFSET + offset * PAGE_SIZE,SEEK_SET);
+        //fseek(fp,DATA_OFFSET + offset * PAGE_SIZE,SEEK_SET);
         char ch[PAGE_SIZE];
         memset(ch,0,sizeof(ch));
         fwrite(ch,sizeof(ch),1,fp);
@@ -133,8 +144,9 @@ void Memorizer::PageStore(__uint16_t offset, Page* page){
         fp = fopen(filePath.c_str(),"a");
         fclose(fp);
         fp = fopen(filePath.c_str(),"r+");
-        fseek(fp,offset * PAGE_SIZE,SEEK_SET);
-        fwrite(&page->is_empty_,1,1,fp);
+        fwrite(&page->table_ptr_->max_offset,2,1,fp);
+        fseek(fp,DATA_OFFSET + offset * PAGE_SIZE,SEEK_SET);
+        fwrite(&page->not_empty_,1,1,fp);
         fwrite(&page->page_index_.index_,page->page_index_.getSize(),1,fp);
         fwrite(&page->is_full_,1,1,fp);
         fwrite(&page->cursor_pos_,2,1,fp);
