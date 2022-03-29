@@ -1,4 +1,4 @@
-# LiteDB - Project Logging
+# NEDB - Project Logging
 
 ![avatar](https://badgen.net/badge/Language/C++11/orange)
 ![stars](https://badgen.net/badge/Dev%20Env./Linux/green)

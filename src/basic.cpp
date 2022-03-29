@@ -67,7 +67,7 @@ void __START__(){
     Parser p;
     Executor e(&p);
     while(true){
-        printf("LiteDB > ");
+        printf("nedb > ");
         p.analyse(i.read());
         if(p.getCommand() == __OPERATION){
             e.execute_operation();
@@ -96,14 +96,14 @@ void __LOAD_FILE__(string fileName){
 
 ////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
-    cout<<"Welcome to LiteDB terminal. Command end with ';'."<<endl;
+    cout<<"Welcome to NEDB terminal. Command end with ';'."<<endl;
     cout<<"Server version: 22.3.21 <Preview>"<<endl;
     cout<<"Enter '.help' for viewing help infomation.\n"<<endl;
 }
 
 ////////////////////////////////////////////////////////////////
 void __HELP__(){
-    cout<<"LiteDB version: 22.3.21 <Preview>"<<endl;
+    cout<<"NEDB version: 22.3.21 <Preview>"<<endl;
     cout<<" "<<endl;
     cout<<"Data Type Support >"<<endl;
     cout<<" "<<endl;
