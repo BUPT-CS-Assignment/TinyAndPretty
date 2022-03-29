@@ -117,6 +117,7 @@ bool Parser::parser_insert_values(){
 
 bool Parser::parser_delete_values(){
     regex layout("DELETE FROM (.+) WHERE (.+)");
+    //regex layout2("DELETE FROM (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
