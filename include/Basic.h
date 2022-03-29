@@ -47,6 +47,7 @@ using namespace std;
 #define PAGE_HEAD_SIZE 40
 #define TABLE_UPDATE_OFFSET 38  
 #define MAX_EMPTY_PAGE 20
+#define DATA_OFFSET 2
 
 enum DATA_TYPE : __uint16_t{
                 __INT,
