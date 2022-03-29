@@ -186,7 +186,7 @@ bool Parser::parser_update_values(){
 }
 
 bool Parser::parser_describe_table(){
-    object_ = Trim(statement_.substr(9,statement_.length()-9));
+    object_ = Trim(statement_.substr(15,statement_.length()-15));
     if(object_.length() == 0) return false;
     return true;
 }
