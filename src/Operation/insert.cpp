@@ -94,7 +94,7 @@ bool Row::Padding(string condition, string value){
     //直接填充
     if(cond_num == 0 && value_num == table_ptr_->parm_num_){
         for(int i = 0; i < value_num; i++){
-            if(!value_update(i, values[i])){
+            if(!update_value(i, values[i])){
                 return false;
             }
         }
@@ -120,14 +120,14 @@ bool Row::Padding(string condition, string value){
             cout << "<E> PARAMETER NOT FOUND" << endl;
             return false;
         }
-        if(!value_update(pos, values[i]))
+        if(!update_value(pos, values[i]))
             return false;
     }
     index_update();
     return true;
 }
 
-bool Row::value_update(int pos, string value){
+bool Row::update_value(int pos, string value){
     DATA_TYPE type = table_ptr_->parm_types_[pos];
     if(!parm_check(value, type))
         return false;
