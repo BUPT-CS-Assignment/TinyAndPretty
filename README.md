@@ -118,12 +118,11 @@
     ```
   - ##### 查询数据
     ```
-    SELECT 'parm_name_1', ... FROM 'table_name' WHERE 'condition' 
+    SELECT 'parm_name_1', ... FROM 'table_name' WHERE 'condition_1' AND ... 
     ```
     注意事项 : 
     1. 要取出数据行的所有字段, 请使用 **\*** 代替指定字段名称.
     2. 当 **WHERE** 语句省略时, **NEDB** 会遍历全表进行搜索
-    3. **NEDB** 仅支持单一条件, 即不支持 'condition_1 AND condtion_2' 语句.
    
     操作示例 : 
     ```
@@ -136,7 +135,7 @@
     ```
   - ##### 修改数据
     ```
-    UPDATE table_name SET 'parm_name_1' = 'value_1', ... WHERE 'condition' 
+    UPDATE table_name SET 'parm_name_1' = 'value_1', ... WHERE 'condition_1'
     ```
     注意事项 : 
     1. 主键值不能被修改.
@@ -158,13 +157,13 @@
 ## Structure
 - ### Principle
   - ##### 文件格式
-    1. **NEDB** 文件存储默认位置为 **`/home/{user_name}/NEDB/Tables`** , 可在 **`Basic.h`** 中进行修改.
+    1. **NEDB** 文件存储默认位置为 **`/home/{user_name}/nesrc/tables`** , 可在 **`Basic.cpp`** 中进行修改.
     2. 一张数据表将包含以下三个文件
         |文件名|内容|
         |:---:|:---:|
-        |table_name.ldf|表结构文件, 包含表名和字段信息等|
-        |table_name.ldd|数据文件, 包含写入表格的所有数据|
-        |table_name.ldi|索引文件, 包含用户创建的非主键索引|
+        |table_name.nef|表结构文件, 包含表名和字段信息等|
+        |table_name.ned|数据文件, 包含写入表格的所有数据|
+        |table_name.nei|索引文件, 包含用户创建的非主键索引|
 
   - ##### 存储原理
     1. **NEDB** 底层以 **`B+Tree`** 结构进行数据处理.
