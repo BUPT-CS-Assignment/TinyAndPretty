@@ -3,7 +3,7 @@
 #include<Storage.h>
 
 ////////////////////////////////////////////////////////////////
-string kHomeDir = "/home/jianxf/LiteSrc/Tables/";
+string kHomeDir = "/home/jianxf/NEsrc/Tables/";
 ////////////////////////////////////////////////////////////////
 string const kTypeName[]={"INT","INT64","REAL","TEXT","LONGTEXT"};
 int const kTypeSize []={4,8,8,32,255};
