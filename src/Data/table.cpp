@@ -32,7 +32,7 @@ bool Table::Init(string parameters){
     //分配空间
     index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
     parm_types_ = new DATA_TYPE[parm_num_];
-    parm_names_ = new char[parm_num_][32]{0};
+    parm_names_ = new char[parm_num_][32]{{0}};
     bool key_assigned = 0;
     //参数分析
     for(int i = 0; i < parm_num_; i++){
@@ -43,19 +43,19 @@ bool Table::Init(string parameters){
             return false;
         }
         //数据类型解析
-        if(str[1] == "INT"){
+        if(str[1] == "int"){
             parm_types_[i] = __INT;
             row_take_up_ += 4;
-        }else if(str[1] == "INT64"){
+        }else if(str[1] == "int64"){
             parm_types_[i] = __INT64;
             row_take_up_ += 8;
-        }else if(str[1] == "REAL"){
+        }else if(str[1] == "real"){
             parm_types_[i] = __REAL;
             row_take_up_ += 8;
-        }else if(str[1] == "TEXT"){
+        }else if(str[1] == "text"){
             parm_types_[i] = __TEXT;
             row_take_up_ += 32;
-        }else if(str[1] == "LONGTEXT"){
+        }else if(str[1] == "longtext"){
             parm_types_[i] = __LONGTEXT;
             row_take_up_ += 255;
         }else{
@@ -70,13 +70,13 @@ bool Table::Init(string parameters){
                 cout<<"<E> PRIM KEY TYPE NOT ALLOWED"<<endl;
                 return false;
             }
-            if(str[2]=="KEY"){
+            if(str[2]=="key"){
                 key_assigned = true;
                 prim_key_ = i;
             }
         }
         //非主键索引创建
-        if(number == 3 && str[2]=="INDEX"){
+        if(number == 3 && str[2]=="index"){
             if(parm_types_[i] != __LONGTEXT){
                 
                 index_tree_[i] = new BalanceTree<Index, Index>(i);

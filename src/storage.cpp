@@ -17,8 +17,6 @@ void Memorizer::TableStore(Table* table){
     fseek(fp,0,SEEK_SET);
     fwrite(&table->table_id_, 4 , 1 ,fp);
     fwrite(table->table_name_, 32, 1,fp);
-    //fwrite(&table->max_offset, 2,1,fp);
-    //fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
     fwrite(&table->parm_num_,2,1,fp);
     fwrite(table->parm_types_,2,table->parm_num_,fp);
     fwrite(table->parm_names_,32,table->parm_num_,fp);
@@ -33,17 +31,18 @@ Table* Memorizer::TableLoad(string table_name){
     string dataPath = kHomeDir + table_name + kDataSuffix;
     try{
         FILE* fp;
-        fp = fopen(filePath.c_str(),"r");
+        if((fp = fopen(filePath.c_str(),"r")) == NULL){
+            cout<<"<E> FILE NOT EXIST"<<endl;
+            return NULL;
+        }
         fseek(fp,0,SEEK_SET);
         Table* table = new Table(0," ");
         size_t res;
         res = fread(&table->table_id_,4,1,fp);
         res = fread(table->table_name_,32,1,fp);
-        //res = fread(&table->max_offset, 2,1,fp);
-        //res = fread(table->empty_pages_,2,1 + MAX_EMPTY_PAGE,fp);
         res = fread(&table->parm_num_,2,1,fp);
         table->parm_types_ = new DATA_TYPE[table->parm_num_];
-        table->parm_names_ = new char[table->parm_num_][32]{0};
+        table->parm_names_ = new char[table->parm_num_][32]{{0}};
         res = fread(table->parm_types_,2,table->parm_num_,fp);
         res = fread(table->parm_names_,32,table->parm_num_,fp);
         res = fread(&table->prim_key_,2,1,fp);
@@ -53,7 +52,10 @@ Table* Memorizer::TableLoad(string table_name){
         fclose(fp);
         //主键索引树重构
         //if(table->max_offset == 0) return table;
-        fp = fopen(dataPath.c_str(),"r");
+        if((fp = fopen(dataPath.c_str(),"r")) == NULL){
+            cout<<"<W> DATA SOURCE FILE NOT FOUND : "<<table_name<<endl;
+            return table;
+        }
         res = fread(&table->max_offset,2,1,fp);
         bool notEmpty = true;
         for(__uint16_t i = 0; i < table->max_offset; i++){
@@ -74,22 +76,15 @@ Table* Memorizer::TableLoad(string table_name){
     }
 }
 
-/*
-void Memorizer::TableUpdate(Table* table){
-    if(table == NULL) return;
-    //检测空文件/创建文件
-    string filePath = kHomeDir + table->table_name_ + kFramSuffix;
-    FILE* fp = fopen(filePath.c_str(),"r+");
-    fseek(fp,36,SEEK_SET);
-    fwrite(&table->max_offset,2,1,fp);
-    //fwrite(table->empty_pages_,2,1+MAX_EMPTY_PAGE,fp);
-    fclose(fp);
-}*/
 
 Page* Memorizer::PageLoad(__uint16_t offset, Table* table){
     string filePath = kHomeDir + table->table_name_ + kDataSuffix;
     try{
-        FILE* fp = fopen(filePath.c_str(),"r");
+        FILE* fp;
+        if((fp = fopen(filePath.c_str(),"r")) == NULL){
+            cout<<"<E> DATA SOURCE FILE MISSING"<<endl;
+            return NULL;
+        }
         size_t res;
         fseek(fp,DATA_OFFSET + offset * PAGE_SIZE,SEEK_SET);
         bool notEmpty;
@@ -112,6 +107,7 @@ Page* Memorizer::PageLoad(__uint16_t offset, Table* table){
         fclose(fp);
         return page;
     }catch(exception &e){
+        cout<<"<E> DATA SOURCE FILE DAMAGED"<<endl;
         return NULL;
     }
 }
@@ -131,6 +127,7 @@ void Memorizer::PageFlush(__uint16_t offset, Table* table){
         fwrite(ch,sizeof(ch),1,fp);
         fclose(fp);
     }catch(exception &e){
+        cout<<"<E> DATA SOURCE FILE DAMAGED"<<endl;
         return;
     }
 }
@@ -141,7 +138,7 @@ void Memorizer::PageStore(__uint16_t offset, Page* page){
     string filePath = kHomeDir + page->table_ptr_->table_name_ + kDataSuffix;
     try{
         FILE* fp;
-        fp = fopen(filePath.c_str(),"a");
+        fp = fopen(filePath.c_str(),"ab+");
         fclose(fp);
         fp = fopen(filePath.c_str(),"r+");
         fwrite(&page->table_ptr_->max_offset,2,1,fp);
@@ -158,6 +155,7 @@ void Memorizer::PageStore(__uint16_t offset, Page* page){
         }
         fclose(fp);
     }catch(exception &e){
+        cout<<"<E> DATA SOURCE FILE DAMAGED"<<endl;
         return;
     }
 }
