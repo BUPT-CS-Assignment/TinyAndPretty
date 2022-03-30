@@ -14,20 +14,9 @@ using namespace std;
  *      [A]__index - 索引数组
  *      [A]__data - 数据指针数组
  *      [A]__child - 子节数组  
+ *  [S]DataNode - 数据指针迭代器
  *
  */
-template<class T>
-struct T_node{
-    T_node *next;
-    T data;
-    T_node(T *new_data){
-        data = *new T(*new_data);
-    }
-    T_node(T *new_data, T_node *n){
-        data = *new T(*new_data);
-        next = n;
-    }
-};
 
 enum __NodeType__{
     __INTERNAL__, __LEAF__
@@ -40,16 +29,28 @@ enum __NodeType__{
  * @tparam Idx_索引类型
  */
 
+
+
 template<class DAT, class Idx> class Node;
+
+template<class DAT, class Idx>
+struct DataNode{
+    Node<DAT, Idx> *node;
+    int pos;
+    DataNode<DAT, Idx>();
+    DAT *getData();
+    DataNode<DAT, Idx> &operator ++();
+    DataNode<DAT, Idx> &operator --();
+};
 
 template<class DAT, class Idx>
 class BalanceTree{
     friend class Node<DAT, Idx>;  //节点类友元
+    friend struct DataNode<DAT, Idx>;
     /**
      * @brief B+树结构类
      *
      */
-
     private:
     int __ID__; //树结构标识
     Node<DAT, Idx> *__Data__; //首节点指针
@@ -67,27 +68,25 @@ class BalanceTree{
     }
     public:
     BalanceTree(int id);    //树创建
-    DAT *InsertLocate(Idx *); //数据查找
+    DataNode<DAT, Idx> LocateData(Idx *); //数据查找
     DAT *AccurateLoacte(Idx *); //数据查找
     void InsertData(Idx *, DAT *); //数据插入
     void DeleteData(Idx *);   //数据删除
     //void UpdateData(Idx*,DAT*);
     void CheckAll();   //遍历树
-    Node<DAT, Idx> *getHead(){
-        return findHead(__Root__);
-    }
-    T_node<DAT> *getDataLink(Idx *);
+    DataNode<DAT, Idx> getLink();
 
 };
 
+/**
+ * @brief B+树节点结构类
+ *
+ */
 template<class DAT, class Idx>
 class Node{
     friend class BalanceTree<DAT, Idx>;  //树结构类友元
-    /**
-     * @brief B+树节点结构类
-     *
-     */
-    private:
+    friend struct DataNode<DAT, Idx>;
+    
     __NodeType__  __type;    //节点类型
     Node<DAT, Idx> *__parent, *__left, *__right;  //父节点指针/左右叶子节点指针
     Node<DAT, Idx> **__child; //孩子节点指针数组
@@ -117,18 +116,6 @@ class Node{
     void delete_index(int); //根据位置抹除索引及子节点
     bool find_node(Node<DAT, Idx> *); //寻找节点
     ///////////////////////////
-    public:
-    DAT *getData(int pos){
-        if(pos >= __cursor) return NULL;
-        return __data[pos];
-    }
-    Idx *getIndex(int pos){
-        if(pos >= __cursor) return NULL;
-        return __index[pos];
-    }
-    Node<DAT, Idx> *getNext(){
-        return __right;
-    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,25 +132,24 @@ BalanceTree<DAT, Idx>::BalanceTree(int id){
 }
 
 
-
 template<class DAT, class Idx>
 void BalanceTree<DAT, Idx>::CheckAll(){
     cout << "----------------------------------------" << endl;
     Node<DAT, Idx> *node = __Root__;
     int layer = 1;
-    cout<<"BTree ID : "<<__ID__<<endl;
+    cout << "BTree ID : " << __ID__ << endl;
     while(node != NULL){
         cout << "Layer " << layer++ << " : ";
         Node<DAT, Idx> *temp = node;
         while(temp != NULL){
-            cout<<"[ ";
+            cout << "[ ";
             for(int i = 0; i < temp->__cursor; i++){
                 cout << *temp->__index[i] << ",";
             }
             if(temp->__parent != NULL) cout << "(P:" << *temp->__parent->__index[0] << ")";
-            else cout<< "(ROOT)";
+            else cout << "(ROOT)";
             cout << " ]";
-            cout<<"->";
+            cout << "->";
             temp = temp->__right;
         }
         cout << "<end>" << endl;
@@ -206,7 +192,7 @@ bool Node<DAT, Idx>::isSatisfied(){
     /**
      * @brief 判断节点关键字数量是否满足阶数要求
      */
-    
+
     return __cursor - 1 >= __ORDER__ / 2 - 1;
 }
 
@@ -270,7 +256,7 @@ void Node<DAT, Idx>::remove(){
      * @brief 移除节点
      */
     for(int i = 0; i < __cursor; i++){
-            __index[i] = NULL;
+        __index[i] = NULL;
     }
     if(__type == __INTERNAL__){
         for(int i = 0; i < __cursor + 1; i++)    __child[i] = NULL;
@@ -301,41 +287,6 @@ void Node<DAT, Idx>::print_node(){
  * @brief 数据查找相关函数
  *
  */
-template<class DAT, class Idx>
-T_node<DAT> *BalanceTree<DAT, Idx>::getDataLink(Idx *idx){
-    T_node<DAT> *T = NULL, *Tail = NULL;
-    Node<DAT, Idx> *node = find_insert_leaf_node(idx, __Root__);
-    if(node == NULL) return T;
-    int start = node->find_delete_position(idx);
-    for(int i = start; i < node->__cursor; i ++){
-        if(*node->__index[i] == *idx){
-            if(T == NULL){
-                T = new T_node<DAT>(node->__data[i], NULL);
-                Tail = T;
-            }
-            else{
-                T_node<DAT> *table_ptr_ = new T_node<DAT>(node->__data[i], NULL);
-                Tail->next = table_ptr_;
-                Tail = table_ptr_;
-            }
-        }
-        else  return T;
-
-    }
-    node = node->__right;
-    while(node != NULL){
-        for(int i = start; i < node->__cursor; i ++){
-            if(*node->__index[i] == *idx){
-                T_node<DAT> *table_ptr_ = new T_node<DAT>(node->__data[i], NULL);
-                Tail->next = table_ptr_;
-                Tail = table_ptr_;
-            }
-            else return T;
-        }
-        node = node->__right;
-    }
-    return T;
-}
 
 template<class DAT, class Idx>
 Node<DAT, Idx> *BalanceTree<DAT, Idx>::find_insert_leaf_node(Idx *idx, Node<DAT, Idx> *start){
@@ -350,14 +301,15 @@ Node<DAT, Idx> *BalanceTree<DAT, Idx>::find_insert_leaf_node(Idx *idx, Node<DAT,
 }
 
 template<class DAT, class Idx>
-DAT *BalanceTree<DAT, Idx>::InsertLocate(Idx *idx){
+DataNode<DAT, Idx> BalanceTree<DAT, Idx>::LocateData(Idx *idx){
     /**
      * @brief 根据索引查找数据单元位置 <parm>索引指针
      */
+    DataNode<DAT, Idx> data_node = * new DataNode<DAT, Idx>();
     Node<DAT, Idx> *node = find_insert_leaf_node(idx, __Root__);
-    if(node == NULL) return NULL;
+    if(node == NULL) return data_node;
     if(*idx < *node->__index[0]){
-        return NULL; //需要新建数据页
+        return data_node; //需要新建数据页
     }
     int p = 0;
     for(int i = 1; i < node->__cursor; i ++){
@@ -367,14 +319,16 @@ DAT *BalanceTree<DAT, Idx>::InsertLocate(Idx *idx){
         }
         p = node->__cursor - 1;
     }
-    return node->__data[p];
+    data_node.node = node;
+    data_node.pos = p;
+    return data_node;
 }
-
+/*
 template<class DAT, class Idx>
 DAT *BalanceTree<DAT, Idx>::AccurateLoacte(Idx *idx){
     /**
      * @brief 根据索引定位数据页 <parm>索引指针
-     */
+     *
     Node<DAT, Idx> *node = find_insert_leaf_node(idx, __Root__);
     if(node == NULL) return NULL;
     for(int i = 0; i < node->__cursor; i ++){
@@ -383,8 +337,7 @@ DAT *BalanceTree<DAT, Idx>::AccurateLoacte(Idx *idx){
         }
     }
     return NULL;
-
-}
+}*/
 
 template<class DAT, class Idx>
 int Node<DAT, Idx>::find_insert_position(Idx *idx){
@@ -540,7 +493,7 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
         node = node->left_merge(node->__left);
         if(node->__parent == __Root__ && node->__parent->__cursor == 0){
             __Root__ = node;
-            __Root__ -> __parent = NULL;
+            __Root__->__parent = NULL;
             return;
         }
         delete_adjust(node->__parent);
@@ -551,7 +504,7 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
         node->right_merge(node->__right);
         if(node->__parent == __Root__ && node->__parent->__cursor == 0){
             __Root__ = node;
-            __Root__ -> __parent = NULL;
+            __Root__->__parent = NULL;
             return;
         }
         delete_adjust(node->__parent);
@@ -798,7 +751,64 @@ void Node<DAT, Idx>::right_lend(Idx *new_idx){
     __cursor ++;
 }
 
+/////////////////////////////////////////////////////////////////////////
+//iterator simulation
 
+template<class DAT, class Idx>
+DataNode<DAT, Idx>::DataNode(){
+    node = NULL;
+    pos = -1;
+}
+
+template<class DAT, class Idx>
+DataNode<DAT, Idx> &DataNode<DAT, Idx>::operator++(){
+    if(pos < node->__cursor - 1){
+        pos++;
+    }
+    else{
+        if(node->__right != NULL){
+            node = node->__right;
+            pos = 0;
+        }
+        else{
+            node = NULL;
+        }
+    }
+    return *this;
+}
+
+template<class DAT, class Idx>
+DataNode<DAT, Idx> &DataNode<DAT, Idx>::operator--(){
+    if(pos > 0){
+        pos--;
+    }
+    else{
+        if(node->__left != NULL){
+            node = node->__left;
+            pos = node->__cursor - 1;
+        }
+        else{
+            node = NULL;
+        }
+    }
+    return *this;
+}
+
+template<class DAT, class Idx>
+DAT *DataNode<DAT, Idx>::getData(){
+    if(node == NULL || pos == -1 || pos >= node->__cursor){
+        return NULL;
+    }
+    return node->__data[pos];
+}
+
+template<class DAT, class Idx>
+DataNode<DAT, Idx> BalanceTree<DAT, Idx>::getLink(){
+    DataNode<DAT, Idx> node = * new DataNode<DAT, Idx>();
+    node.node = findHead(__Root__);
+    node.pos = 0;
+    return node;
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #endif
