@@ -47,6 +47,7 @@ using namespace std;
 #define MAX_TABLES 50
 #define TEXT_LENGTH 32
 #define LONGTEXT_LENGTH 255
+//测试分页操作，限制页大小为0.2KB
 #define PAGE_SIZE 200
 #define PAGE_HEAD_SIZE 40 
 #define MAX_EMPTY_PAGE 20
