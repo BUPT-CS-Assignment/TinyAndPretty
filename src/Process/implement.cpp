@@ -1,4 +1,4 @@
-#include<Implement.h>
+#include<implement.h>
 
 
 string *Split(string str, char c, int &length){
@@ -34,42 +34,35 @@ string Trim(string str){
     return temp;
 }
 
-bool parm_check(string str, DATA_TYPE type){
+void parm_check(string str, DATA_TYPE type){
     if(str.length() == 0){
-        cout << "<E> PARAMETER EMPTY" << endl;
-        return false;
+        throw PARAM_EMPTY;
     }
     if(type == __INT){
         if(!regex_match(str, regex("^-?\\d+"))){
-            cout << "<E> PARAMETER '" << str << "' MISMATCH TYPE 'INT'." << endl;
-            return false;
+            throw TYPE_INT_MISMATCH;
         }
-    }    
-else if(type == __INT64){
+    }
+    else if(type == __INT64){
         if(!regex_match(str, regex("^-?\\d+"))){
-            cout << "<E> PARAMETER '" << str << "' MISMATCH TYPE 'INT64'." << endl;
-            return false;
+            throw TYPE_INT64_MISMATCH;
         }
-    }    
-else if(type == __REAL){
+    }
+    else if(type == __REAL){
         if(!regex_match(str, regex("^-?\\d+\\.\\d+")) && !regex_match(str, regex("^-?\\d+"))){
-            cout << "<E> PARAMETER '" << str << "' MISMATCH TYPE 'REAL'." << endl;
-            return false;
+            throw TYPE_REAL_MISMATCH;
         }
     }
     else if(type == __TEXT){
         if(str.length() > TEXT_LENGTH - 1){
-            cout << "<E> OUT OF RANGE 'TEXT'" << endl;
-            return false;
+            throw TYPE_TEXT_OVERFLOW;
         }
     }
     else{
         if(str.length() > LONGTEXT_LENGTH - 1){
-            cout << "<E> OUT OF RANGE 'LONGTEXT'" << endl;
-            return false;
+            throw TYPE_LONGTEXT_OVERFLOW;
         }
     }
-    return true;
 }
 
 

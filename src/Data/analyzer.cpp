@@ -1,5 +1,5 @@
-#include<Data.h>
-#include<Implement.h>
+#include<data.h>
+#include<implement.h>
 
 
 Analyzer::Analyzer(Table *table){
@@ -21,15 +21,15 @@ int Analyzer::getCompareType(int pos){
     return -2;
 }
 
-bool Analyzer::Extract(string conditions, string pattern){
+void Analyzer::Extract(string conditions, string pattern){
     if(conditions.length() == 0){
         cond_num = -1;
-        return true;
+        return;
     }
     int l = pattern.length();
     while(true){
         if(conditions.length() == 0){
-            return true;
+            return;
         }
         size_t pos = conditions.find(pattern);
         string temp;
@@ -51,7 +51,7 @@ bool Analyzer::Extract(string conditions, string pattern){
             cond_cmp[cond_num] = '>';
         }
         else{
-            return false;
+            throw COMPARE_NONSUPPORT;
         }
         int num = 0;
         string *str = Split(temp, cond_cmp[cond_num], num);
@@ -60,33 +60,31 @@ bool Analyzer::Extract(string conditions, string pattern){
             key_pos = cond_num;
         }
         if(cond_pos[cond_num] == -1){
-            cout << "<E> PARAMETER NOT FOUND" << endl;
-            return false;
+            throw PARAM_NOT_FOUND;
         }
         cond_origin[cond_num] = str[1];
         cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
         cond_num++;
     }
-    return true;
 }
 
-bool Analyzer::Locate(string params){
+void Analyzer::Locate(string params){
     if(params == "*"){
         parm_num = -1;
-        return true;
+        return;
     }
     //int n;
     string *param = Split(params, ',', parm_num);
-    if(parm_num == 0) return false;
+    if(parm_num == 0){
+        throw PARAM_EMPTY;
+    }
     parm_pos = new int[parm_num];
     for(int i = 0; i < parm_num; i++){
         parm_pos[i] = table_ptr_->ParmLocate(param[i]);
         if(parm_pos[i] == -1){
-            cout << "<E> PARAMETER NOT FOUND" << endl;
-            return false;
+            throw PARAM_NOT_FOUND;
         }
     }
-    return true;
 }
 
 bool Analyzer::Match(Row *row){

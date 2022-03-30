@@ -1,5 +1,5 @@
-#include<Data.h>
-#include<Implement.h>
+#include<data.h>
+#include<implement.h>
 
 //数据表创建
 Table::Table(int id, string name){
@@ -16,88 +16,80 @@ Table::Table(int id, string name){
 }
 
 
-bool Table::Init(string parameters){
+void Table::Init(string parameters){
     /*
         数据表初始化, 判空
     */
-    if(parameters.length() == 0){
-        cout << "<E> PARAMETER EMPTY" << endl;
-        return false;
-    }
-    //参数分离
-    int number;
-    string *params = Split(parameters, ',', number);
-    parm_num_ = number;
-    //分配空间
-    index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
-    parm_types_ = new DATA_TYPE[parm_num_];
-    parm_names_ = new char[parm_num_][32]{{0}};
-    bool key_assigned = 0;
-    //参数分析
-    for(int i = 0; i < parm_num_; i++){
-        index_tree_[i] = NULL;
-        string *str = Split(params[i], ' ', number);
-        if(number != 2 && number != 3){
-            cout << "<E> WRONG PARAMETER FORMAT" << endl;
-            return false;
-        }
-        //数据类型解析
-        if(str[1] == "int"){
-            parm_types_[i] = __INT;
-            row_take_up_ += 4;
-        }
-        else if(str[1] == "int64"){
-            parm_types_[i] = __INT64;
-            row_take_up_ += 8;
-        }
-        else if(str[1] == "real"){
-            parm_types_[i] = __REAL;
-            row_take_up_ += 8;
-        }
-        else if(str[1] == "text"){
-            parm_types_[i] = __TEXT;
-            row_take_up_ += 32;
-        }
-        else if(str[1] == "longtext"){
-            parm_types_[i] = __LONGTEXT;
-            row_take_up_ += 255;
-        }
-        else{
-            cout << "<E> UNDEFINED ELEMENT TYPE" << endl;
-            return false;
-        }
-        //存入变量名
-        strcpy(parm_names_[i], str[0].c_str());
-        //指定主键索引
-        if(!key_assigned && number == 3){
-            if(parm_types_[i] == __LONGTEXT){
-                cout << "<E> PRIM KEY TYPE NOT ALLOWED" << endl;
-                return false;
+    try{    
+        if(parameters.length() == 0) throw PARAM_EMPTY;
+        //参数分离
+        int number;
+        string *params = Split(parameters, ',', number);
+        parm_num_ = number;
+        //分配空间
+        index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
+        parm_types_ = new DATA_TYPE[parm_num_];
+        parm_names_ = new char[parm_num_][32]{{0}};
+        bool key_assigned = 0;
+        //参数分析
+        for(int i = 0; i < parm_num_; i++){
+            index_tree_[i] = NULL;
+            string *str = Split(params[i], ' ', number);
+            if(number != 2 && number != 3)  throw PARAM_FORM_ERROR;
+            //数据类型解析
+            if(str[1] == "int"){
+                parm_types_[i] = __INT;
+                row_take_up_ += 4;
             }
-            if(str[2] == "key"){
-                key_assigned = true;
-                prim_key_ = i;
+            else if(str[1] == "int64"){
+                parm_types_[i] = __INT64;
+                row_take_up_ += 8;
             }
-        }
-        //非主键索引创建
-        /*
-        if(number == 3 && str[2]=="index"){
-            if(parm_types_[i] != __LONGTEXT){
+            else if(str[1] == "real"){
+                parm_types_[i] = __REAL;
+                row_take_up_ += 8;
+            }
+            else if(str[1] == "text"){
+                parm_types_[i] = __TEXT;
+                row_take_up_ += 32;
+            }
+            else if(str[1] == "longtext"){
+                parm_types_[i] = __LONGTEXT;
+                row_take_up_ += 255;
+            }
+            else{
+                throw TYPE_UNDEFINED;
+            }
+            //存入变量名
+            strcpy(parm_names_[i], str[0].c_str());
+            //指定主键索引
+            if(!key_assigned && number == 3){
+                if(parm_types_[i] == __LONGTEXT){
+                    throw KEY_TYPE_NOT_ALLOWED;
+                }
+                if(str[2] == "key"){
+                    key_assigned = true;
+                    prim_key_ = i;
+                }
+            }
+            //非主键索引创建
+            /*
+            if(number == 3 && str[2]=="index"){
+                if(parm_types_[i] != __LONGTEXT){
 
-                index_tree_[i] = new BalanceTree<Index, Index>(i);
-            }else{
-                cout<<"<W> INDEX NOT CREATE : TYPE NOT ALLOWED"<<endl;
-            }
-        }*/
+                    index_tree_[i] = new BalanceTree<Index, Index>(i);
+                }else{
+                    cout<<"<W> INDEX NOT CREATE : TYPE NOT ALLOWED"<<endl;
+                }
+            }*/
+        }
+        //计算单页行数
+        max_rows_per_page_ = (PAGE_SIZE - PAGE_HEAD_SIZE) / row_take_up_;
+        Memorizer RAM;
+        RAM.TableStore(this);
+    }catch(NEexception &e){
+        throw e;
     }
-    //计算单页行数
-    max_rows_per_page_ = (PAGE_SIZE - PAGE_HEAD_SIZE) / row_take_up_;
-    cout << "Take up : " << row_take_up_ << endl;
-    cout << "Max : " << max_rows_per_page_ << endl;
-    Memorizer RAM;
-    RAM.TableStore(this);
-    return true;
-
 }
 
 
@@ -129,11 +121,12 @@ void Table::print_table(){
     cout<<"+-------+---------------------------------"<<endl;
 }
 */
-void Table::print_structure(){
+string Table::getStructure(){
     /*
     cout<<"+-----------------------"<<endl;
     cout<<"|   "<<__Name<<"   "<<endl;
     */
+    /*
     cout << "+-----------+-----------" << endl;
     cout << "|   Filed   |   Type   " << endl;
     cout << "+-----------+-----------" << endl;
@@ -144,6 +137,15 @@ void Table::print_structure(){
         cout << "| " << kTypeName[parm_types_[i]] << endl;
     }
     cout << "+-----------+-----------\n" << endl;
+    */
+    string str = * new string("{"); 
+    for(int i = 0; i < parm_num_; i++){
+        str = str +parm_names_[i] + ":"+ kTypeName[parm_types_[i]]
+            + (i == prim_key_ ? "(key)" : "");
+        str = str + (i==parm_num_-1? "}":", ");
+    }
+    return str;
+
 }
 
 string Table::getName(){

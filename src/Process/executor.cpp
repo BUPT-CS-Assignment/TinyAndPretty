@@ -1,112 +1,107 @@
-#include<Process.h>
-#include<Data.h>
-#include<Implement.h>
-#include<Storage.h>
+#include<process.h>
+#include<data.h>
+#include<implement.h>
+#include<storage.h>
 
 
 Executor::Executor(Parser *parser){
     parser_ = parser;
 }
 
-void Executor::execute_operation(){
-    switch(parser_->operation_){
-        case CREATE_TABLE:
-            execute_create_table();
-            break;
-        case INSERT_VALUES:
-            execute_insert_values();
-            break;
-        case DELETE_VALUES:
-            execute_delete_values();
-            break;
-        case SELECT_VALUES:
-            execute_select_values();
-            break;
-        case UPDATE_VALUES:
-            execute_update_values();
-            break;
-        case DESCRIBE_TABLE:
-            execute_describe_table();
-            break;
-        case CREATE_INDEX:
-            execute_create_index();
-            break;
-        case DROP_INDEX:
-            execute_drop_index();
-            break;
-        case DROP_TABLE:
-            execute_drop_table();
-            break;
-        case UNDEFINED:
-            cout << "UNDEFINED OPERATION '" << parser_->statement_ << "'." << endl;
-            break;
-        default:
-            break;
+void Executor::execute_operation(Table** table,int& c,string& str){
+    try{
+        switch(parser_->operation_){
+            case CREATE_TABLE:
+                return execute_create_table(table,c);
+            case INSERT_VALUES:
+                return execute_insert_values(table,c);
+            case DELETE_VALUES:
+                return execute_delete_values(table,c);
+            case SELECT_VALUES:
+                return execute_select_values(table,c,str);
+            case UPDATE_VALUES:
+                return execute_update_values(table,c);
+            case DESCRIBE_TABLE:
+                return execute_describe_table(table,c,str);
+            case CREATE_INDEX:
+                return execute_create_index(table,c);
+            case DROP_INDEX:
+                return execute_drop_index(table,c);
+            case DROP_TABLE:
+                return execute_drop_table(table,c);
+            case UNDEFINED:
+                str = parser_->statement_;
+                break;
+            default:    break;
+        }
+        throw SQL_UNDEFINED;
+    }catch(NEexception &e){
+        throw e;
     }
 }
 
 void Executor::execute_command(){
-    switch(parser_->command_){
-        case __UNKNOWN:
-            cout << "UNDEFINED COMMAND '" << parser_->statement_ << "'." << endl;
-            break;
-        case __HELP:
-            __HELP__();
-            break;
-        case __LOADALL:
-            __LOAD_ALL__();
-            break;
-        case __LOAD:
-            __LOAD_FILE__(parser_->statement_);
-            break;
-        case __SAVE:
-            printf("Saving to files...");
-            sleep(2);
-            printf("Done.\n");
-            break;
-        default:
-            break;
+    try{
+        switch(parser_->command_){
+            case __UNKNOWN:
+                cout << "UNDEFINED COMMAND '" << parser_->statement_ << "'." << endl;
+                break;
+            case __HELP:
+                __HELP__();
+                break;
+            case __LOADALL:
+                __LOAD_ALL__(__TABLES__,__CURSOR__);
+                break;
+            case __LOAD:
+                __LOAD_FILE__(__TABLES__,__CURSOR__,parser_->statement_);
+                break;
+            case __SAVE:
+                printf("Saving to files...");
+                sleep(2);
+                printf("Done.\n");
+                break;
+            default:
+                break;
+        }
+    }catch(NEexception &e){
+        throw e;
     }
 }
 
 
-void Executor::execute_create_table(){
-    string table_name = parser_->object_;
-    string parameters = parser_->value_;
-    for(int i = 0; i < __CURSOR__; i++){
-        if(__TABLES__[i]->getName() == table_name){
-            cout << "Table '" << table_name << "' Already Exists." << endl;
-            cout << "Create Table '" << table_name << "' Failed." << endl;
-            return;
+void Executor::execute_create_table(Table** table,int& cursor){
+    try{
+        string table_name = parser_->object_;
+        string parameters = parser_->value_;
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
+        if(index != -1){
+            throw TABLE_EXIST;
         }
-    }
-    ///////////////////////////////////////////////////////////文件操作
-    Table *new_table = new Table(__CURSOR__, table_name);
-    if(new_table->Init(parameters)){
-        __TABLES__[__CURSOR__] = new_table;
-        ++ __CURSOR__;
-        cout << "Create Table '" << table_name << "' Success." << endl;
-    }
-    else{
-        cout << "Create Table '" << table_name << "' Failed." << endl;
+        ///////////////////////////////////////////////////////////文件操作
+        Table *new_table = new Table(cursor, table_name);
+        new_table->Init(parameters);
+        table[cursor] = new_table;
+        ++ cursor;
+    }catch(NEexception &e){
+        throw e;
     }
 }
 
 
-void Executor::execute_insert_values(){
-    string table_name = parser_->object_;
-    string values = parser_->value_;
-    string conditions = parser_->condition_;
-    int index = __TABLE_LOCATED_BY_NAME__(table_name);
-    if(index != -1){
-        if(! __TABLES__[index]->InsertValues(conditions, values)){
-            cout << "Insert To '" << table_name << "' Failed." << endl;
-            return;
+void Executor::execute_insert_values(Table** table,int cursor){
+    try{
+        string table_name = parser_->object_;
+        string values = parser_->value_;
+        string conditions = parser_->condition_;
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
+        if(index != -1){
+            table[index]->InsertValues(conditions, values);
+        }else{
+            throw TABLE_NOT_FOUND;
         }
-        cout << "Insert To '" << table_name << "' Success." << endl;
+    }catch(NEexception &e){
+        throw e;
     }
-    else
-        cout << "No Such Table Named '" << table_name << "'." << endl;
 }
 
 /*
@@ -114,98 +109,108 @@ void Executor::execute_insert_values(){
 
 */
 
-void Executor::execute_delete_values(){
-    string table_name = parser_->object_;
-    string conditions = parser_->condition_;
-    int index = __TABLE_LOCATED_BY_NAME__(table_name);
-    if(index != -1){
-        //if(conditions.length() == 0) return execute_drop_table();
-        if(!__TABLES__[index]->DeleteValues(conditions)){
-            cout << "Delete From '" << table_name << "' Failed." << endl;
+void Executor::execute_delete_values(Table** table,int cursor){
+    try{
+        string table_name = parser_->object_;
+        string conditions = parser_->condition_;
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
+        if(index != -1){
+            //if(conditions.length() == 0) return execute_drop_table();
+            table[index]->DeleteValues(conditions);
+        }else{
+            throw TABLE_NOT_FOUND;
+        }
+    }catch(NEexception &e){
+        throw e;
+    }
+}
+
+
+void Executor::execute_drop_table(Table** table,int& cursor){
+    try{
+        string table_name = parser_->object_;
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
+        if(index != -1){
+            //table[index]->remove_table();
+            for(int i = index; i < cursor - 1; i++){
+                table[i] = table[i + 1];
+            }
+            -- cursor;
+        }else{
+            throw TABLE_EXIST;
+        }
+    }catch(NEexception &e){
+        throw e;
+    }
+}
+
+void Executor::execute_describe_table(Table** table,int cursor,string& str){
+    try{
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,parser_->object_);
+        if(index != -1){
+            str = table[index]->getStructure();
+        }else{
+            throw TABLE_NOT_FOUND;
+        }
+    }catch(NEexception &e){
+        throw e;
+    }
+}
+
+void Executor::execute_create_index(Table** table,int cursor){
+    try{
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,parser_->object_);
+        if(index != -1){
+            //table[index]->print_structure();
             return;
+        }else{
+            throw TABLE_NOT_FOUND;
         }
-        cout << "Delete From '" << table_name << "' Success." << endl;
-        return;
+    }catch(NEexception &e){
+        throw e;
     }
-    cout << "No Such Table Named '" << table_name << "'." << endl;
 }
 
-
-void Executor::execute_drop_table(){
-    string table_name = parser_->object_;
-    int index = __TABLE_LOCATED_BY_NAME__(table_name);
-    if(index != -1){
-        //__TABLES__[index]->remove_table();
-        for(int i = index; i < __CURSOR__ - 1; i++){
-            __TABLES__[i] = __TABLES__[i + 1];
+void Executor::execute_drop_index(Table** table,int cursor){
+    try{
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,parser_->object_);
+        if(index != -1){
+            //table[index]->print_structure();
+        }else{
+            throw TABLE_NOT_FOUND;
         }
-        -- __CURSOR__;
-        cout << "Remove Table '" << table_name << "' Success." << endl;
+    }catch(NEexception &e){
+        throw e;
     }
-    else
-        cout << "No Such Table Named '" << table_name << "'." << endl;
 }
 
-
-void Executor::execute_print_table(){
-    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
-    if(index != -1){
-        __TABLES__[index]->print_table();
-        return;
-    }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
-}
-
-void Executor::execute_describe_table(){
-    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
-    if(index != -1){
-        __TABLES__[index]->print_structure();
-        return;
-    }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
-}
-
-void Executor::execute_create_index(){
-    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
-    if(index != -1){
-        //__TABLES__[index]->print_structure();
-        return;
-    }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
-}
-
-void Executor::execute_drop_index(){
-    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
-    if(index != -1){
-        //__TABLES__[index]->print_structure();
-        return;
-    }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
-}
-
-void Executor::execute_select_values(){
-    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
-    if(index != -1){
-        cout << __TABLES__[index]->SelectValues(parser_->value_, parser_->condition_) << endl;
-        return;
-    }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
-}
-
-void Executor::execute_update_values(){
-    string table_name = parser_->object_;
-    string values = parser_->value_;
-    string condition = parser_->condition_;
-    int index = __TABLE_LOCATED_BY_NAME__(table_name);
-    if(index != -1){
-        if(!__TABLES__[index]->UpdateValues(condition, values)){
-            cout << "Update Table '" << parser_->object_ << "' Failed." << endl;
-            return;
+void Executor::execute_select_values(Table** table,int cursor,string& str){
+    try{
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,parser_->object_);
+        if(index != -1){
+            str = table[index]->SelectValues(parser_->value_, parser_->condition_);
+        }else{
+            throw TABLE_NOT_FOUND;
         }
-        cout << "Update Table '" << parser_->object_ << "' Success." << endl;
-        return;
+    }catch(NEexception &e){
+        throw e;
     }
-    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
+}
+
+void Executor::execute_update_values(Table** table,int cursor){
+    try{
+        string table_name = parser_->object_;
+        string values = parser_->value_;
+        string condition = parser_->condition_;
+        int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
+        if(index != -1){
+            table[index]->UpdateValues(condition, values);
+        }else{
+            throw TABLE_NOT_FOUND;
+        }
+    }catch(NEexception &e){
+        throw e;
+    }
 }
 
 /*
@@ -213,10 +218,20 @@ void Executor::execute_show_tables(){
     cout<<"+---------------"<<endl;
     cout<<"|    TABLES     "<<endl;
     cout<<"+---------------"<<endl;
-    for(int i = 0; i<__CURSOR__; i++){
-        cout<<"| "<<__TABLES__[i]->getName()<<endl;
+    for(int i = 0; i<cursor; i++){
+        cout<<"| "<<table[i]->getName()<<endl;
     }
     cout<<"+---------------"<<endl;
 }*/
 
+/*
+void Executor::execute_print_table(){
+    int index = __TABLE_LOCATED_BY_NAME__(parser_->object_);
+    if(index != -1){
+        table[index]->print_table();
+        return;
+    }
+    cout << "No Such Table Named '" << parser_->object_ << "'." << endl;
+}
+*/
 

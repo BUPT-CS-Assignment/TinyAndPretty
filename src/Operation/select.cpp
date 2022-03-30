@@ -1,55 +1,69 @@
-#include<Data.h>
-#include<Implement.h>
+#include<data.h>
+#include<implement.h>
 
 string Table::SelectValues(string param, string condition){
-    Analyzer ANZ(this);
-    ANZ.Locate(param);
-    ANZ.Extract(condition, " and ");
-    if(ANZ.KeySupport()){
-        return select_by_key(ANZ);
+    try{
+        Analyzer ANZ(this);
+        ANZ.Locate(param);
+        ANZ.Extract(condition, " and ");
+        string res = *new string("");
+        if(ANZ.KeySupport()){
+            res = select_by_key(ANZ);
+        }else{
+            res = select_by_traverse(ANZ);
+        }
+        return "{"+res+"}";
+    }catch(NEexception &e){
+        throw e;
     }
-    return select_by_traverse(ANZ);
+    
 }
 string Table::select_by_key(Analyzer &ANZ){
-    Index *index = ANZ.getCondVal(ANZ.getKeyPos());
-    DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
-    if(data_node.getData() == NULL){
-        cout << "<E> DATA NOT FOUND" << endl;
-        return "";
+    try{
+        Index *index = ANZ.getCondVal(ANZ.getKeyPos());
+        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+        if(data_node.getData() == NULL){
+            return "";
+        }
+        Memorizer RAM;
+        string res = *new string("");
+        Page *page;
+        int cmp = ANZ.getCompareType(ANZ.getKeyPos());
+        while(data_node.getData() != NULL){
+            page = RAM.PageLoad(*data_node.getData(), this);
+            res = res + page->SelectRow(ANZ);
+            if(cmp == 0) break;
+            else if(cmp == -1) --data_node;
+            else ++data_node;
+        }
+        res = res.substr(0, res.length() - 1);
+        return res;
+    }catch(NEexception &e){
+        throw e;
     }
-    Memorizer RAM;
-    string res = "";
-    Page *page;
-    int cmp = ANZ.getCompareType(ANZ.getKeyPos());
-    while(data_node.getData() != NULL){
-        page = RAM.PageLoad(*data_node.getData(), this);
-        res = res + page->SelectRow(ANZ);
-        if(cmp == 0) break;
-        else if(cmp == -1) --data_node;
-        else ++data_node;
-    }
-    res = res.substr(0, res.length() - 1);
-    return "{" + res + "}";
-
 }
 
 
 string Table::select_by_traverse(Analyzer &ANZ){
     //遍历搜索
-    string res = *new string("{");
-    Memorizer RAM;
-    DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
-    while(data_node.getData() != NULL){
-        __uint16_t *page_offset = data_node.getData();
-        if(page_offset == NULL) break;
-        Page *page = RAM.PageLoad(*page_offset, this);
-        res = res + page->SelectRow(ANZ);
-        ++ data_node;
+    try{
+        string res = *new string("");
+        Memorizer RAM;
+        DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+        while(data_node.getData() != NULL){
+            __uint16_t *page_offset = data_node.getData();
+            if(page_offset == NULL) break;
+            Page *page = RAM.PageLoad(*page_offset, this);
+            res = res + page->SelectRow(ANZ);
+            ++ data_node;
+        }
+        if(res.length() > 1){
+            res = res.substr(0, res.length() - 1);
+        }
+        return res;
+    }catch(NEexception &e){
+        throw e;
     }
-    if(res.length() > 1){
-        res = res.substr(0, res.length() - 1);
-    }
-    return res + "}";
 }
 
 

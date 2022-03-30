@@ -1,5 +1,5 @@
-#include<Data.h>
-#include<Implement.h>
+#include<data.h>
+#include<implement.h>
 
 Index::Index(){
     type_ = __TEXT;
@@ -21,20 +21,28 @@ int Index::getSize(){
 }
 
 Index::Index(string index, DATA_TYPE type){
-    if(type == __INT && parm_check(index, __INT)){
-        index_.i_index = stoi(index);
+    try{
+        if(type == __INT){
+            parm_check(index, __INT);
+            index_.i_index = stoi(index);
+        }
+        else if(type == __INT64){
+            parm_check(index, __INT64);
+            index_.l_index = stoll(index);
+        }
+        else if(type == __REAL){
+            parm_check(index, __REAL);
+            index_.d_index = stod(index);
+        }
+        else if(type == __TEXT){
+            parm_check(index, __TEXT);
+            const char *str = index.c_str();
+            strcpy(index_.t_index, str);
+        }
+        type_ = type;
+    }catch(NEexception &e){
+        throw e;
     }
-    else if(type == __INT64 && parm_check(index, __INT64)){
-        index_.l_index = stoll(index);
-    }
-    else if(type == __REAL && parm_check(index, __REAL)){
-        index_.d_index = stod(index);
-    }
-    else if(type == __TEXT && parm_check(index, __TEXT)){
-        const char *str = index.c_str();
-        strcpy(index_.t_index, str);
-    }
-    type_ = type;
 }
 
 Index::Index(int i){

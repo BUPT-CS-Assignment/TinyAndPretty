@@ -1,4 +1,4 @@
-#include<Storage.h>
+#include<storage.h>
 Memorizer::Memorizer(){
     //cout<<"<S> I/O"<<endl;
     //cout<<"RAM INITIALIZE"<<endl;
@@ -12,7 +12,8 @@ Memorizer::Memorizer(){
 void Memorizer::TableStore(Table *table){
     if(table == NULL) return;
     //检测空文件/创建文件
-    string filePath = kHomeDir + table->table_name_ + kFramSuffix;
+    string homedir = __HomeDir__;
+    string filePath = homedir + table->table_name_ + __FramSuffix__;
     FILE *fp = fopen(filePath.c_str(), "w");
     fseek(fp, 0, SEEK_SET);
     fwrite(&table->table_id_, 4, 1, fp);
@@ -27,13 +28,13 @@ void Memorizer::TableStore(Table *table){
 }
 
 Table *Memorizer::TableLoad(string table_name){
-    string filePath = kHomeDir + table_name + kFramSuffix;
-    string dataPath = kHomeDir + table_name + kDataSuffix;
+    string homedir = __HomeDir__;
+    string filePath = homedir + table_name + __FramSuffix__;
+    string dataPath = homedir + table_name + __DataSuffix__;
     try{
         FILE *fp;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
-            cout << "<E> FILE NOT EXIST" << endl;
-            return NULL;
+            throw FILE_NOT_FOUND;
         }
         fseek(fp, 0, SEEK_SET);
         Table *table = new Table(0, " ");
@@ -53,7 +54,7 @@ Table *Memorizer::TableLoad(string table_name){
         //主键索引树重构
         //if(table->max_offset == 0) return table;
         if((fp = fopen(dataPath.c_str(), "r")) == NULL){
-            cout << "<W> DATA SOURCE FILE NOT FOUND : " << table_name << endl;
+            //cout << "<W> DATA SOURCE FILE NOT FOUND : " << table_name << endl;
             return table;
         }
         res = fread(&table->max_offset, 2, 1, fp);
@@ -72,19 +73,22 @@ Table *Memorizer::TableLoad(string table_name){
         fclose(fp);
         return table;
     }
+    catch(NEexception &e){
+        throw e;
+    }
     catch(exception &e){
-        return NULL;
+        throw FILE_DAMAGED;
     }
 }
 
 
 Page *Memorizer::PageLoad(__uint16_t offset, Table *table){
-    string filePath = kHomeDir + table->table_name_ + kDataSuffix;
+    string homedir = __HomeDir__;
+    string filePath = homedir + table->table_name_ + __DataSuffix__;
     try{
         FILE *fp;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
-            cout << "<E> DATA SOURCE FILE MISSING" << endl;
-            return NULL;
+            throw FILE_NOT_FOUND;
         }
         size_t res;
         fseek(fp, DATA_OFFSET + offset * PAGE_SIZE, SEEK_SET);
@@ -108,14 +112,17 @@ Page *Memorizer::PageLoad(__uint16_t offset, Table *table){
         fclose(fp);
         return page;
     }
+    catch(NEexception &e){
+        throw e;
+    }
     catch(exception &e){
-        cout << "<E> DATA SOURCE FILE DAMAGED" << endl;
-        return NULL;
+        throw FILE_DAMAGED;
     }
 }
 
 void Memorizer::PageFlush(__uint16_t offset, Table *table){
-    string filePath = kHomeDir + table->table_name_ + kDataSuffix;
+    string homedir = __HomeDir__;
+    string filePath = homedir + table->table_name_ + __DataSuffix__;
     try{
         FILE *fp;
         fp = fopen(filePath.c_str(), "ab+");
@@ -129,16 +136,19 @@ void Memorizer::PageFlush(__uint16_t offset, Table *table){
         fwrite(ch, sizeof(ch), 1, fp);
         fclose(fp);
     }
+    catch(NEexception &e){
+        throw e;
+    }
     catch(exception &e){
-        cout << "<E> DATA SOURCE FILE DAMAGED" << endl;
-        return;
+        throw FILE_DAMAGED;
     }
 }
 
 
 void Memorizer::PageStore(__uint16_t offset, Page *page){
     if(page == NULL) return;
-    string filePath = kHomeDir + page->table_ptr_->table_name_ + kDataSuffix;
+    string homedir = __HomeDir__;
+    string filePath = homedir + page->table_ptr_->table_name_ + __DataSuffix__;
     try{
         FILE *fp;
         fp = fopen(filePath.c_str(), "ab+");
@@ -158,14 +168,13 @@ void Memorizer::PageStore(__uint16_t offset, Page *page){
         }
         fclose(fp);
     }
+    catch(NEexception &e){
+        throw e;
+    }
     catch(exception &e){
-        cout << "<E> DATA SOURCE FILE DAMAGED" << endl;
-        return;
+        throw FILE_DAMAGED;
     }
 }
-
-
-
 
 
 void Memorizer::IndexLoad(){
