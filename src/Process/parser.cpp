@@ -71,7 +71,7 @@ bool Parser::deconstruct(){
 }
 
 bool Parser::parser_create_table(){
-    regex layout("CREATE TABLE (.+)\\((.+)\\)");
+    regex layout("create table (.+)\\((.+)\\)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -89,8 +89,8 @@ bool Parser::parser_create_table(){
 }
 
 bool Parser::parser_insert_values(){
-    regex layout("INSERT INTO (.+) \\((.+)\\) VALUES \\((.+)\\)");
-    regex layout2("INSERT INTO (.+) VALUES \\((.+)\\)");
+    regex layout("insert into (.+) \\((.+)\\) values \\((.+)\\)");
+    regex layout2("insert into (.+) values \\((.+)\\)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -116,7 +116,7 @@ bool Parser::parser_insert_values(){
 }
 
 bool Parser::parser_delete_values(){
-    regex layout("DELETE FROM (.+) WHERE (.+)");
+    regex layout("delete from (.+) where (.+)");
     //regex layout2("DELETE FROM (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
@@ -141,8 +141,8 @@ bool Parser::parser_delete_values(){
 }
 
 bool Parser::parser_select_values(){
-    regex layout("SELECT (.+) FROM (.+) WHERE (.+)");
-    regex layout2("SELECT (.+) FROM (.+)");
+    regex layout("select (.+) from (.+) where (.+)");
+    regex layout2("select (.+) from (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -168,8 +168,8 @@ bool Parser::parser_select_values(){
 }
 
 bool Parser::parser_update_values(){
-    regex layout("UPDATE (.+) SET (.+) WHERE (.+)");
-    regex layout2("UPDATE (.+) SET (.+)");
+    regex layout("update (.+) set (.+) where (.+)");
+    regex layout2("update (.+) set (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -191,7 +191,7 @@ bool Parser::parser_describe_table(){
 }
 
 bool Parser::parser_create_index(){
-    regex layout("CREATE INDEX (.+) ON (.+)");
+    regex layout("create index (.+) on (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -202,7 +202,7 @@ bool Parser::parser_create_index(){
 }
 
 bool Parser::parser_drop_index(){
-    regex layout("DROP INDEX (.+) ON (.+)");
+    regex layout("drop index (.+) on (.+)");
     smatch result;
     if(regex_match(statement_,result,layout)){
         auto it = result.begin();
@@ -214,15 +214,24 @@ bool Parser::parser_drop_index(){
 
 OPERATION  Parser::operate_type(string input){
     /******************/
-    if(input.compare(0,13,"CREATE TABLE ") == 0) return CREATE_TABLE;
-    if(input.compare(0,12,"INSERT INTO ") == 0) return INSERT_VALUES;
-    if(input.compare(0,12,"DELETE FROM ") == 0) return DELETE_VALUES;
-    if(input.compare(0,7,"SELECT ") == 0) return SELECT_VALUES;
-    if(input.compare(0,7,"UPDATE ") == 0) return UPDATE_VALUES;
-    if(input.compare(0,11,"DROP TABLE ") == 0) return DROP_TABLE;
-    if(input.compare(0,15,"DESCRIBE TABLE ") == 0) return DESCRIBE_TABLE;
-    if(input.compare(0,13,"CREATE INDEX ")==0) return CREATE_INDEX;
-    if(input.compare(0,11,"DROP INDEX ")==0) return DROP_INDEX;
+    //if(regex_match(input,regex("CREATE TABLE( +)\\w+"))) return CREATE_TABLE;
+    if(input.compare(0,13,"create table ") == 0) return CREATE_TABLE;
+    //if(regex_match(input,regex("INSERT INTO( +)\\w+"))) return INSERT_VALUES;
+    if(input.compare(0,12,"insert into ") == 0) return INSERT_VALUES;
+    //if(regex_match(input,regex("DELETE FROM( +)\\w+"))) return DELETE_VALUES;
+    if(input.compare(0,12,"delete from ") == 0) return DELETE_VALUES;
+    //if(regex_match(input,regex("SELECT ( +)\\w+"))) return SELECT_VALUES;
+    if(input.compare(0,7,"select ") == 0) return SELECT_VALUES;
+    //if(regex_match(input,regex("UPDATE( +)\\w+"))) return UPDATE_VALUES;
+    if(input.compare(0,7,"update ") == 0) return UPDATE_VALUES;
+    //if(regex_match(input,regex("DROP TABLE( +)\\w+"))) return DROP_TABLE;
+    if(input.compare(0,11,"drop table ") == 0) return DROP_TABLE;
+    //if(regex_match(input,regex("DESCRIBE TABLE( +)\\w+"))) return DESCRIBE_TABLE;
+    if(input.compare(0,15,"describe table ") == 0) return DESCRIBE_TABLE;
+    //if(regex_match(input,regex("CREATE INDEX( +)\\w+"))) return CREATE_INDEX;
+    if(input.compare(0,13,"create index ")==0) return CREATE_INDEX;
+    //if(regex_match(input,regex("DROP INDEX( +)\\w+"))) return DROP_INDEX;
+    if(input.compare(0,11,"drop index ")==0) return DROP_INDEX;
     return UNDEFINED;
 }
 

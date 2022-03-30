@@ -53,6 +53,9 @@ void Executor::execute_command(){
         case __HELP:
             __HELP__();
             break;
+        case __LOADALL :
+            __LOAD_ALL__();
+            break;
         case __LOAD:
             __LOAD_FILE__(parser_->statement_);
             break;
