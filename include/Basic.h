@@ -7,12 +7,16 @@
 #include<regex>
 #include<iomanip>
 #include<unistd.h>
+#include<sys/io.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 using namespace std;
 
 /*
     [C]Table - 数据表
     [C]Page - 数据页
-    [C]Row - 数据行  
+    [C]Row - 数据行
     [C]Index - 动态索引
     [C]Executor - 命令执行器
     [C]Praser - 命令解析器
@@ -48,34 +52,34 @@ using namespace std;
 #define MAX_EMPTY_PAGE 20
 #define DATA_OFFSET 2
 
-enum DATA_TYPE : __uint16_t{
-                __INT,
-                __INT64,
-                __REAL,
-                __TEXT,
-                __LONGTEXT
-                };
-enum COMMAND : __uint16_t{
-                __UNKNOWN,
-                __EXIT,
-                __HELP,
-                __OPERATION,
-                __SAVE,
-                __LOAD,
-                __LOADALL
-                };
-enum OPERATION : __uint16_t{
-                CREATE_TABLE,
-                CREATE_INDEX,
-                INSERT_VALUES,
-                DELETE_VALUES,
-                UPDATE_VALUES,
-                SELECT_VALUES,
-                DESCRIBE_TABLE,
-                DROP_TABLE,
-                DROP_INDEX,
-                UNDEFINED
-                };
+enum DATA_TYPE: __uint16_t{
+    __INT,
+    __INT64,
+    __REAL,
+    __TEXT,
+    __LONGTEXT
+};
+enum COMMAND: __uint16_t{
+    __UNKNOWN,
+    __EXIT,
+    __HELP,
+    __OPERATION,
+    __SAVE,
+    __LOAD,
+    __LOADALL
+};
+enum OPERATION: __uint16_t{
+    CREATE_TABLE,
+    CREATE_INDEX,
+    INSERT_VALUES,
+    DELETE_VALUES,
+    UPDATE_VALUES,
+    SELECT_VALUES,
+    DESCRIBE_TABLE,
+    DROP_TABLE,
+    DROP_INDEX,
+    UNDEFINED
+};
 
 union INDEX{
     int i_index;
@@ -97,15 +101,16 @@ class Implement;
 class Memorizer;
 
 extern string const kTypeName[];
-extern int const kTypeSize [];
-extern Table** __TABLES__;
+extern int const kTypeSize[];
+extern Table **__TABLES__;
 extern int __CURSOR__;
 extern string kHomeDir;
 extern string kFramSuffix;
 extern string kDataSuffix;
 extern string kIndexSuffix;
 
-void __DATABASE_INIT__();
+bool __DATABASE_INIT__();
+bool __LOAD_ALL__();
 int __TABLE_LOCATED_BY_NAME__(string name);
 void __START__();
 void __MESSAGE__();

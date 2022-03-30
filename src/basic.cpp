@@ -1,11 +1,11 @@
 #include<Process.h>
 #include<Data.h>
 #include<Storage.h>
-
+#include<Implement.h>
 ////////////////////////////////////////////////////////////////
-string kHomeDir = "/home/jianxf/nesrc/tables/";
+string kHomeDir = "/home/jianxf/.nesrc/tables/";
 ////////////////////////////////////////////////////////////////
-string const kTypeName[]={"INT","INT64","REAL","TEXT","LONGTEXT"};
+string const kTypeName[]={"int","int64","real","text","longtext"};
 int const kTypeSize []={4,8,8,32,255};
 ////////////////////////////////////////////////////////////////
 string kFramSuffix = ".nef";
@@ -15,9 +15,22 @@ string kIndexSuffix = ".nei";
 Table** __TABLES__;
 int __CURSOR__;
 ////////////////////////////////////////////////////////////////
-void __DATABASE_INIT__(){
+bool __DATABASE_INIT__(){
     __TABLES__ = new Table*[MAX_TABLES];
     __CURSOR__ = 0;
+    int dir_num = 0;
+    string* dirs = Split(kHomeDir,'/',dir_num);
+    string dir = "";
+    for(int i = 1; i < dir_num-1; i++){
+        dir = dir + "/" + dirs[i]; 
+        if(NULL == opendir(dir.c_str())){
+            if(mkdir(dir.c_str(),S_IRWXU) == -1){
+                cout<<"<E> HOME DIR ERROR"<<endl;
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 /*
@@ -53,8 +66,8 @@ int __TABLE_LOCATED_BY_NAME__(string name){
 
 ////////////////////////////////////////////////////////////////
 void __START__(){
-    __DATABASE_INIT__();
     __MESSAGE__();
+    if(!__DATABASE_INIT__()) return;
     InputStream i;
     Parser p;
     Executor e(&p);
@@ -74,16 +87,35 @@ void __START__(){
     }
 }
 
+bool __LOAD_ALL__(){
+    DIR *dp = opendir(kHomeDir.c_str());
+    if(dp == NULL){
+        cout<<"<E> HOME DIR ERROR"<<endl;
+        return false;
+    }
+    regex layout(".+\\.nef");
+    struct dirent *dirfiles;
+    while((dirfiles = readdir(dp))!=NULL){
+        string fileName = dirfiles->d_name;
+        if(regex_match(fileName,layout)){
+            string tableName =  fileName.substr(0,fileName.find('.'));
+            __LOAD_FILE__(tableName);
+        }
+    }
+    closedir(dp);
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////
-void __LOAD_FILE__(string fileName){
+void __LOAD_FILE__(string tableName){
     Memorizer RAM;
     Table* table = NULL;
-    if((table = RAM.TableLoad(fileName))==NULL){
-        cout<<"Load Table '"<<fileName<<"' Failed."<<endl;
+    if((table = RAM.TableLoad(tableName))==NULL){
+        cout<<"Load Table '"<<tableName<<"' Failed."<<endl;
         return;
     }
     __TABLES__[__CURSOR__ ++ ] = table;
-    cout<<"Load Table '"<<fileName<<"' Success."<<endl;
+    cout<<"Load Table '"<<tableName<<"' Success."<<endl;
 }
 
 ////////////////////////////////////////////////////////////////
