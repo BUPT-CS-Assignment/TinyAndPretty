@@ -2,17 +2,16 @@
 #include<Implement.h>
 
 //数据表创建
-Table::Table(int id,string name){
+Table::Table(int id, string name){
     table_id_ = id;
-    strcpy(table_name_,name.c_str());
+    strcpy(table_name_, name.c_str());
     max_offset = 0;
     parm_num_ = 0;
     prim_key_ = 0;
     row_take_up_ = 0;
     max_rows_per_page_ = 0;
     parm_names_ = NULL;
-    //empty_pages_[0] = 0;
-    pages_tree_ = new BalanceTree<__uint16_t,Index>(id);
+    pages_tree_ = new BalanceTree<__uint16_t, Index>(id);
     index_tree_ = NULL;
 }
 
@@ -22,12 +21,12 @@ bool Table::Init(string parameters){
         数据表初始化, 判空
     */
     if(parameters.length() == 0){
-        cout<<"<E> PARAMETER EMPTY"<<endl;
+        cout << "<E> PARAMETER EMPTY" << endl;
         return false;
     }
     //参数分离
     int number;
-    string* params = Split(parameters,',',number);
+    string *params = Split(parameters, ',', number);
     parm_num_ = number;
     //分配空间
     index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
@@ -37,58 +36,64 @@ bool Table::Init(string parameters){
     //参数分析
     for(int i = 0; i < parm_num_; i++){
         index_tree_[i] = NULL;
-        string* str = Split(params[i],' ',number);
+        string *str = Split(params[i], ' ', number);
         if(number != 2 && number != 3){
-            cout<<"<E> WRONG PARAMETER FORMAT"<<endl;
+            cout << "<E> WRONG PARAMETER FORMAT" << endl;
             return false;
         }
         //数据类型解析
         if(str[1] == "int"){
             parm_types_[i] = __INT;
             row_take_up_ += 4;
-        }else if(str[1] == "int64"){
+        }
+        else if(str[1] == "int64"){
             parm_types_[i] = __INT64;
             row_take_up_ += 8;
-        }else if(str[1] == "real"){
+        }
+        else if(str[1] == "real"){
             parm_types_[i] = __REAL;
             row_take_up_ += 8;
-        }else if(str[1] == "text"){
+        }
+        else if(str[1] == "text"){
             parm_types_[i] = __TEXT;
             row_take_up_ += 32;
-        }else if(str[1] == "longtext"){
+        }
+        else if(str[1] == "longtext"){
             parm_types_[i] = __LONGTEXT;
             row_take_up_ += 255;
-        }else{
-            cout<<"<E> UNDEFINED ELEMENT TYPE"<<endl;
+        }
+        else{
+            cout << "<E> UNDEFINED ELEMENT TYPE" << endl;
             return false;
         }
         //存入变量名
-        strcpy(parm_names_[i],str[0].c_str());
+        strcpy(parm_names_[i], str[0].c_str());
         //指定主键索引
         if(!key_assigned && number == 3){
             if(parm_types_[i] == __LONGTEXT){
-                cout<<"<E> PRIM KEY TYPE NOT ALLOWED"<<endl;
+                cout << "<E> PRIM KEY TYPE NOT ALLOWED" << endl;
                 return false;
             }
-            if(str[2]=="key"){
+            if(str[2] == "key"){
                 key_assigned = true;
                 prim_key_ = i;
             }
         }
         //非主键索引创建
+        /*
         if(number == 3 && str[2]=="index"){
             if(parm_types_[i] != __LONGTEXT){
-                
+
                 index_tree_[i] = new BalanceTree<Index, Index>(i);
             }else{
                 cout<<"<W> INDEX NOT CREATE : TYPE NOT ALLOWED"<<endl;
             }
-        }
+        }*/
     }
     //计算单页行数
     max_rows_per_page_ = (PAGE_SIZE - PAGE_HEAD_SIZE) / row_take_up_;
-    cout<<"Take up : "<<row_take_up_<<endl;
-    cout<<"Max : "<<max_rows_per_page_<<endl;
+    cout << "Take up : " << row_take_up_ << endl;
+    cout << "Max : " << max_rows_per_page_ << endl;
     Memorizer RAM;
     RAM.TableStore(this);
     return true;
@@ -96,12 +101,10 @@ bool Table::Init(string parameters){
 }
 
 
-
+/*
 void Table::print_table(){
-    /*
     cout<<"+-----------------------------------------"<<endl;
     cout<<"|             "<<__Name<<"               "<<endl;
-    */
     cout<<"+-------+---------------------------------"<<endl;
     cout<<"| [R]   |";
     for(int i = 0;i<parm_num_;i++){
@@ -125,22 +128,22 @@ void Table::print_table(){
     }
     cout<<"+-------+---------------------------------"<<endl;
 }
-
+*/
 void Table::print_structure(){
     /*
     cout<<"+-----------------------"<<endl;
     cout<<"|   "<<__Name<<"   "<<endl;
     */
-    cout<<"+-----------+-----------"<<endl;
-    cout<<"|   Filed   |   Type   "<<endl;
-    cout<<"+-----------+-----------"<<endl;
+    cout << "+-----------+-----------" << endl;
+    cout << "|   Filed   |   Type   " << endl;
+    cout << "+-----------+-----------" << endl;
     for(int i = 0; i < parm_num_; i++){
-        cout<<"| ";
+        cout << "| ";
         string str = parm_names_[i];
-        cout<<setw(10)<<left<<  str + (i==prim_key_?"[P]":"");
-        cout<<"| "<<kTypeName[parm_types_[i]]<<endl;
+        cout << setw(10) << left << str + (i == prim_key_ ? "[P]" : "");
+        cout << "| " << kTypeName[parm_types_[i]] << endl;
     }
-    cout<<"+-----------+-----------\n"<<endl;
+    cout << "+-----------+-----------\n" << endl;
 }
 
 string Table::getName(){
@@ -150,16 +153,7 @@ string Table::getName(){
 DATA_TYPE Table::getKeyType(){
     return parm_types_[prim_key_];
 }
-/*
-bool Table::check_empty(int page_num){
-    int total = empty_pages_[0];
-    if(total <= 0) return false;
-    for(int i = 1;i<=total;i++){
-        if(page_num == empty_pages_[i]) return true;
-    }
-    return false;
-}
-*/
+
 __uint16_t Table::get_empty_page_offset(){
     /*
     ePage* tail = &empty_pages;
@@ -170,18 +164,18 @@ __uint16_t Table::get_empty_page_offset(){
     */
     if(empty_pages.next == NULL){
         max_offset ++;
-        return max_offset-1;
+        return max_offset - 1;
     }
     ///////////////////////////////////////////
     __uint16_t offset = empty_pages.next->offset;
-    ePage* temp = empty_pages.next;
+    ePage *temp = empty_pages.next;
     empty_pages.next = empty_pages.next->next;
     delete temp;
     return offset;
 }
 
 void Table::add_empty_page(__uint16_t page_num){
-    ePage* new_epage = new ePage();
+    ePage *new_epage = new ePage();
     new_epage->offset = page_num;
     new_epage->next = empty_pages.next;
     empty_pages.next = new_epage;
