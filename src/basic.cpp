@@ -122,6 +122,7 @@ void __LOAD_FILE__(string tableName){
 void __MESSAGE__(){
     cout<<"Welcome to NEDB terminal. Command end with ';'."<<endl;
     cout<<"Server version: 22.3.30 <Pre-Release>"<<endl;
+    cout<<"Current file-dir: "<<kHomeDir<<endl;
     cout<<"Enter '.help' for viewing help infomation.\n"<<endl;
 }
 
