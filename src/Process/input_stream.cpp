@@ -1,5 +1,5 @@
-#include<Process.h>
-#include<Implement.h>
+#include<process.h>
+#include<implement.h>
 
 InputStream::InputStream(){
     __Input = "";
