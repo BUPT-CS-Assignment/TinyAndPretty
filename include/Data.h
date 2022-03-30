@@ -256,6 +256,7 @@ public:
     int* getCondPos(){return cond_pos;}
     int getCondNum(){return cond_num;}
     string* getCondOrigin(){return cond_origin;}
+    int getCompareType(int);
 
 };
 
