@@ -1,14 +1,25 @@
-#include<Basic.h>
-#include<BalanceTree.h>
-#include<Data.h>
+#include<basic.h>
+#include<nedb.h>
 
 /**
- * @brief 请修改Basic.cpp中 " kHomeDir " 数据表格根目录 ! 
+ * @brief 请修改Basic.cpp中 " __HomeDir__ " 数据表格根目录 ! 
  *
  */
 
 int main(/*int argv , char* argc[]*/){
-    __START__();
+    //__START__();
+    nedb* db = NULL;
+    char* msg = NULL,*data=NULL;
+    const char *sql = "describe table test;select * from test;";
+    const char *name="test";
+    if(!nedb_open(&db,name,&msg)){
+        cout<<msg<<endl;
+    }
+    if(!nedb_exec(db,sql,&data,&msg)){
+        cout<<msg<<endl;
+    }else{
+        cout<<data<<endl;
+    }
     /*
     BalanceTree<int,int> B(0);
     for(int i = 1;i <= 50; i++){
