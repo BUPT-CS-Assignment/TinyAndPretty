@@ -32,11 +32,11 @@
   作为超轻量数据库, **NEDB** 支持以下五种数据类型
     |名称|对应 `C++` 数据类型|占用空间|默认值|
     |:---:|:---:|:---:|:---:|
-    |INT |**`int`**|4|0|
-    |INT64|**`long long`**|8|0|
-    |REAL|**`double`**|8|0.0|
-    |TEXT|**`char[32]`**|32|NULL|
-    |LONGTEXT|**`char[255]`**|255|NULL|
+    |int |**`int`**|4|0|
+    |int64|**`long long`**|8|0|
+    |real|**`double`**|8|0.0|
+    |text|**`char[32]`**|32|NULL|
+    |longtext|**`char[255]`**|255|NULL|
 
 - ### Console
   ##### **NEDB** 包含以 **`.`** 开头的元命令 AND 以 **`;`** 结尾的普通操作命令
@@ -48,17 +48,17 @@
     |.openall|-|从NEDB根目录加载所有数据表|
     |.exit|-|退出 **`NEDB`** 控制台|
 
-  **NEDB** 支持的操作命令如下, 注意严格大写
+  **NEDB** 支持的操作命令如下, 注意严格小写
   - ##### 创建数据表
     ```
-    CREATE TABLE 'table_name' (
+    create table 'table_name' (
         'Parm_Name' 'Parm_Type',
         ...
         );
     ```
     注意事项 : 
-    1. **NEDB** 默认输入的首个元素为主键, 可以在相应元素类型后添加 `KEY`关键字以指定主键.
-    2. **NEDB** 不支持将 `LONGTEXT` 类型的数据设置为主键.
+    1. **NEDB** 默认输入的首个元素为主键, 可以在相应元素类型后添加 `key`关键字以指定主键.
+    2. **NEDB** 不支持将 `longtext` 类型的数据设置为主键.
     
     操作示例 : 
     ```
@@ -68,23 +68,23 @@
      * 指定 'ID' 字段为主键
      */
 
-    CREATE TABLE new_table (
-        ID INT KEY, 
-        NAME TEXT,
-        SCORE REAL
+    create table new_table (
+        ID int key, 
+        NAME text,
+        SCORE real
         );
 
     ```
 
   - ##### 插入数据
     ```
-    INSERT INTO 'table_name' ('Parm_Name_1', ...) VALUES ('Value_1', ...);
+    insert into 'table_name' ('parm_name_1', ...) values ('value_1', ...);
     ```
     注意事项 : 
     1. **NEDB** 要求插入数据必须指定主键, 因此在前一参数表中需包含主键字段.
-    2. 若省略指定'Parm_Name'字段, 即
+    2. 若省略指定'parm_name'字段, 即
         ```
-        INSERT INTO 'table_name' VALUES ('Value_1', ...);
+        insert into 'table_name' values ('value_1', ...);
         ```
         此时参数个数应与表格字段个数相同, **NEDB** 会按照表格字段顺序进行填充.
     3. 当指定字段不存在, 或主键值重复时, **NEDB** 会返回错误信息.
@@ -96,16 +96,16 @@
      * 'ID' 为 2020212001 , 'SCORE' 为 100.0
      */
 
-    INSERT INTO new_table (ID, SCORE) VALUES (2020212001, 100.0);
+    insert into new_table (ID, SCORE) values (2020212001, 100.0);
 
     ```
   - ##### 删除数据
     ```
-    DELETE FROM 'table_name' WHERE 'condition';
+    delete from 'table_name' where 'condition_1' and ...;
     ```
     注意事项 : 
-    1. **NEDB** 仅支持单一条件, 即不支持 'condition_1 AND condtion_2' 语句.
-    2. 当 **WHERE** 语句省略时, 操作会清空全表, 但不删除表
+    1. 当 **where** 语句省略时, 操作会清空全表, 但不删除表
+    2. 注意在 **`and`** 前后需要加上空格
     
     操作示例 : 
     ```
@@ -113,16 +113,17 @@
      * 在 'new_table' 数据表中删除'NAME'字段为'NULL'的数据行
      */
 
-    DELETE FROM new_table WHERE NAME = NULL;
+    delete from new_table where NAME = NULL;
 
     ```
   - ##### 查询数据
     ```
-    SELECT 'parm_name_1', ... FROM 'table_name' WHERE 'condition_1' AND ... 
+    select 'parm_name_1', ... from 'table_name' where 'condition_1' and ... 
     ```
     注意事项 : 
     1. 要取出数据行的所有字段, 请使用 **\*** 代替指定字段名称.
-    2. 当 **WHERE** 语句省略时, **NEDB** 会遍历全表进行搜索
+    2. 当 **where** 语句省略时, **NEDB** 会遍历全表进行搜索
+    3. 注意在 **`,`** 和 **`and`** 前后需要加上空格
    
     操作示例 : 
     ```
@@ -130,17 +131,17 @@
      * 在 'new_table' 数据表中查找'SCORE'字段为'90.0'的数据行的所有信息
      */
 
-    SELECT * FROM new_table WHERE SCORE = 90.0;
+    select * from new_table where SCORE = 90.0;
     
     ```
   - ##### 修改数据
     ```
-    UPDATE table_name SET 'parm_name_1' = 'value_1', ... WHERE 'condition_1'
+    update table_name set 'parm_name_1' = 'value_1', ... where 'condition_1' and ...
     ```
     注意事项 : 
     1. 主键值不能被修改.
-    2. 当 **WHERE** 语句省略时, **NEDB** 会将全表数据进行相应替换.
-    3. **NEDB** 仅支持单一条件, 即不支持 'condition_1 AND condtion_2' 语句.
+    2. 当 **where** 语句省略时, **NEDB** 会将全表数据进行相应替换.
+    3. 注意在 **`and`** 前后需要加上空格
    
     操作示例 :
     ```
@@ -148,7 +149,7 @@
      * 在 'new_table' 数据表中将'ID'字段为'2020212001'的数据行的'SCORE'信息修改为'150.0'
      */
 
-    UPDATE new_table SET SCORE = 150.0 WHERE ID = 2020212001;
+    update new_table set SCORE = 150.0 where ID = 2020212001;
     
     ```
 - ### Interface
@@ -157,7 +158,7 @@
 ## Structure
 - ### Principle
   - ##### 文件格式
-    1. **NEDB** 文件存储默认位置为 **`/home/{user_name}/nesrc/tables`** , 可在 **`Basic.cpp`** 中进行修改.
+    1. **NEDB** 文件存储默认位置为 **`/home/{user_name}/.nesrc/tables`** , 可在 **`Basic.cpp`** 中进行修改.
     2. 一张数据表将包含以下三个文件
         |文件名|内容|
         |:---:|:---:|
@@ -167,7 +168,7 @@
 
   - ##### 存储原理
     1. **NEDB** 底层以 **`B+Tree`** 结构进行数据处理.
-    2. 数据存储以行为最小单位, 页为基本单位, 页大小默认为 **`4KB`**, 可在 **`Basic.h`** 文件中进行修改. 单页可存最大行数由表结构决定.
+    2. 数据存储以行为最小单位, 页为基本单位, 页大小默认为 **`2KB`**, 可在 **`Basic.h`** 文件中进行修改. 单页可存最大行数由表结构决定.
     3. **`B+Tree`** 叶子节点存有数据页起始位置在数据文件中的偏移量, 一次 **`I/O`** 操作会将整页数据读入内存, 操作完毕后重新写入.
   - ##### 查询原理
     **(working)**
