@@ -5,7 +5,7 @@
 
 bool Table::UpdateValues(string condition, string setting){
     Analyzer CANZ(this), SANZ(this);
-    CANZ.Extract(condition," AND ");
+    CANZ.Extract(condition," and ");
     SANZ.Extract(setting," , ");
     if(SANZ.KeySupport()){
         cout<<"<E> PRIM KEY CHANGE NOT ALLOWED"<<endl;

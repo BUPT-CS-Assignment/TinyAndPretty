@@ -3,7 +3,7 @@
 
 bool Table::DeleteValues(string condition){
     Analyzer ANZ(this);
-    ANZ.Extract(condition," AND ");
+    ANZ.Extract(condition," and ");
     if(ANZ.KeySupport()){
         return delete_by_key(ANZ);
     }

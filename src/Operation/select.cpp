@@ -4,7 +4,7 @@
 string Table::SelectValues(string param, string condition){
     Analyzer ANZ(this);
     ANZ.Locate(param);
-    ANZ.Extract(condition," AND ");
+    ANZ.Extract(condition," and ");
     if(ANZ.KeySupport()){
         return select_by_key(ANZ);
     }
