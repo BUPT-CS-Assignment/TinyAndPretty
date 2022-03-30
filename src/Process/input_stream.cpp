@@ -7,20 +7,21 @@ InputStream::InputStream(){
 
 string InputStream::read(){
     string input = "";
-    getline(cin,input);
+    getline(cin, input);
     int pos = input.find_first_not_of(' ');
     if(input[pos] == '.'){
         __Input = input;
         return __Input;
-    } 
+    }
     while(true){
         int index = input.find(";");
         if(index == -1){
             __Input = __Input + input;
             printf("      -> ");
-            getline(cin,input);
-        }else{
-            __Input = __Input + input.substr(0,index);
+            getline(cin, input);
+        }
+        else{
+            __Input = __Input + input.substr(0, index);
             fflush(stdin);
             break;
         }

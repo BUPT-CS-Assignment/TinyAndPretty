@@ -13,6 +13,14 @@ Analyzer::Analyzer(Table *table){
     key_pos = -1;
 }
 
+int Analyzer::getCompareType(int pos){
+    if(pos >= cond_num) return -2;
+    if(cond_cmp[pos] == '=') return 0;
+    if(cond_cmp[pos] == '<') return -1;
+    if(cond_cmp[pos] == '>') return 1;
+    return -2;
+}
+
 bool Analyzer::Extract(string conditions, string pattern){
     if(conditions.length() == 0){
         cond_num = -1;
@@ -28,7 +36,8 @@ bool Analyzer::Extract(string conditions, string pattern){
         if(pos == conditions.npos){
             temp = conditions;
             conditions = "";
-        }else{
+        }
+        else{
             temp = conditions.substr(0, pos);
             conditions = conditions.substr(pos + l, conditions.length() - pos - l);
         }
@@ -41,6 +50,9 @@ bool Analyzer::Extract(string conditions, string pattern){
         else if(temp.find('>') != temp.npos){
             cond_cmp[cond_num] = '>';
         }
+        else{
+            return false;
+        }
         int num = 0;
         string *str = Split(temp, cond_cmp[cond_num], num);
         cond_pos[cond_num] = table_ptr_->ParmLocate(str[0]);
@@ -48,7 +60,7 @@ bool Analyzer::Extract(string conditions, string pattern){
             key_pos = cond_num;
         }
         if(cond_pos[cond_num] == -1){
-            cout<<"<E> PARAMETER NOT FOUND"<<endl;
+            cout << "<E> PARAMETER NOT FOUND" << endl;
             return false;
         }
         cond_origin[cond_num] = str[1];
@@ -64,10 +76,10 @@ bool Analyzer::Locate(string params){
         return true;
     }
     //int n;
-    string* param = Split(params,',',parm_num);
+    string *param = Split(params, ',', parm_num);
     if(parm_num == 0) return false;
     parm_pos = new int[parm_num];
-    for(int i = 0;i < parm_num; i++){
+    for(int i = 0; i < parm_num; i++){
         parm_pos[i] = table_ptr_->ParmLocate(param[i]);
         if(parm_pos[i] == -1){
             cout << "<E> PARAMETER NOT FOUND" << endl;
@@ -77,38 +89,47 @@ bool Analyzer::Locate(string params){
     return true;
 }
 
-bool Analyzer::Match(Row* row){
+bool Analyzer::Match(Row *row){
     if(cond_num == -1) return true;
-    for(int i =0; i < cond_num; i++){
+    for(int i = 0; i < cond_num; i++){
         DATA_TYPE type = table_ptr_->parm_types_[cond_pos[i]];
         Index temp;
         if(type == __INT){
-            temp = Index(*(int*)row->content_[cond_pos[i]]);
-        }else if(type == __INT64){
-            temp = Index(*(long long*)row->content_[cond_pos[i]]);
-        }else if(type == __REAL){
-            temp = Index(*(double*)row->content_[cond_pos[i]]);
-        }else if(type == __TEXT){
-            temp = Index((char*)row->content_[cond_pos[i]], __TEXT);
-        }else{
-            temp = Index((char*)row->content_[cond_pos[i]], __LONGTEXT);
+            temp = Index(*(int *)row->content_[cond_pos[i]]);
+        }
+        else if(type == __INT64){
+            temp = Index(*(long long *)row->content_[cond_pos[i]]);
+        }
+        else if(type == __REAL){
+            temp = Index(*(double *)row->content_[cond_pos[i]]);
+        }
+        else if(type == __TEXT){
+            temp = Index((char *)row->content_[cond_pos[i]], __TEXT);
+        }
+        else{
+            temp = Index((char *)row->content_[cond_pos[i]], __LONGTEXT);
         }
         if(cond_cmp[i] == '='){
             if(temp == cond_val[i]){
                 continue;
-            }else{
+            }
+            else{
                 return false;
             }
-        }else if(cond_cmp[i] == '<'){
+        }
+        else if(cond_cmp[i] == '<'){
             if(temp < cond_val[i]){
                 continue;
-            }else{
+            }
+            else{
                 return false;
             }
-        }else if(cond_cmp[i] == '>'){
+        }
+        else if(cond_cmp[i] == '>'){
             if(temp > cond_val[i]){
                 continue;
-            }else{
+            }
+            else{
                 return false;
             }
         }

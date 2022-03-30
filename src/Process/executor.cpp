@@ -53,7 +53,7 @@ void Executor::execute_command(){
         case __HELP:
             __HELP__();
             break;
-        case __LOADALL :
+        case __LOADALL:
             __LOAD_ALL__();
             break;
         case __LOAD:
@@ -141,8 +141,8 @@ void Executor::execute_drop_table(){
         }
         -- __CURSOR__;
         cout << "Remove Table '" << table_name << "' Success." << endl;
-    }    
-else
+    }
+    else
         cout << "No Such Table Named '" << table_name << "'." << endl;
 }
 
