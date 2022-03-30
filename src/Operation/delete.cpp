@@ -3,56 +3,60 @@
 
 bool Table::DeleteValues(string condition){
     Analyzer ANZ(this);
-    ANZ.Extract(condition," and ");
+    ANZ.Extract(condition, " and ");
     if(ANZ.KeySupport()){
         return delete_by_key(ANZ);
     }
     return delete_by_traverse(ANZ);
 }
 
-bool Table::delete_by_key(Analyzer& ANZ){
-    Index* index = ANZ.getCondVal(ANZ.getKeyPos());
-    __uint16_t *offset = pages_tree_->InsertLocate(index);
-    if(offset == NULL){
+bool Table::delete_by_key(Analyzer &ANZ){
+    Index *index = ANZ.getCondVal(ANZ.getKeyPos());
+    DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+    if(data_node.getData() == NULL){
         cout << "<E> DATA NOT FOUND" << endl;
         return "";
     }
     Memorizer RAM;
-    Page *page = RAM.PageLoad(*offset, this);
-    if(!page->DeleteRow(ANZ)){
-        return false;
-    }
-    if(page->cursor_pos_ == 0){
-        page->Clear(*offset);
-    }
-    else{
-        RAM.PageStore(*offset, page);
+    Page *page;
+    int cmp = ANZ.getCompareType(ANZ.getKeyPos());
+    while(data_node.getData() != NULL){
+        page = RAM.PageLoad(*data_node.getData(), this);
+        if(!page->DeleteRow(ANZ)){
+            return false;
+        }
+        if(page->cursor_pos_ == 0){
+            page->Clear(*data_node.getData());
+        }
+        else{
+            RAM.PageStore(*data_node.getData(), page);
+        }
+        if(cmp == 0) break;
+        else if(cmp == -1) -- data_node;
+        else ++ data_node;
     }
     return true;
 }
 
 
-bool Table::delete_by_traverse(Analyzer& ANZ){
-    Node<__uint16_t, Index> *head = pages_tree_->getHead();
-    if(head == NULL) return "";
+bool Table::delete_by_traverse(Analyzer &ANZ){
     Memorizer RAM;
-    while(head != NULL){
-        for(int i = 0; i >= 0; i++){
-            __uint16_t *page_offset = head->getData(i);
-            if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset, this);
-            if(!page->DeleteRow(ANZ)){
-                return false;
-            }
-            if(page->cursor_pos_ == 0){
-                page->Clear(*page_offset);
-                i --;
-            }
-            else{
-                RAM.PageStore(*page_offset, page);
-            }
+    DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+    while(data_node.getData() != NULL){
+        __uint16_t *page_offset = data_node.getData();
+        if(page_offset == NULL) break;
+        Page *page = RAM.PageLoad(*page_offset, this);
+        if(!page->DeleteRow(ANZ)){
+            return false;
         }
-        head = head->getNext();
+        if(page->cursor_pos_ == 0){
+            page->Clear(*page_offset);
+        }
+        else{
+            RAM.PageStore(*page_offset, page);
+            ++ data_node;
+        }
+        RAM.PageStore(*page_offset, page);
     }
     return true;
 }
@@ -70,7 +74,7 @@ void Page::Clear(__uint16_t offset){
     RAM.PageFlush(offset, table_ptr_);
 }
 
-bool Page::DeleteRow(Analyzer& ANZ){
+bool Page::DeleteRow(Analyzer &ANZ){
     for(int i = 0; i < cursor_pos_; i++){
         if(ANZ.Match(rows_[i])){
             rows_[i]->Erase();

@@ -19,7 +19,7 @@ bool Table::InsertValues(string conditions, string values){
     }*/
     Memorizer T;
     //查找插入数据页指针
-    __uint16_t *page_offset = pages_tree_->InsertLocate(&(new_row->getIndex()));
+    __uint16_t *page_offset = pages_tree_->LocateData(&(new_row->getIndex())).getData();
     if(page_offset == NULL){
         /////计算偏移量
         __uint16_t *new_page_offset = new __uint16_t(get_empty_page_offset());

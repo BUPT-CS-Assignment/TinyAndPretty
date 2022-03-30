@@ -4,40 +4,47 @@
 string Table::SelectValues(string param, string condition){
     Analyzer ANZ(this);
     ANZ.Locate(param);
-    ANZ.Extract(condition," and ");
+    ANZ.Extract(condition, " and ");
     if(ANZ.KeySupport()){
         return select_by_key(ANZ);
     }
     return select_by_traverse(ANZ);
-
 }
-string Table::select_by_key(Analyzer& ANZ){
-    Index* index = ANZ.getCondVal(ANZ.getKeyPos());
-    __uint16_t *offset = pages_tree_->InsertLocate(index);
-    if(offset == NULL){
+string Table::select_by_key(Analyzer &ANZ){
+    Index *index = ANZ.getCondVal(ANZ.getKeyPos());
+    DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+    if(data_node.getData() == NULL){
         cout << "<E> DATA NOT FOUND" << endl;
         return "";
     }
     Memorizer RAM;
-    Page *page = RAM.PageLoad(*offset, this);
-    return "{"+ page->SelectRow(ANZ) + "}";
+    string res = "";
+    Page *page;
+    int cmp = ANZ.getCompareType(ANZ.getKeyPos());
+    while(data_node.getData() != NULL){
+        page = RAM.PageLoad(*data_node.getData(), this);
+        res = res + page->SelectRow(ANZ);
+        if(cmp == 0) break;
+        else if(cmp == -1) --data_node;
+        else ++data_node;
+    }
+    res = res.substr(0, res.length() - 1);
+    return "{" + res + "}";
+
 }
 
 
-string Table::select_by_traverse(Analyzer& ANZ){
+string Table::select_by_traverse(Analyzer &ANZ){
     //遍历搜索
-    Node<__uint16_t, Index> *head = pages_tree_->getHead();
-    if(head == NULL) return "";
     string res = *new string("{");
     Memorizer RAM;
-    while(head != NULL){
-        for(int i = 0; i >= 0; i++){
-            __uint16_t *page_offset = head->getData(i);
-            if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset, this);
-            res = res + page->SelectRow(ANZ);
-        }
-        head = head->getNext();
+    DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+    while(data_node.getData() != NULL){
+        __uint16_t *page_offset = data_node.getData();
+        if(page_offset == NULL) break;
+        Page *page = RAM.PageLoad(*page_offset, this);
+        res = res + page->SelectRow(ANZ);
+        ++ data_node;
     }
     if(res.length() > 1){
         res = res.substr(0, res.length() - 1);
@@ -83,7 +90,7 @@ string Row::get_value(int i){
 }
 
 
-string Page::SelectRow(Analyzer& ANZ){
+string Page::SelectRow(Analyzer &ANZ){
     string str = *new string("");
     for(int i = 0; i < cursor_pos_; i++){
         if(ANZ.Match(rows_[i])){
