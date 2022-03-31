@@ -13,7 +13,7 @@ typedef struct nedb{
     }
 }nedb;
 
-int nedb_auto_start(nedb **ne, char **msg){
+int nedb_auto(nedb **ne, char **msg){
     try{
         if(*ne == NULL){
             *ne = new nedb();
