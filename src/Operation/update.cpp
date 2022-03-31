@@ -13,10 +13,12 @@ void Table::UpdateValues(string condition, string setting){
         }
         if(CANZ.KeySupport()){
             update_by_key(SANZ, CANZ);
-        }else{
+        }
+        else{
             update_by_traverse(SANZ, CANZ);
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 
@@ -36,11 +38,13 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData(), this);
             page->UpdateRow(SANZ, CANZ);
-            if(cmp == 0) break;
+            RAM.PageStore(*data_node.getData(), page);
+            if(cmp == 0 || CANZ.stop_flag == 2) break;
             else if(cmp == -1) --data_node;
             else ++data_node;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -58,7 +62,8 @@ void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
             RAM.PageStore(*page_offset, page);
             ++ data_node;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw &e;
     }
 }
@@ -66,12 +71,35 @@ void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
 
 void Page::UpdateRow(Analyzer &SANZ, Analyzer &CANZ){
     try{
-        for(int i = 0; i < cursor_pos_; i++){
-            if(CANZ.Match(rows_[i])){
-                rows_[i]->update_values(SANZ.getCondPos(), SANZ.getCondOrigin(), SANZ.getCondNum());
+        if(CANZ.KeySupport() && CANZ.getCompareType(CANZ.getKeyPos()) == -1){
+            //递减顺序筛选
+            for(int i = cursor_pos_ - 1; i >= 0; i--){
+                if(CANZ.Match(rows_[i])){
+                    rows_[i]->update_values(SANZ.getCondPos(), SANZ.getCondOrigin(), SANZ.getCondNum());
+                }
+                else{
+                    if(CANZ.stop_flag == 2){
+                        return; //超出主键筛选范围, 返回
+                    }
+                }
             }
         }
-    }catch(NEexception &e){
+        else{
+            //递增顺序筛选
+            for(int i = 0; i < cursor_pos_; i++){
+                if(CANZ.Match(rows_[i])){
+                    rows_[i]->update_values(SANZ.getCondPos(), SANZ.getCondOrigin(), SANZ.getCondNum());
+                }
+                else{
+                    if(CANZ.stop_flag == 2){
+                        return; //超出主键筛选范围, 返回
+                    }
+                }
+            }
+        }
+        CANZ.stop_flag = 1;
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -82,7 +110,8 @@ void Row::update_values(int value_pos[], string values[], int n){
         for(int i = 0; i < n; i++){
             update_value(value_pos[i], values[i]);
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }

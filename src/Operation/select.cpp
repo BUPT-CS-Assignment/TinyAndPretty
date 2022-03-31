@@ -9,14 +9,16 @@ string Table::SelectValues(string param, string condition){
         string res = *new string("");
         if(ANZ.KeySupport()){
             res = select_by_key(ANZ);
-        }else{
+        }
+        else{
             res = select_by_traverse(ANZ);
         }
-        return "{"+res+"}";
-    }catch(NEexception &e){
+        return "{" + res + "}";
+    }
+    catch(NEexception &e){
         throw e;
     }
-    
+
 }
 string Table::select_by_key(Analyzer &ANZ){
     try{
@@ -31,14 +33,16 @@ string Table::select_by_key(Analyzer &ANZ){
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData(), this);
-            res = res + page->SelectRow(ANZ);
-            if(cmp == 0) break;
+            string temp = page->SelectRow(ANZ);
+            res = res + temp;
+            if(cmp == 0 || ANZ.stop_flag == 2) break;
             else if(cmp == -1) --data_node;
             else ++data_node;
         }
         res = res.substr(0, res.length() - 1);
         return res;
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -61,7 +65,8 @@ string Table::select_by_traverse(Analyzer &ANZ){
             res = res.substr(0, res.length() - 1);
         }
         return res;
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -106,11 +111,33 @@ string Row::get_value(int i){
 
 string Page::SelectRow(Analyzer &ANZ){
     string str = *new string("");
-    for(int i = 0; i < cursor_pos_; i++){
-        if(ANZ.Match(rows_[i])){
-            str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ",";
+    if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
+        //递减顺序筛选
+        for(int i = cursor_pos_ - 1; i >= 0; i--){
+            if(ANZ.Match(rows_[i])){
+                str = rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + "," + str;
+            }
+            else{
+                if(ANZ.stop_flag == 2){
+                    return str;//超出主键筛选范围, 返回
+                }
+            }
         }
     }
+    else{
+        //递增顺序筛选
+        for(int i = 0; i < cursor_pos_; i++){
+            if(ANZ.Match(rows_[i])){
+                str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ",";
+            }
+            else{
+                if(ANZ.stop_flag == 2){
+                    return str; //超出主键筛选范围, 返回
+                }
+            }
+        }
+    }
+    ANZ.stop_flag = 1;
     return str;
 }
 

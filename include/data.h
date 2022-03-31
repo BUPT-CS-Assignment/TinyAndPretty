@@ -226,19 +226,26 @@ class Analyzer{
 friend class Row;
 private:
     //condition match
-    Table* table_ptr_;
-    int cond_num;
-    int* cond_pos;
-    char* cond_cmp;
-    Index* cond_val;
-    string* cond_origin;
+    Table* table_ptr_;  //表指针
+    int cond_num;       //记录比较次数
+    int* cond_pos;      //记录比较元素位置
+    char* cond_cmp;     //记录比较符号
+    Index* cond_val;    //搜索值索引
+    Index* key_range[2]; //记录主键搜索范围
+    string* cond_origin; //记录比较原值
     //value match
-    int parm_num;
-    int* parm_pos;
+    int parm_num;   //update 专用, 记录更新后的值
+    int* parm_pos;  //update 专用, 记录更新元素位置
     //prim key support
-    int key_pos;
+    int key_pos;    //记录主键在本数组中的位置
+    
 
 public:
+    //0：B树定位页搜索, 忽略错误匹配
+    //1: 记录错误匹配, 匹配错误时更新为2
+    //2: 立即停止
+    int stop_flag;  
+    //////////////////////////////
     Analyzer(Table* table);
     void Extract(string, string);
     bool Match(Row* row);

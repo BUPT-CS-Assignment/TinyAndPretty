@@ -7,10 +7,12 @@ void Table::DeleteValues(string condition){
         ANZ.Extract(condition, " and ");
         if(ANZ.KeySupport()){
             delete_by_key(ANZ);
-        }else{
+        }
+        else{
             delete_by_traverse(ANZ);
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -34,11 +36,12 @@ void Table::delete_by_key(Analyzer &ANZ){
             else{
                 RAM.PageStore(*data_node.getData(), page);
             }
-            if(cmp == 0) break;
+            if(cmp == 0 || ANZ.stop_flag == 2) break;
             else if(cmp == -1) -- data_node;
             else ++ data_node;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -62,7 +65,8 @@ void Table::delete_by_traverse(Analyzer &ANZ){
             }
             RAM.PageStore(*page_offset, page);
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -79,24 +83,51 @@ void Page::Clear(__uint16_t offset){
         table_ptr_->pages_tree_->DeleteData(&page_index_);
         Memorizer RAM;
         RAM.PageFlush(offset, table_ptr_);
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
 
 void Page::DeleteRow(Analyzer &ANZ){
     try{
-        for(int i = 0; i < cursor_pos_; i++){
-            if(ANZ.Match(rows_[i])){
-                rows_[i]->Erase();
-                for(int j = i; j < cursor_pos_ - 1; j++){
-                    rows_[j] = rows_[j + 1];
+        if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
+            //递减顺序筛选
+            for(int i = cursor_pos_ - 1; i >= 0; i--){
+                if(ANZ.Match(rows_[i])){
+                    rows_[i]->Erase();
+                    for(int j = i; j < cursor_pos_ - 1; j++){
+                        rows_[j] = rows_[j + 1];
+                    }
+                    cursor_pos_--;
                 }
-                cursor_pos_--;
-                i--;
+                else{
+                    if(ANZ.stop_flag == 2){
+                        return; //超出主键筛选范围, 返回
+                    }
+                }
             }
         }
-    }catch(NEexception &e){
+        else{
+            //递增顺序筛选
+            for(int i = 0; i < cursor_pos_; i++){
+                if(ANZ.Match(rows_[i])){
+                    rows_[i]->Erase();
+                    for(int j = i; j < cursor_pos_ - 1; j++){
+                        rows_[j] = rows_[j + 1];
+                    }
+                    cursor_pos_--;
+                }
+                else{
+                    if(ANZ.stop_flag == 2){
+                        return; //超出主键筛选范围, 返回
+                    }
+                }
+            }
+        }
+        ANZ.stop_flag = 1;
+    }
+    catch(NEexception &e){
         throw e;
     }
 }

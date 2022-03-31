@@ -11,6 +11,8 @@ Analyzer::Analyzer(Table *table){
     cond_origin = new string[10];
     parm_num = 0;
     key_pos = -1;
+    stop_flag = 0;  
+    key_range[0] = key_range[1] = NULL;
 }
 
 int Analyzer::getCompareType(int pos){
@@ -26,6 +28,7 @@ void Analyzer::Extract(string conditions, string pattern){
         cond_num = -1;
         return;
     }
+    key_range[0] = key_range[1] = NULL;
     int l = pattern.length();
     while(true){
         if(conditions.length() == 0){
@@ -41,6 +44,7 @@ void Analyzer::Extract(string conditions, string pattern){
             temp = conditions.substr(0, pos);
             conditions = conditions.substr(pos + l, conditions.length() - pos - l);
         }
+        //分离操作符
         if(temp.find('=') != temp.npos){
             cond_cmp[cond_num] = '=';
         }
@@ -53,17 +57,38 @@ void Analyzer::Extract(string conditions, string pattern){
         else{
             throw COMPARE_NONSUPPORT;
         }
+        //比值存入
         int num = 0;
         string *str = Split(temp, cond_cmp[cond_num], num);
         cond_pos[cond_num] = table_ptr_->ParmLocate(str[0]);
-        if(cond_pos[cond_num] == table_ptr_->prim_key_){
-            key_pos = cond_num;
-        }
         if(cond_pos[cond_num] == -1){
             throw PARAM_NOT_FOUND;
         }
         cond_origin[cond_num] = str[1];
         cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
+        /////////////////////
+        if(cond_pos[cond_num] == -1){
+            throw PARAM_NOT_FOUND;
+        }
+        cond_origin[cond_num] = str[1];
+        cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
+        if(cond_pos[cond_num] == table_ptr_->prim_key_){
+            ///更新主键范围
+            if(cond_cmp[cond_num] == '>'){
+                if(key_range[0] == NULL || *key_range[0] < cond_val[cond_num]){
+                    key_pos = cond_num;
+                    key_range[0] = &cond_val[cond_num];
+                }
+            }
+            else if(cond_cmp[cond_num] == '<'){
+                if(key_range[1] == NULL || *key_range[1] > cond_val[cond_num]){
+                    key_pos = cond_num;
+                    key_range[1] = &cond_val[cond_num];
+                }
+            }else{
+                key_pos = cond_num;
+            }
+        }
         cond_num++;
     }
 }
@@ -116,7 +141,21 @@ bool Analyzer::Match(Row *row){
             }
         }
         else if(cond_cmp[i] == '<'){
-            if(temp < cond_val[i]){
+            if(cond_pos[i] == table_ptr_->prim_key_){
+                if(key_range[1] == NULL){
+                    continue;
+                }
+                else if(temp < *key_range[1]){
+                    continue;
+                }
+                else{
+                    if(stop_flag == 1){
+                        stop_flag = 2;
+                    }
+                    return false;
+                }
+            }
+            else if(temp < cond_val[i]){
                 continue;
             }
             else{
@@ -124,7 +163,21 @@ bool Analyzer::Match(Row *row){
             }
         }
         else if(cond_cmp[i] == '>'){
-            if(temp > cond_val[i]){
+            if(cond_pos[i] == table_ptr_->prim_key_){
+                if(key_range[0] == NULL){
+                    continue;
+                }
+                else if(temp > *key_range[0]){
+                    continue;
+                }
+                else{
+                    if(stop_flag == 1){
+                        stop_flag = 2;
+                    }
+                    return false;
+                }
+            }
+            else if(temp > cond_val[i]){
                 continue;
             }
             else{
