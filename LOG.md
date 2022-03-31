@@ -26,7 +26,8 @@
 - 实现外部接口 (nedb_open, nedb_auto_start, nedb_exec, nedb_close)
 - 完成移除数据表指令 **`drop`**
 - 完成静态链接库创建 **`libne.a`**
-- 添加列出所有数据表名称指令
+- 添加列出所有数据表名称指令 **`select tables`**
+- 增加 **`Analyzer`** 类主键范围字段 **`key_range[2]`** 和匹配停止标识 **`stop_flag`** ,优化匹配逻辑, 减少主键索引比较次数
 
 ---
 #### 2022.3.30
