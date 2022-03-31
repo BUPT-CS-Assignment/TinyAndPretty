@@ -22,10 +22,11 @@
 
 ---
 #### 2022.3.31
-- 完成全局异常处理
-- 完成外部接口 (nedb_open, nedb_auto_start, nedb_exec, nedb_close)
+- 实现全局异常处理
+- 实现外部接口 (nedb_open, nedb_auto_start, nedb_exec, nedb_close)
 - 完成移除数据表指令 **`drop`**
 - 完成静态链接库创建 **`libne.a`**
+- 添加列出所有数据表名称指令
 
 ---
 #### 2022.3.30
