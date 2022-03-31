@@ -10,9 +10,9 @@ int main(/*int argv , char* argc[]*/){
     //__START__();
     nedb* db = NULL;
     char* msg = NULL,*data=NULL;
-    const char *sql = "describe table test;select * from test;";
-    const char *name="test";
-    if(!nedb_open(&db,name,&msg)){
+    const char *sql = "describe table test2;select * from test2;drop table test2;";
+    //const char *name="test";
+    if(!nedb_auto_start(&db,&msg)){
         cout<<msg<<endl;
     }
     if(!nedb_exec(db,sql,&data,&msg)){
@@ -20,6 +20,8 @@ int main(/*int argv , char* argc[]*/){
     }else{
         cout<<data<<endl;
     }
+    nedb_close(db,&msg);
+    cout<<msg<<endl;
     /*
     BalanceTree<int,int> B(0);
     for(int i = 1;i <= 50; i++){
