@@ -12,7 +12,7 @@ int main(/*int argv , char* argc[]*/){
     char* msg = NULL,*data=NULL;
     const char *sql = "describe table test2;select * from test2;drop table test2;";
     //const char *name="test";
-    if(!nedb_auto_start(&db,&msg)){
+    if(!nedb_auto(&db,&msg)){
         cout<<msg<<endl;
     }
     if(!nedb_exec(db,sql,&data,&msg)){
