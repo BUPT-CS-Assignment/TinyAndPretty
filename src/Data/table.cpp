@@ -15,7 +15,6 @@ Table::Table(int id, string name){
     index_tree_ = NULL;
 }
 
-
 void Table::Init(string parameters){
     /*
         数据表初始化, 判空
@@ -192,4 +191,7 @@ int Table::ParmLocate(string name){
     return -1;
 }
 
+void Table::FreeTable(){
+    delete parm_names_;
+}
 

@@ -84,8 +84,11 @@ void Parser::deconstruct(){
             case UPDATE_VALUES:
                 parser_update_values();
                 break;
-            case DESCRIBE_TABLE: case DROP_TABLE:
+            case DESCRIBE_TABLE: 
                 parser_describe_table();
+                break;
+            case DROP_TABLE:
+                parser_drop_table();
                 break;
             default:
                 throw SQL_FORM_ERROR;
@@ -215,6 +218,11 @@ void Parser::parser_update_values(){
 
 void Parser::parser_describe_table(){
     object_ = Trim(statement_.substr(15, statement_.length() - 15));
+    if(object_.length() == 0) throw SQL_FORM_ERROR;
+}
+
+void Parser::parser_drop_table(){
+    object_ = Trim(statement_.substr(11, statement_.length() - 11));
     if(object_.length() == 0) throw SQL_FORM_ERROR;
 }
 

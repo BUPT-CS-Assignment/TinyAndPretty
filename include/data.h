@@ -121,6 +121,7 @@ public:
     //DATA_TYPE* getDataType(); //获取数据元素类型
     string getName();               //获取表名
     DATA_TYPE getKeyType();
+    void FreeTable();           //释放内存空间
     
 };
 

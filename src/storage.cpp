@@ -176,6 +176,28 @@ void Memorizer::PageStore(__uint16_t offset, Page *page){
     }
 }
 
+void Memorizer::TableDrop(string table_name){
+    string homedir = __HomeDir__;
+    string filePath = homedir + table_name + __FramSuffix__;
+    string dataPath = homedir + table_name + __DataSuffix__;
+    string indexPath = homedir + table_name + __IndexSuffix__;
+    try{
+        FILE *fp=NULL;
+        if((fp = fopen(filePath.c_str(),"r"))==NULL){
+            throw FILE_NOT_FOUND;
+        }
+        remove(filePath.c_str());
+        if((fp = fopen(dataPath.c_str(),"r"))!=NULL){
+            remove(dataPath.c_str());
+        }
+        if((fp = fopen(indexPath.c_str(),"r"))!=NULL){
+            remove(indexPath.c_str());
+        }
+    }
+    catch(NEexception &e){
+        throw e;
+    }
+}
 
 void Memorizer::IndexLoad(){
 

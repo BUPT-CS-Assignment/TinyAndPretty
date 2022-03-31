@@ -39,6 +39,7 @@ public:
     void PageFlush(__uint16_t, Table*);
     Page* PageLoad(__uint16_t, Table*);
     void PageStore(__uint16_t, Page*);
+    void TableDrop(string name);
     
     
 };

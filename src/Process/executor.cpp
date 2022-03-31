@@ -131,7 +131,9 @@ void Executor::execute_drop_table(Table** table,int& cursor){
         string table_name = parser_->object_;
         int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
         if(index != -1){
-            //table[index]->remove_table();
+            table[index]->FreeTable();
+            Memorizer RAM;
+            RAM.TableDrop(table_name);
             for(int i = index; i < cursor - 1; i++){
                 table[i] = table[i + 1];
             }
