@@ -43,14 +43,9 @@ using namespace std;
     Row  @  单行数据(数据基类)  
 
 */
-#define MAX_ROWS_SINGLE_PAGE 20
-#define MAX_PAGES_SINGLE_TABLE 100
 #define TEXT_LENGTH 32
 #define LONGTEXT_LENGTH 255
-//测试分页操作，限制页大小为0.2KB
-#define PAGE_SIZE 200
 #define PAGE_HEAD_SIZE 40 
-#define MAX_EMPTY_PAGE 20
 #define DATA_OFFSET 2
 
 enum DATA_TYPE: __uint16_t{

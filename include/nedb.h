@@ -8,6 +8,9 @@
 //单数据库最大表数
 #define MAX_TABLES 50
 
+//测试分页操作，限制页大小为0.2KB
+#define PAGE_SIZE 200
+
 //数据库结构体
 typedef struct nedb nedb;
 
