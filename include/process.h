@@ -58,6 +58,7 @@ private:
     void execute_drop_table(Table**,int&);
     void execute_create_index(Table**,int);
     void execute_drop_index(Table**,int);
+    void execute_select_tables(Table**,int,string&);
     ////////////////////////////////
     //void execute_print_table(Table*);
 public:

@@ -25,10 +25,11 @@ void Parser::i_analyse(string input){
         operation_ = operate_type(input);
         statement_ = Trim(input);
         deconstruct();
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw &e;
     }
-    
+
 }
 
 void Parser::analyse(string input){
@@ -60,7 +61,8 @@ void Parser::analyse(string input){
             command_ = __UNKNOWN;
             statement_ = input;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 
@@ -84,19 +86,22 @@ void Parser::deconstruct(){
             case UPDATE_VALUES:
                 parser_update_values();
                 break;
-            case DESCRIBE_TABLE: 
+            case DESCRIBE_TABLE:
                 parser_describe_table();
                 break;
             case DROP_TABLE:
                 parser_drop_table();
                 break;
+            case SELECT_TABLES :
+                break;
             default:
                 throw SQL_FORM_ERROR;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
-    
+
 }
 
 void Parser::parser_create_table(){
@@ -252,6 +257,7 @@ OPERATION  Parser::operate_type(string input){
     if(input.compare(0, 13, "create table ") == 0) return CREATE_TABLE;
     if(input.compare(0, 12, "insert into ") == 0) return INSERT_VALUES;
     if(input.compare(0, 12, "delete from ") == 0) return DELETE_VALUES;
+    if(input.compare("select tables") == 0) return SELECT_TABLES;
     if(input.compare(0, 7, "select ") == 0) return SELECT_VALUES;
     if(input.compare(0, 7, "update ") == 0) return UPDATE_VALUES;
     if(input.compare(0, 11, "drop table ") == 0) return DROP_TABLE;

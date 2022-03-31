@@ -66,8 +66,9 @@ void __START__(){
             p.analyse(i.read());
             if(p.getCommand() == __OPERATION){
                 e.execute_operation(__TABLES__, __CURSOR__, res);
-                if(p.getOperate() == SELECT_VALUES || p.getOperate() == DESCRIBE_TABLE){
-                    cout<<res<<endl;
+                if(p.getOperate() == SELECT_VALUES || p.getOperate() == DESCRIBE_TABLE
+                    || p.getOperate() == SELECT_TABLES){
+                    cout << res << endl;
                 }
             }
             else if(p.getCommand() == __EXIT){
@@ -152,14 +153,14 @@ void __LOAD_FILE__(Table **tables, int &cursor, string tableName){
 ////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.3.30 <Pre-Release>" << endl;
+    cout << "Server version: 22.3.31 <Stable>" << endl;
     cout << "Current file-dir: " << __HomeDir__ << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
 
 ////////////////////////////////////////////////////////////////
 void __HELP__(){
-    cout << "NEDB version: 22.3.30 <Pre-Release>" << endl;
+    cout << "NEDB version: 22.3.31 <Stable>" << endl;
     cout << " " << endl;
     cout << "Data Type Support >" << endl;
     cout << " " << endl;
@@ -175,8 +176,10 @@ void __HELP__(){
     cout << "   " << endl;
     cout << "\t[HELP] .help" << endl;
     cout << "   " << endl;
-    cout << "\t[OPEN FILE] .open table_name" << endl;
+    cout << "\t[OPEN FILE] .open 'table_name'" << endl;
     cout << "\t * Just enter the table name, without suffix." << endl;
+    cout << "   " << endl;
+    cout << "\t[OPEN ALL] .openall" << endl;
     cout << "   " << endl;
     cout << "\t[TABLE CREATE] create table 'table_name' ('data_title' 'data_type', ... );" << endl;
     cout << "\t * The first parm will be set as PRIMARY KEY by default." << endl;

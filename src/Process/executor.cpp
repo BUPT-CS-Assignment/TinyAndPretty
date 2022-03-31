@@ -29,6 +29,8 @@ void Executor::execute_operation(Table** table,int& c,string& str){
                 return execute_drop_index(table,c);
             case DROP_TABLE:
                 return execute_drop_table(table,c);
+            case SELECT_TABLES:
+                return execute_select_tables(table,c,str);
             case UNDEFINED:
                 str = parser_->statement_;
                 break;
@@ -210,6 +212,18 @@ void Executor::execute_update_values(Table** table,int cursor){
         }else{
             throw TABLE_NOT_FOUND;
         }
+    }catch(NEexception &e){
+        throw e;
+    }
+}
+
+void Executor::execute_select_tables(Table** table,int cursor,string& str){
+    try{
+        str = *new string("{");
+        for(int i = 0; i < cursor; i++){
+            str = str + table[i]->getName() + (i==cursor-1?"":", ");
+        }
+        str = str + "}";
     }catch(NEexception &e){
         throw e;
     }
