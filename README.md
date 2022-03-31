@@ -118,7 +118,7 @@
     ```
   - ##### 查询数据
     ```
-    select 'parm_name_1', ... from 'table_name' where 'condition_1' and ... 
+    select 'parm_name_1', ... from 'table_name' where 'condition_1' and ...;
     ```
     注意事项 : 
     1. 要取出数据行的所有字段, 请使用 **\*** 代替指定字段名称.
@@ -136,7 +136,7 @@
     ```
   - ##### 修改数据
     ```
-    update table_name set 'parm_name_1' = 'value_1', ... where 'condition_1' and ...
+    update table_name set 'parm_name_1' = 'value_1', ... where 'condition_1' and ...;
     ```
     注意事项 : 
     1. 主键值不能被修改.
@@ -152,8 +152,90 @@
     update new_table set SCORE = 150.0 where ID = 2020212001;
     
     ```
+  - ##### 删除数据表
+    ```
+    drop table 'table_name';
+    ```
+
+  - ##### 列出所有数据表
+    ```
+    select tables;
+    ```
+
 - ### Interface
-    **(working)**
+  - ##### 简介
+    **`NEDB`** 提供简易的对外接口, 以整合入各类项目使用. 接口格式参考 **`SQLite`** 的主要接口格式, 包含数据库创建, 文件读取, 指令执行三大核心功能.
+  
+  - ##### 使用说明
+    1. **`NEDB`** 外部接口静态库文件为 **`libne.a`** , 入口头文件为 **`nedb.h`** , 只需在其他项目中引用该头文件并再编译时连接该静态库即可. 
+    2. 在使用时请在 **`nedb.h`** 入口头文件中修改数据表存储路径 **`__HomeDir__`** , 若路径不存在或访问权限不足, 操作将返回错误信息.
+    3. 默认单数据库结构体指针能存 **`50`** 张数据表, 可以在 **`nedb.h`** 入口头文件中修改 **`MAX_TABLES`** 的值.
+    4. 该接口当前仅限 **`C++`** 语言.
+
+  - ##### 接口说明
+    1. 数据库结构体  
+
+        结构体定义为 **`nedb`** , 后续所有操作都基于该结构体指针.
+        ```
+        typedef struct nedb nedb;
+
+        ```
+    2. 数据库创建指令
+
+        若传入的数据库结构体指针为空, 将会自动为数据库结构体分配内存空间.
+        i. 自动载入目录下所有文件
+        ```
+        /**
+         * @brief   自动读取目录下的所有表文件
+         * @param   **db 数据库指针地址
+         * @param   **msg  操作返回信息
+         * @return  1: 操作成功, 0:操作失败
+         */
+        int nedb_auto(nedb** db,char** msg);
+
+        ```
+        ii. 打开指定文件
+        ```
+        /**
+         * @brief   读取指定表文件
+         * @param   **db 数据库指针地址
+         * @param   *table_name 表名称
+         * @param   **msg  操作返回信息
+         * @return  1: 操作成功, 0:操作失败
+         */
+        int nedb_open(nedb**,const char* table_name,char** msg);
+
+        ```
+    3. 执行操作
+
+        通过传入sql语句进行操作, 返回信息将以参数的形式传递. 
+        **`NEDB`** sql语句格式请至上文查看.
+        ```
+        /**
+         * @brief   通过sql语句操作数据库
+         * @param   **db 数据库指针地址
+         * @param   *sql sql语句
+         * @param   **data  数据返回信息
+         * @param   **msg  操作返回信息
+         * @return  1: 操作成功, 0:操作失败
+         */
+        int nedb_exec(nedb*,const char* sql,char** data,char** msg);
+
+        ```
+    4. 关闭数据库
+
+        若数据库结构体指针为空, 将返回错误信息.
+        ```
+        /**
+         * @brief   关闭数据库
+         * @param   **db 数据库指针地址
+         * @param   **msg  操作返回信息
+         * @return  1: 操作成功, 0:操作失败
+         */
+        int nedb_close(nedb*, char **msg);
+
+        ```
+
 
 ## Structure
 - ### Principle
@@ -172,6 +254,7 @@
     3. **`B+Tree`** 叶子节点存有数据页起始位置在数据文件中的偏移量, 一次 **`I/O`** 操作会将整页数据读入内存, 操作完毕后重新写入.
   - ##### 查询原理
     **(working)**
+
 - ### Modules
     **NEDB** 项目包含以下结构模块
     |模块|内容|
