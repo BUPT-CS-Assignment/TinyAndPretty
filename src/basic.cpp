@@ -25,7 +25,7 @@ string const NEexceptionName[] = {
     //sql error
     "sql form mismatch", "sql undefined",
     //table error
-    "table existed", "table not found",
+    "table existed", "table not found", "table number reach limit",
     //parm error
     "param empty", "param form mismatch", "param not found", "param num mismatch",
     "value empty",
@@ -123,6 +123,9 @@ void __LOAD_ALL__(Table **tables, int &cursor){
         regex layout(".+\\.nef");
         struct dirent *dirfiles;
         while((dirfiles = readdir(dp)) != NULL){
+            if(cursor >= MAX_TABLES){
+                throw TABLE_NUM_REACH_LIMIT;
+            }
             string fileName = dirfiles->d_name;
             if(regex_match(fileName, layout)){
                 string tableName = fileName.substr(0, fileName.find('.'));
@@ -141,6 +144,9 @@ void __LOAD_FILE__(Table **tables, int &cursor, string tableName){
     try{
         Memorizer RAM;
         Table *table = NULL;
+        if(cursor >= MAX_TABLES){
+            throw TABLE_NUM_REACH_LIMIT;
+        }
         table = RAM.TableLoad(tableName);
         tables[cursor] = table;
         ++cursor;

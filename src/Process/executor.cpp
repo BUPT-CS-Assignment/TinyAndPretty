@@ -73,6 +73,9 @@ void Executor::execute_command(){
 
 void Executor::execute_create_table(Table** table,int& cursor){
     try{
+        if(cursor>=MAX_TABLES){
+            throw TABLE_NUM_REACH_LIMIT;
+        }
         string table_name = parser_->object_;
         string parameters = parser_->value_;
         int index = __TABLE_LOCATED_BY_NAME__(table,cursor,table_name);
