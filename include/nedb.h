@@ -212,40 +212,6 @@ class nedb{
 
 };
 
-/**
- * @brief   自动读取目录下的所有表文件
- * @param   **db 数据库指针地址
- * @param   **msg  操作返回信息
- * @return  1: 操作成功, 0:操作失败
- */
-
-
- /**
-  * @brief   读取指定表文件
-  * @param   **db 数据库指针地址
-  * @param   *table_name 表名称
-  * @param   **msg  操作返回信息
-  * @return  1: 操作成功, 0:操作失败
-  */
-
-
-  /**
-   * @brief   通过sql语句操作数据库
-   * @param   **db 数据库指针地址
-   * @param   *sql sql语句
-   * @param   **data  数据返回信息
-   * @param   **msg  操作返回信息
-   * @return  1: 操作成功, 0:操作失败
-   */
-
-
-   /**
-    * @brief   关闭数据库
-    * @param   **db 数据库指针地址
-    * @param   **msg  操作返回信息
-    * @return  1: 操作成功, 0:操作失败
-    */
-
 
 
 #endif
