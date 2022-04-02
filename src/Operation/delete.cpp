@@ -15,6 +15,9 @@ void Table::DeleteValues(string condition){
     catch(NEexception &e){
         throw e;
     }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
+    }
 }
 
 void Table::delete_by_key(Analyzer &ANZ){
@@ -24,11 +27,11 @@ void Table::delete_by_key(Analyzer &ANZ){
         if(data_node.getData() == NULL){
             throw DATA_NOT_FOUND;
         }
-        Memorizer RAM;
+        Memorizer RAM(this);
         Page *page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         while(data_node.getData() != NULL){
-            page = RAM.PageLoad(*data_node.getData(), this);
+            page = RAM.PageLoad(*data_node.getData());
             page->DeleteRow(ANZ);
             if(page->cursor_pos_ == 0){
                 page->Clear(*data_node.getData());
@@ -36,38 +39,55 @@ void Table::delete_by_key(Analyzer &ANZ){
             else{
                 RAM.PageStore(*data_node.getData(), page);
             }
-            if(cmp == 0 || ANZ.stop_flag == 2) break;
-            else if(cmp == -1) -- data_node;
-            else ++ data_node;
+            if(cmp == 0 || ANZ.stop_flag == 2){
+                if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
+                break;
+            }
+            else if(cmp == -1){
+                -- data_node;
+                if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
+            }
+            else{
+                if(page->cursor_pos_ != 0)  ++ data_node;
+                else  pages_tree_->DeleteData(&page->page_index_);
+            }
+
         }
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
 
 void Table::delete_by_traverse(Analyzer &ANZ){
     try{
-        Memorizer RAM;
+        Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
             __uint16_t *page_offset = data_node.getData();
             if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset, this);
+            Page *page = RAM.PageLoad(*page_offset);
             page->DeleteRow(ANZ);
             if(page->cursor_pos_ == 0){
                 page->Clear(*page_offset);
             }
             else{
                 RAM.PageStore(*page_offset, page);
-                ++ data_node;
+                if(page->cursor_pos_ != 0)  ++ data_node;
+                else if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
             }
             RAM.PageStore(*page_offset, page);
         }
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -80,12 +100,14 @@ void Page::Clear(__uint16_t offset){
         else{
             table_ptr_->max_offset --;
         }
-        table_ptr_->pages_tree_->DeleteData(&page_index_);
-        Memorizer RAM;
-        RAM.PageFlush(offset, table_ptr_);
+        Memorizer RAM(table_ptr_);
+        RAM.PageFlush(offset);
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -129,6 +151,9 @@ void Page::DeleteRow(Analyzer &ANZ){
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 

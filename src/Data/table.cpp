@@ -2,8 +2,9 @@
 #include<implement.h>
 
 //数据表创建
-Table::Table(int id, string name){
-    table_id_ = id;
+Table::Table(nedb* db,string name){
+    db_ = db;
+    page_size_ = db_->getDefaultPageSize();
     strcpy(table_name_, name.c_str());
     max_offset = 0;
     parm_num_ = 0;
@@ -11,9 +12,10 @@ Table::Table(int id, string name){
     row_take_up_ = 0;
     max_rows_per_page_ = 0;
     parm_names_ = NULL;
-    pages_tree_ = new BalanceTree<__uint16_t, Index>(id);
+    pages_tree_ = new BalanceTree<__uint16_t, Index>(0);
     index_tree_ = NULL;
 }
+
 
 void Table::Init(string parameters){
     /*
@@ -83,9 +85,9 @@ void Table::Init(string parameters){
             }*/
         }
         //计算单页行数
-        max_rows_per_page_ = (PAGE_SIZE - PAGE_HEAD_SIZE) / row_take_up_;
-        Memorizer RAM;
-        RAM.TableStore(this);
+        max_rows_per_page_ = (page_size_ - PAGE_HEAD_SIZE) / row_take_up_;
+        Memorizer RAM(this);
+        RAM.TableStore();
     }catch(NEexception &e){
         throw e;
     }
@@ -138,6 +140,7 @@ string Table::getStructure(){
     cout << "+-----------+-----------\n" << endl;
     */
     string str = * new string("{"); 
+    str = str + to_string((int)page_size_) + ",";
     for(int i = 0; i < parm_num_; i++){
         str = str +parm_names_[i] + ":"+ kTypeName[parm_types_[i]]
             + (i == prim_key_ ? "(key)" : "");

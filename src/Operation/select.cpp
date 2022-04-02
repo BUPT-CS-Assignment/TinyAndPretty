@@ -17,6 +17,8 @@ string Table::SelectValues(string param, string condition){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 
 }
@@ -27,14 +29,15 @@ string Table::select_by_key(Analyzer &ANZ){
         if(data_node.getData() == NULL){
             return "";
         }
-        Memorizer RAM;
+        Memorizer RAM(this);
         string res = *new string("");
         Page *page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         while(data_node.getData() != NULL){
-            page = RAM.PageLoad(*data_node.getData(), this);
+            page = RAM.PageLoad(*data_node.getData());
             string temp = page->SelectRow(ANZ);
-            res = res + temp;
+            if(cmp == -1) res = temp + res;
+            else res = res + temp;
             if(cmp == 0 || ANZ.stop_flag == 2) break;
             else if(cmp == -1) --data_node;
             else ++data_node;
@@ -44,6 +47,8 @@ string Table::select_by_key(Analyzer &ANZ){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -52,12 +57,12 @@ string Table::select_by_traverse(Analyzer &ANZ){
     //遍历搜索
     try{
         string res = *new string("");
-        Memorizer RAM;
+        Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
             __uint16_t *page_offset = data_node.getData();
             if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset, this);
+            Page *page = RAM.PageLoad(*page_offset);
             res = res + page->SelectRow(ANZ);
             ++ data_node;
         }
@@ -68,6 +73,8 @@ string Table::select_by_traverse(Analyzer &ANZ){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 

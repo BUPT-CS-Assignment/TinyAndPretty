@@ -32,11 +32,11 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
         if(data_node.getData() == NULL){
             throw DATA_NOT_FOUND;
         }
-        Memorizer RAM;
+        Memorizer RAM(this);
         Page *page;
         int cmp = CANZ.getCompareType(CANZ.getKeyPos());
         while(data_node.getData() != NULL){
-            page = RAM.PageLoad(*data_node.getData(), this);
+            page = RAM.PageLoad(*data_node.getData());
             page->UpdateRow(SANZ, CANZ);
             RAM.PageStore(*data_node.getData(), page);
             if(cmp == 0 || CANZ.stop_flag == 2) break;
@@ -52,12 +52,12 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
 
 void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
     try{
-        Memorizer RAM;
+        Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
             __uint16_t *page_offset = data_node.getData();
             if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset, this);
+            Page *page = RAM.PageLoad(*page_offset);
             page->UpdateRow(SANZ, CANZ);
             RAM.PageStore(*page_offset, page);
             ++ data_node;
@@ -101,6 +101,8 @@ void Page::UpdateRow(Analyzer &SANZ, Analyzer &CANZ){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -113,6 +115,8 @@ void Row::update_values(int value_pos[], string values[], int n){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 

@@ -1,7 +1,6 @@
 #ifndef __IMPLEMENT_H__
 #define __IMPLEMENT_H__
-#include<iostream>
-#include<basic.h>
+#include<nedb.h>
 using namespace std;
 /*
 
@@ -11,6 +10,7 @@ using namespace std;
     length : 拆分后字符串数组长度
 
 */ 
+
 string* Split(string str,char c,int &length);
 void parm_check(string str,DATA_TYPE type);
 string Trim(string str);

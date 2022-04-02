@@ -1,6 +1,6 @@
 #ifndef __DATA_H__
 #define __DATA_H__
-#include<basic.h>
+#include<nedb.h>
 #include<btree.h>
 #include<storage.h>
 
@@ -63,9 +63,11 @@ class Table{
     };
 private:
     //FileHead
-    int             table_id_;      //表ID索引
+    __uint16_t      page_size_;   //单页最大字节数
     char            table_name_[32] = {0};    //表名
+    nedb*           db_;
     //TableHead
+    
     __uint16_t      max_offset;    //页总数
     //__uint16_t      max_pages;
     //__uint16_t      empty_pages_[1 + MAX_EMPTY_PAGE] = {0};    //记录空页
@@ -84,7 +86,6 @@ private:
     /////////////////////////////////////////////////////
     Page *page_locate(Index);       //数据页搜索
     ///////////////////////////////////////////////////////
-    
     //INSERT
     //bool check_empty(int);
     __uint16_t  get_empty_page_offset();
@@ -101,7 +102,7 @@ private:
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
 public:
-    Table(int id, string name);     //构造函数
+    Table(nedb*, string name);     //构造函数
     void Init(string statement);    //初始化表数据类型
     /**
      *数据操作相关
@@ -173,7 +174,7 @@ class Page{
     void DeleteRow(Analyzer&);
     //Clear
     void Clear(__uint16_t);
-    void print_page();  //打印整页
+    //void print_page();  //打印整页
 };
 
 /**

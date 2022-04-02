@@ -19,11 +19,11 @@ Row::Row(Table *table){
                 content_[i] = new double(0.0);
                 break;
             case __TEXT:
-                content_[i] = new char[TEXT_LENGTH]{0};
+                content_[i] = new char[TEXT_LENGTH];
                 strcpy((char *)content_[i], "NULL");
                 break;
             case __LONGTEXT:
-                content_[i] = new char[LONGTEXT_LENGTH]{0};
+                content_[i] = new char[LONGTEXT_LENGTH];
                 strcpy((char *)content_[i], "NULL");
                 break;
         }
@@ -39,7 +39,6 @@ Row::Row(Table *table){
 //格式化字符串
 //Format  @  'element_1,_element_2,element_3,...'
 string Row::Format(){
-
     string temp = *new string("{");
     for(int i = 0; i < table_ptr_->parm_num_; i++){
         switch(table_ptr_->parm_types_[i]){

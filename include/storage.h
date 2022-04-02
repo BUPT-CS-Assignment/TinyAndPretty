@@ -1,6 +1,6 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
-#include<basic.h>
+#include<nedb.h>
 #include<data.h>
 
 /**
@@ -25,21 +25,22 @@
  */
 
 class Memorizer{
+    Table* table_;
 public:
-    Memorizer();
-    Table* TableLoad(string);
-    void TableStore(Table*);
-    void TableUpdate(Table*);
+    Memorizer(Table* table);
+    Table* TableLoad(nedb*,string);
+    void TableStore();
+    void TableUpdate();
     void IndexLoad();
     void IndexStore();
     void IndexUpdate();
     /////////////////////////
     bool storage();
     bool update();
-    void PageFlush(__uint16_t, Table*);
-    Page* PageLoad(__uint16_t, Table*);
+    void PageFlush(__uint16_t);
+    Page* PageLoad(__uint16_t);
     void PageStore(__uint16_t, Page*);
-    void TableDrop(string name);
+    void TableDrop();
     
     
 };

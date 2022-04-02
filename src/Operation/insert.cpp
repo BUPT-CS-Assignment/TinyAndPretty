@@ -8,7 +8,7 @@ void Table::InsertValues(string conditions, string values){
         在数据表中插入数据行
     */
     //填充数据
-    Memorizer RAM;
+    Memorizer RAM(this);
     //查找插入数据页指针
     try{
         Row *new_row = new Row(this); //创建行对象
@@ -19,20 +19,21 @@ void Table::InsertValues(string conditions, string values){
             __uint16_t *new_page_offset = new __uint16_t(get_empty_page_offset());
             /////创建新页
             Page *new_page = new Page(this);
-            RAM.PageFlush(*new_page_offset, this);
+            RAM.PageFlush(*new_page_offset);
             new_page->InsertRow(new_row);
             new_page->page_index_ = *new Index(new_row->getIndex());
             pages_tree_->InsertData(&(new_row->getIndex()), new_page_offset);
             RAM.PageStore(*new_page_offset, new_page);
+            return;
         }
         /////读入内存//////////////////////////////////////////////////////
-        Page *page = RAM.PageLoad(*page_offset, this);
+        Page *page = RAM.PageLoad(*page_offset);
         if(!page->is_full_) page->InsertRow(new_row);
         else{
             //////新建页后插入/////////////////////////////////////////////////
             Page *new_page = new Page(this);
             __uint16_t *new_page_offset = new __uint16_t(get_empty_page_offset());
-            RAM.PageFlush(*new_page_offset, this);
+            RAM.PageFlush(*new_page_offset);
             for(int i = max_rows_per_page_ / 2; i < max_rows_per_page_; i++){
                 new_page->InsertRow(page->rows_[i]);
                 page->cursor_pos_--;
@@ -41,13 +42,15 @@ void Table::InsertValues(string conditions, string values){
             new_page->InsertRow(new_row);
             new_page->page_index_ = *new Index(new_page->rows_[0]->getIndex());
             pages_tree_->InsertData(&(new_page->page_index_), new_page_offset);
-            RAM.PageFlush(*page_offset, this);
+            RAM.PageFlush(*page_offset);
             RAM.PageStore(*new_page_offset, new_page);
         }
         RAM.PageStore(*page_offset, page);
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -67,6 +70,8 @@ void Page::InsertRow(Row *Node){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }
 
@@ -109,6 +114,8 @@ void Row::Padding(string condition, string value){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 
 }
@@ -156,5 +163,7 @@ void Row::update_value(int pos, string value){
     }
     catch(NEexception &e){
         throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 }

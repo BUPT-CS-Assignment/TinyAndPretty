@@ -40,22 +40,39 @@ void Parser::analyse(string input){
             statement_ = Trim(input);
             deconstruct();
         }
-        else if(input.compare(".exit") == 0){
+        else if(input == ".exit"){
             command_ = __EXIT;
         }
-        else if(input.compare(".help") == 0){
+        else if(input == ".help"){
             command_ = __HELP;
         }
-        else if(input.compare(".save") == 0){
-            command_ = __SAVE;
+        else if(input == ".dir"){
+            command_ = __SHOWDIR;
         }
-        else if(input.compare(".openall") == 0){
+        else if(input == ".dirinit"){
+            command_ = __DIRINIT;
+        }
+        else if(input == ".openall"){
             command_ = __LOADALL;
         }
+        else if(input.substr(0, input.find(" ")).compare(".setdir") == 0){
+            command_ = __SETDIR;
+            int index = input.find(" ");
+            statement_ = input.substr(index + 1, input.length() - index - 1);
+        }
+
         else if(input.substr(0, input.find(" ")).compare(".open") == 0){
             command_ = __LOAD;
             int index = input.find(" ");
             statement_ = input.substr(index + 1, input.length() - index - 1);
+        }
+        else if(input.substr(0, input.find(" ")).compare(".setsize") == 0){
+            command_ = __SETPAGESIZE;
+            int index = input.find(" ");
+            statement_ = input.substr(index + 1, input.length() - index - 1);
+        }
+        else if(input == ".size"){
+            command_ = __SHOWPAGESIZE;
         }
         else{
             command_ = __UNKNOWN;
@@ -64,6 +81,9 @@ void Parser::analyse(string input){
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 
 }
@@ -92,7 +112,7 @@ void Parser::deconstruct(){
             case DROP_TABLE:
                 parser_drop_table();
                 break;
-            case SELECT_TABLES :
+            case SELECT_TABLES:
                 break;
             default:
                 throw SQL_FORM_ERROR;
@@ -100,6 +120,9 @@ void Parser::deconstruct(){
     }
     catch(NEexception &e){
         throw e;
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
     }
 
 }
