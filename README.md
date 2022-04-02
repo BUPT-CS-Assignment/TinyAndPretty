@@ -187,14 +187,14 @@
     **`NEDB`** 提供简易的对外接口, 以整合入各类项目使用. 接口格式参考 **`SQLite`** 的主要接口格式, 包含数据库创建, 文件读取, 指令执行三大核心功能.
   
   - ##### 使用说明
-    1. **`NEDB`** 外部接口静态库文件为 **`libne.a`** , 入口头文件为 **`nedb.h`** , 只需在其他项目中引用该头文件并再编译时连接该静态库即可. 
+    1. **`NEDB`** 外部接口静态库文件为 **`libNEdb.a`** , 动态库为 **`libNEdb.so`** , 入口头文件为 **`NEdb.h`** , 只需在其他项目中引用该头文件并再编译时连接该静态库/动态库即可. 
         ```
         /**
         * @ g++ 参考指令
         *  
         * -o out 指定输出文件名
-        * -L ./  指定静态库路径
-        * -l ne  链接静态库, ne为'libne.a'去掉前缀'lib'和后缀'.a'
+        * -L ./  指定库路径
+        * -l ne  链接动态库, NEdb为'libNEdb.a'去掉前缀'lib'和后缀'.so'
         */
         g++ main.cpp -o out -L ./ -l ne
 
@@ -204,67 +204,123 @@
     4. 接口当前仅限 **`C++`** 语言.
 
   - ##### 接口说明
-    1. 数据库类  
+    1. 数据库结构体  
 
-        i. 类名称定义为 **`nedb`** , 后续所有操作都基于该类.  
-        ii. 类初始化时强制要求设定数据文件加载目录, 请确保路径正确且权限足够.
+        ```
+        /**
+        * @brief NEDB class pointer
+        */ 
+        NEDB* nedb;
+
+        ```
+        i. 类名称定义为 **`NEdb`** , 后续所有操作都基于结构体.  
+        ii. 结构体初始化时强制要求设定数据文件加载目录, 请确保路径正确且权限足够.
+        iii. 接口的调用以 **`结构体名.函数名`** 的方式实现
         
 
-    2. 数据库主要接口
+    2. 主要接口
 
         ```
-        /*
-         * @brief   强制要求设定数据文件加载目录
-         */
-
-        nedb(string dir);           //构造函数
-
-        ```
-        ```
-        /*
-         * @return  1:操作成功, 0:操作失败
-         */
-
-        int scan();                 //打开目录下全表
-        int open(string fileName);  //载入数据表
-        int exec(string sql);       //执行sql语句
-        int close();                //关闭数据库
+        /**
+         * @brief   construct NEdb 
+         * @param   full-path of resource folder
+         */ 
+        NEdb(const char* dir);          //构造函数
 
         ```
         ```
-        /*
-         * @return  操作执行情况信息/数据信息
-         */
-
-        string getMsg();            //获取sql语句执行返回信息
-        string getData();           //获取sql语句执行数据信息
+        /**
+         * @brief   set full path for NEdb resource folder 
+         * @param   full-path of resource folder
+         * @return  1:complete, 0:error, -1:pointer error
+         */ 
+        int setDir(const char* dir);    //设置目录
 
         ```
+        ```
+        /**
+         * @brief   scan specified table at NEdb resource folder 
+         * @return  1:complete, 0:error, -1:pointer error
+         */ 
+        int scan();                     //打开目录下全表
+
+        ```
+        ```
+        /**
+         * @brief   scan all tables at NEdb resource folder 
+         * @param   table-name
+         * @return  1:complete, 0:error, -1:pointer error
+         */ 
+        int open(const char* fileName); //载入数据表
+
+        ```
+        ```
+
+        /**
+         * @brief   execute sql command through NEdb 
+         * @param   sql-command
+         * @return  1:complete, 0:error, -1:pointer error
+         */ 
+        int exec(const char* sql);      //执行sql语句
+
+        ```
+        ```
+        /**
+         * @brief   close and free NEdb 
+         * @return  1:complete, 0:error
+         */ 
+        int close();                    //关闭数据库
         
-
-    3. 其他接口函数
-   
-        ```
-        /*
-         * @return  当前目录
-         */  
-        string getDir();                  //获取当前目录
-
         ```
         ```
-        /*
-         * @return  1:操作成功, 0:操作失败
+        /**
+         * @brief   get sql command state, complete or error-message 
+         * @return  sql-command state message
          */
-        int setDir(string dir);           //设置目录
-        int dirInit();                    //目录初始化(自动新建文件夹)
-        int setDefaultPageSize(int size); //设置数据表单页最大字节数, 限制范围为100 - 4000(字节)
+        char* getMsg();                 //获取sql语句执行返回信息
+        
+        ```
+        ```
+        /**
+         * @brief   get sql command return value, 'select' and 'describe' effective
+         * @return  sql-command return value
+         */
+        char* getData();                //获取sql语句执行数据信息
+
+        ```
+
+    3. 其他功能接口
+        ```
+        /**
+         * @brief   get NEdb resource folder full path 
+         * @return  NEdb resource folder full path
+         */
+        char* getDir();                 //获取当前目录
 
         ```
         ```
-        /*
-         * @return  数据表单页最大字节数
+        /**
+         * @brief   get NEdb default page size  
+         * @return  NEdb default page-size, default by 0.4KB, -1:pointer error 
          */
         int getDefaultPageSize();
+
+        ```
+        ```
+        /**
+         * @brief   set NEdb default page size  
+         * @param  NEdb default page-size, range: 100-4000 (Bytes)
+         * @return  1:complete, 0:error, -1:pointer error
+         */
+        int setDefaultPageSize(int);    //设置数据表单页最大字节数
+
+        ```
+        ```
+        /**
+         * @brief   initialize NEdb resource folder full path, attempt to create directory automatically
+         * @return  1:complete, 0:error, -1:pointer error
+         */
+        int dirInit();                  //目录初始化
 
         ```
 
