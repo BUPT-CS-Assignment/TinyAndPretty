@@ -5,8 +5,8 @@ SRC_DIR  	= $(WORK_DIR)/src
 BUILD_DIR 	= $(WORK_DIR)/build
 INCLUDE_DIR = $(WORK_DIR)/include
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
-LIB			= $(BUILD_DIR)/nedb.so
-#LIB			= $(BUILD_DIR)/nedb.a
+LIB			= $(BUILD_DIR)/libnedb.so
+#LIB			= $(BUILD_DIR)/libnedb.a
 
 CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror
 
