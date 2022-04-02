@@ -1,14 +1,28 @@
-#include<basic.h>
 #include<nedb.h>
 
-/**
- * @brief 请修改Basic.cpp中 " __HomeDir__ " 数据表格根目录 ! 
- *
- */
-
 int main(/*int argv , char* argc[]*/){
-    __START__();
+    nedb db("");
+    cout<<db.getDir()<<endl;
+    db.setDir("/home/jianxf/.nesrc/");
+    db.setDefaultPageSize(100);
+    cout<<db.getMsg()<<endl;
+    db.exec("create table test (id int);");
+    cout<<db.getMsg()<<endl;
+    string sql = "";
+    for(int i =0; i < 50; i++){
+        sql = sql + "insert into test values ("+to_string(i)+");";
+    }
+    db.exec(sql);
+    cout<<db.getMsg()<<endl;
+    db.exec("describe table test;select * from test where id>10 and id<36;");
+    cout<<db.getMsg()<<endl;
+    cout<<db.getData()<<endl;
+    db.exec("delete from test where id < 44;select * from test;drop table test;");
+    cout<<db.getMsg()<<endl;
+    cout<<db.getData()<<endl;
+    db.close();
     /*
+    delete from test where id < 44;
     nedb* db = NULL;
     char* msg = NULL,*data=NULL;
     const char *sql = "describe table test2;select * from test2;drop table test2;";
