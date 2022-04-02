@@ -1,6 +1,6 @@
 #ifndef __DATA_H__
 #define __DATA_H__
-#include<nedb.h>
+#include<basic.h>
 #include<btree.h>
 #include<storage.h>
 
@@ -65,7 +65,7 @@ private:
     //FileHead
     __uint16_t      page_size_;   //单页最大字节数
     char            table_name_[32] = {0};    //表名
-    nedb*           db_;
+    NEDB*           db_;
     //TableHead
     
     __uint16_t      max_offset;    //页总数
@@ -102,7 +102,7 @@ private:
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
 public:
-    Table(nedb*, string name);     //构造函数
+    Table(NEDB*, string name);     //构造函数
     void Init(string statement);    //初始化表数据类型
     /**
      *数据操作相关
