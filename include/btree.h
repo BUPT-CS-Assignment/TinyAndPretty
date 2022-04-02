@@ -343,11 +343,11 @@ int Node<DAT, Idx>::find_insert_position(Idx *idx){
      * @brief 根据索引查找位置 <parm>索引指针
      */
     if(idx == NULL || isFull()) return -1;
-    if(__cursor == 0 || *idx <= *__index[0]) return 0;
-    if(*idx > *__index[__cursor - 1]) return __cursor;
-    for(int i = 1; i < __cursor; i ++){
-        if(*__index[i - 1] < *idx && *idx <= *__index[i]){
-            return i;
+    if(__cursor == 0 || *idx < *__index[0]) return 0;
+    if(*idx >= *__index[__cursor - 1]) return __cursor;
+    for(int i = 0; i < __cursor-1; i ++){
+        if(*__index[i] <= *idx && *idx < *__index[i+1]){
+            return i+1;
         }
     }
     return -1;
@@ -486,7 +486,6 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
     if(node->isSatisfied()) return;
     //合并节点优先///////////////////////////////////////////////////////////////////
     if(node->__left != NULL && node->isMerge(node->__left)){
-        //cout << "l merge" << endl;
         //左合并
         node = node->left_merge(node->__left);
         if(node->__parent == __Root__ && node->__parent->__cursor == 0){
@@ -497,7 +496,6 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
         delete_adjust(node->__parent);
     }
     else if(node->__right != NULL && node->isMerge(node->__right)){
-        //cout << "r merge" << endl;
         //右合并
         node->right_merge(node->__right);
         if(node->__parent == __Root__ && node->__parent->__cursor == 0){
@@ -552,7 +550,7 @@ bool Node<DAT, Idx>::DeleteData(Idx *idx){
     if(p == -1) return false;
     __data[p] = NULL;
     __index[p] = NULL;
-    for(int i = p; i < __cursor; i++){
+    for(int i = p; i < __cursor - 1; i++){
         __data[i] = __data[i + 1];
         __index[i] = __index[i + 1];
     }
