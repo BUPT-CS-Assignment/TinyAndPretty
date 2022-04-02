@@ -5,9 +5,10 @@ SRC_DIR  	= $(WORK_DIR)/src
 BUILD_DIR 	= $(WORK_DIR)/build
 INCLUDE_DIR = $(WORK_DIR)/include
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
-LIB			= $(BUILD_DIR)/libne.a
-AR 			= ar
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -O2 -Wall -Werror
+LIB			= $(BUILD_DIR)/nedb.so
+#LIB			= $(BUILD_DIR)/nedb.a
+
+CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
@@ -33,7 +34,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(LIB): $(OBJS)
-	$(AR) cq $@ $^
+	$(CXX) $(CXXFLAGS)  -shared -o $@ $^
+#	ar cq $@ $^
 
 
 .PHONY: clean .detect run root
