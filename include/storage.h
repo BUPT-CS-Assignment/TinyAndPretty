@@ -1,6 +1,6 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
-#include<nedb.h>
+#include<basic.h>
 #include<data.h>
 
 /**
@@ -28,7 +28,7 @@ class Memorizer{
     Table* table_;
 public:
     Memorizer(Table* table);
-    Table* TableLoad(nedb*,string);
+    Table* TableLoad(NEDB*,string);
     void TableStore();
     void TableUpdate();
     void IndexLoad();

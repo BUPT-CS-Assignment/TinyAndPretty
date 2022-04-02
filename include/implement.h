@@ -1,6 +1,6 @@
 #ifndef __IMPLEMENT_H__
 #define __IMPLEMENT_H__
-#include<nedb.h>
+#include<basic.h>
 using namespace std;
 /*
 

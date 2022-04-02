@@ -1,5 +1,5 @@
 #include<storage.h>
-#include<nedb.h>
+#include<basic.h>
 Memorizer::Memorizer(Table *table){
     table_ = table;
     //cout<<"<S> I/O"<<endl;
@@ -46,7 +46,7 @@ void Memorizer::TableStore(){
     
 }
 
-Table *Memorizer::TableLoad(nedb* db, string name){
+Table *Memorizer::TableLoad(NEDB* db, string name){
     try{
         string filePath = db->getDir() + name + __FramSuffix__;
         string dataPath = db->getDir() + name + __DataSuffix__;

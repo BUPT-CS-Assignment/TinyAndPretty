@@ -1,7 +1,7 @@
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 #include <iostream>
-#include<nedb.h>
+#include<basic.h>
 
 class InputStream{
 private:
@@ -48,7 +48,7 @@ public:
 
 class Executor{
 private:
-    nedb* db_;
+    NEDB* db_;
     Parser* parser_;
     void execute_create_table();
     void execute_insert_values();
@@ -63,7 +63,7 @@ private:
     ////////////////////////////////
     //void execute_print_table(Table*);
 public:
-    Executor(Parser*,nedb*);
+    Executor(Parser*,NEDB*);
     void execute_command();
     void execute_operation();
 };

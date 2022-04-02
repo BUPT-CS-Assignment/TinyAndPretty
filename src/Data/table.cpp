@@ -2,7 +2,7 @@
 #include<implement.h>
 
 //数据表创建
-Table::Table(nedb* db,string name){
+Table::Table(NEDB* db,string name){
     db_ = db;
     page_size_ = db_->getDefaultPageSize();
     strcpy(table_name_, name.c_str());

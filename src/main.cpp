@@ -1,7 +1,7 @@
-#include<nedb.h>
+#include<basic.h>
 
 int main(/*int argv , char* argc[]*/){
-    nedb db("");
+    NEdb db("");
     cout<<db.getDir()<<endl;
     db.setDir("/home/jianxf/.nesrc/");
     db.setDefaultPageSize(100);
@@ -12,7 +12,7 @@ int main(/*int argv , char* argc[]*/){
     for(int i =0; i < 50; i++){
         sql = sql + "insert into test values ("+to_string(i)+");";
     }
-    db.exec(sql);
+    db.exec(sql.c_str());
     cout<<db.getMsg()<<endl;
     db.exec("describe table test;select * from test where id>10 and id<36;");
     cout<<db.getMsg()<<endl;
@@ -23,7 +23,7 @@ int main(/*int argv , char* argc[]*/){
     db.close();
     /*
     delete from test where id < 44;
-    nedb* db = NULL;
+    NEDB* db = NULL;
     char* msg = NULL,*data=NULL;
     const char *sql = "describe table test2;select * from test2;drop table test2;";
     //const char *name="test";

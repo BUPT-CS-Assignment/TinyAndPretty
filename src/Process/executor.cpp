@@ -4,7 +4,7 @@
 #include<storage.h>
 
 
-Executor::Executor(Parser *parser,nedb* db){
+Executor::Executor(Parser *parser,NEDB* db){
     db_ = db;
     parser_ = parser;
 }
