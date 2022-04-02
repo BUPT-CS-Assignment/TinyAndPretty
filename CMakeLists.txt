@@ -14,5 +14,5 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 add_executable(${PROJECT_NAME} ${SRC_DIR})
 
-target_link_libraries(${PROJECT_NAME} ne)
+target_link_libraries(${PROJECT_NAME} nedb)
 
