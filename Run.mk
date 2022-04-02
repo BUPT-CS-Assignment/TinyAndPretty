@@ -5,9 +5,9 @@ SRC_DIR  	= $(WORK_DIR)/src
 BUILD_DIR 	= $(WORK_DIR)/build
 INCLUDE_DIR = $(WORK_DIR)/include
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
-LIB			= $(BUILD_DIR)/libne.a
-AR 			= ar
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -O2 -Wall -Werror
+#LIB			= $(BUILD_DIR)/libne.a
+#AR 			= ar
+CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
@@ -30,7 +30,7 @@ OBJS = $(subst cpp,o,$(subst src,$(OBJ_DIR),$(SOURCES)))
 
 include scripts/colors.mk
 
-root : .detect $(LIB) 
+root : .detect $(PACKAGE) 
 	@echo "$(C_GREEN)[$(shell date +%F%n%T)] Compile Complete!$(C_END)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
