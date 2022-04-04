@@ -7,7 +7,7 @@ INCLUDE_DIR = $(WORK_DIR)/include
 
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
 
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -O2 -Wall -std=c++17
+CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -Wall -std=c++17 -g
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 

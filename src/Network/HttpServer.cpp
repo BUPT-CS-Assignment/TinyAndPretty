@@ -1,52 +1,67 @@
 #include <Network/HttpServer.h>
+#include <Network/URLParser.h>
+size_t HttpRecv(int _connfd , uint8_t **raw);
 
+HttpServer::HttpServer(uint16_t _port) {
+	sock  = std::make_unique<Socket>(_port);
+	epool = std::make_unique<EventPool>();
+	epool->mountFD( sock->getFD() , EPOLLIN | EPOLLET );
+}
+//fd conn bug!
 
-HttpServer::HttpServer(uint16_t _port , uint32_t _listen_q_max) {
-    port = _port , listen_q_max = _listen_q_max;
-    sockfd = socket(PF_INET , SOCK_STREAM , 0);
-    ERROR(sockfd >= 0 , "create socket error : %d!" , sockfd);
+void HttpServer::createHttpTask(Connection *conn) {
+	printf("*FD IN : \t%d\n" , conn->getFD());
+	HttpResponseBase *ret = nullptr;
+	try {
+		uint8_t *raw = nullptr;
+		size_t len = sock->recvData(conn->getFD() , &raw);
+		if      (len == -1ULL) throw HttpException::OUT_OF_LIMIT;
+		else if (len == 0)     throw HttpException::NON_CONN;
 
-    address = new sockaddr_in {
-        sin_family         : PF_INET           , 
-        sin_port           : htons(port)       ,
-        sin_addr  : {s_addr : htonl(INADDR_ANY)} ,
-    };
-    ERROR(
-        bind(sockfd , (sockaddr *)(address) , sizeof(sockaddr_in)) >= 0
-    , "create socket error!");
+		printf("*Data Size :\t%lu\n" , len);
+		HttpRequest request {conn , raw , len};
+		auto &entry = URLParser::getInstance().URLparse( request.Path() );
+		ret = entry(request);
+		
+		delete raw;
+	 } catch(const HttpException& e) {
+		switch (e) //near future
+		{
+			case HttpException::ERROR_LEN :
+				std::cerr << "ERROR_LEN" << "\n";
+				ret = new HttpResponse{"Error occur"};
+				break;
+			case HttpException::OUT_OF_LIMIT :
+				std::cerr << "OUT_OF_LIMIT" << "\n";
+				ret = new HttpResponse{"Error occur"};				
+			break;
+			case HttpException::NON_PATH  :
+				std::cerr << "NON_PATH" << "\n";
+				ret = new HttpResponse{"Error occur"};
+				break; 
+			case HttpException::NON_CONN  :
+				std::cerr << "NON_CONN" << "\n";
+				delete conn;    break; 
+			default: 
+				std::cerr << "ELSE" << (int)e<< "\n";
+				break;
+		}
+	}
 
-    ERROR(
-        listen(sockfd , listen_q_max) >= 0
-    , "liten socket error!");
+	uint8_t *buff = nullptr;
+	size_t len = ret->stringize(&buff);
+	sock->sendData(conn->getFD() , buff , len );
+	if(ret != nullptr) delete ret;
+	delete conn; // near future
 }
 
 void HttpServer::start() {
-    //while(1) {
-        int connfd = accept(sockfd ,(struct sockaddr*)NULL, NULL);
-        ERROR(connfd >= 0 , "accept socket error!");
-
-        char buff[2048] = {0};
-        recv(connfd , buff , 1024 , 0);
-        //printf("Data Size : %d\n%s\n" ,n , buff);
-        try
-        {
-            HttpRequest request(buff);
-            auto &entry = URLParser::getInstance().url_table[ request.Path() ];
-
-            auto ret = entry(request);
-            
-            memset(buff , 0 , sizeof(buff));
-            ret->stringize(buff);
-            send(connfd , buff , sizeof(buff), 0);
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-        
-        close(connfd);
-    //}
+	epool->Loop( [&] (epoll_data_t data , int type) {
+		if(data.fd == sock->getFD()) {
+			Connection* con = sock->onConnect();
+			epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
+		}else if (type & EPOLLIN) {
+			createHttpTask( static_cast<Connection *>(data.ptr) );
+		}
+	} );
 }
-
-void HttpServer::stop() { __close_socket();}
-HttpServer::~HttpServer()  { __close_socket();}

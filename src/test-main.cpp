@@ -35,10 +35,10 @@ using std::cout;
 
 int main() {
     // 不安全的转换
-    EntryFunc p ;
-    URLParser::getInstance();
-       auto p = URLParser::getInstance().url_table["name"];
-    p(10096);
-    //Derived* d = (Derived*)b;
+    std::string a = "aaaaaa";
+    std::string_view b= a;
+    cout << b << "\n";
+    a = "bbbbbb";
+    cout << b;
     return 0;
 }

@@ -10,9 +10,6 @@ using namespace SimpleJson;
 // Http protocal
 #include "HttpProtocal.h"
 
-// URL Parser
-#include "URLParser.h"
-
 #define def_HttpEntry(name) HttpResponseBase* (name)(HttpRequest &request) 
 
 #endif

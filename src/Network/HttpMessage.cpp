@@ -1,46 +1,206 @@
 #include <Network/HttpProtocal.h>
+#include <Network/URLParser.h>
+#include <Network/ServerBase.h>
 
-char *nsplit(char *str ,const char *token , int n);
+char *nsplit(char *str, const char *token, int n);
+std::string getGMTtime();
 
-HttpRequest::HttpRequest(const char *str) {
-    headers["Content-Type"] = "text/html";
-    
-    char msg [ strlen(str) + 1 ];
-    ERROR(msg != nullptr , "Error Malloc");
-    strcpy(msg , str);
+#define NOW_POS ((char *)str + cur)
+#define CUR_MOV(obj, offset) (cur += (obj.length() + offset))
 
-    method  = nsplit(msg , " " , 1);
-    path    = nsplit(nullptr , " " , 1);
-    version = nsplit(nullptr , "\r\n" , 2);
-    headers.__init__( nsplit(nullptr , "\r\n\r\n" , 4) , ": " , "\r\n"); 
-    body    = nsplit(nullptr , "\0" , 1);
+HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : conn(_conn)
+{
+    std::cerr << "---------------In HttpRequest---------------" << std::endl;
+    size_t cur = 0;
+    method = nsplit((char *)str, " ", 1);
+    CUR_MOV(method, 1);
 
-    strcpy(msg , path.c_str());
-    nsplit(msg , "?" , 1);
-    if(strlen(msg) != path.length()) {
-        path = msg;
-        params.__init__(nsplit(nullptr , "" , 0) , "=" ,"&");
-        params.show();
+    path = nsplit(NOW_POS, " ", 1);
+
+    nsplit(NOW_POS, "?", 1);
+    if (size_t t_len = path.length(); strlen(NOW_POS) != t_len)
+    {
+        path = NOW_POS;
+        params = std::make_unique<StringDict>(NOW_POS, "=", "&");
+        cur += t_len + 1;
+    }
+    else CUR_MOV(path, 1);
+
+    if (URLParser::getInstance().preCheck(path, method))
+        throw HttpException::NON_PATH;
+
+    version = nsplit(NOW_POS, "\r\n", 2);
+    CUR_MOV(version, 2);
+
+    headers = std::make_unique<StringDict>(nsplit(NOW_POS, "\r\n\r\n", 4), ": ", "\r\n");
+    CUR_MOV((*headers), 4);
+
+    length = len - cur;
+    try
+    {
+        std::string_view content_length = queryHeader("Content-Length");
+        std::cerr << "In Header : \n"
+                  << content_length << "\n"
+                  << length << std::endl;
+        if (content_length != "" && content_length != std::to_string(length))
+            throw HttpException::ERROR_LEN;
+    }
+    catch (const HttpException &e) { throw e; }
+
+    if (length > 0)
+    {
+        body = std::make_unique<uint8_t[]>(length);
+        memcpy(body.get(), NOW_POS, length);
+        try
+        {
+            std::string &type = headers->get("Content-Type");
+
+            if (type.find("multipart/form-data") != type.npos)
+            {
+                size_t t_pos = type.find("boundary");
+                std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
+                type = "multipart/form-data";
+                form = std::make_unique<FormData>(boundary, str + cur, length);
+            }
+        }
+        catch (const HttpException &e) { ; }
     }
 
+    std::string_view status = queryHeader("Connection");
+    std::cerr << "Connection Status : " << status << "\n";
+    if (status != "keep-alive")
+        conn->setCloseFlag();
+    std::cerr << "---------------HttpRequest Finish---------------" << std::endl;
 }
 
-size_t HttpResponse::stringize(char *buff) {
+FormItem& HttpRequest::queryForm ( std::string_view _idx) 
+{
+    if(form == nullptr) throw HttpException::NON_FORM;
+    return form->queryItem(_idx);
+}
+
+
+std::string_view HttpRequest::queryParam(std::string_view _idx) noexcept
+{
+    if (params == nullptr)
+        return std::string_view("");
+
+    try
+    {
+        return params->get(_idx);
+    }
+    catch (const HttpException &e)
+    {
+        return std::string_view("");
+    }
+}
+std::string_view HttpRequest::queryHeader(std::string_view _idx) noexcept
+{
+    if (headers == nullptr)
+        return std::string_view("");
+
+    try
+    {
+        return headers->get(_idx);
+    }
+    catch (const HttpException &e)
+    {
+        return std::string_view("");
+    }
+}
+
+void HttpResponseBase::setDefaultHeaders()
+{
+    if (headers == nullptr)
+        return;
+    headers->push("Date", getGMTtime());
+    headers->push("Server", "Cjango/1.0");
+}
+
+HttpResponseBase::HttpResponseBase(std::string &_status) : status(std::move(_status))
+{
+    setDefaultHeaders();
+}
+
+HttpResponseBase::HttpResponseBase()
+{
+    setDefaultHeaders();
+}
+
+void HttpResponseBase::appendHeader(std::string _fir, std::string _sec)
+{
+    headers->push(std::move(_fir), std::move(_sec));
+}
+
+HttpResponse::HttpResponse(std::string _body) : HttpResponseBase(), body(std::move(_body))
+{
+    appendHeader("Content-Type", "text/html; charset=utf-8");
+}
+
+HttpResponse::HttpResponse(std::string _body, std::string _status) : HttpResponseBase(_status), body(_body)
+{
+    appendHeader("Content-Type", "text/html; charset=utf-8");
+}
+
+size_t HttpResponse::length() const
+{
+    return (status.length() + headers->length() + body.length());
+}
+
+size_t HttpResponse::stringize(uint8_t **buff)
+{
+    size_t buff_size = BUFF_INIT_SIZE;
     size_t cur = 0;
 
-    strcpy(buff , status.c_str());      cur += status.length();
-    cur += headers.stringize(buff + cur);
-    strcpy(buff + cur , body.c_str());  cur += body.length();
+    *buff = (uint8_t *)calloc(1 , buff_size) ;
 
+    strcpy((char *)(*buff), status.c_str());
+    cur += status.length();
+    cur += headers->stringize((char *)*buff + cur);
+    
+    if(buff_size < cur + body.length() )
+    {
+        *buff =  (uint8_t *)realloc(*buff , (buff_size = cur + body.length() + 1) ) ;
+    }
+
+    strcpy((char *)(*buff) + cur, body.c_str());
+    cur += body.length();
     return cur;
 }
 
-size_t JsonResponse::stringize(char *buff) {
+JsonResponse::JsonResponse(Json &_body) : body(std::move(_body))
+{
+    appendHeader("Content-Type", "application/json");
+}
+
+JsonResponse::JsonResponse(Json &_body, std::string _status) : HttpResponseBase(_status), body(std::move(_body))
+{
+    appendHeader("Content-Type", "application/json");
+}
+
+size_t JsonResponse::length() const
+{
+    return (status.length() + headers->length() + body.length());
+}
+
+size_t JsonResponse::stringize(uint8_t **buff)
+{
+    size_t buff_size = BUFF_INIT_SIZE;
     size_t cur = 0;
-    
-    strcpy(buff , status.c_str());      cur += status.length();
-    cur += headers.stringize(buff + cur);
-    cur +=    body.stringize(buff + cur);
+
+    *buff = (uint8_t *)calloc(1 , buff_size) ;
+
+    strcpy((char *)*buff, status.c_str());
+    cur += status.length();
+    cur += headers->stringize((char *)*buff + cur);
+
+    const char *tmp = body.stringize();
+    if(buff_size < cur + body.length() )
+    {
+        *buff =  (uint8_t *)realloc(*buff , (buff_size = cur + body.length() + 1) ) ;
+    }
+    memcpy(*buff + cur , tmp , body.length());
+    cur += body.length();
 
     return cur;
 }
