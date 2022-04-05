@@ -94,10 +94,21 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	}
 	return len;
 }
-
-void Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
+	
+size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
 {
-	send(_connfd , buff , _len , 0);
+	int buff_len = 0 ;
+	size_t cur = 0;
+	
+	while( ( buff_len = send(_connfd , buff + cur, _len - cur, 0 ) ) ) {
+		cur += buff_len;
+		std::cerr << "errno : " << errno << " ## " << std::endl;
+		std::cerr << "Buff Max Len : " << _len << " " << cur  << " " << buff_len << std::endl;
+	}
+		std::cerr << "Buff Max Len : " << _len << " " << cur  << " " << buff_len << std::endl;
+
+	errno = 0 ;
+	return ( cur == _len ) ? cur : -1ULL;
 }
 
 Socket::~Socket()

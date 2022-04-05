@@ -42,7 +42,7 @@ friend class FormData;
 	size_t len;
 public :
 	FormItem(uint8_t*_begin , uint8_t* _end);
-	operator std::string() const {return std::string((char *)data.get());}
+	operator std::string() const {return std::string((char *)data.get() , len);}
 	friend std:: fstream& operator << (std:: fstream& out , const FormItem& _this);
 	friend std::ofstream& operator << (std::ofstream& out , const FormItem& _this);
 	size_t length() const {return len;}
@@ -93,8 +93,8 @@ protected :
 	void setDefaultHeaders();
 public :
 	HttpResponseBase();
-	HttpResponseBase(std::string& _status);
-	void appendHeader(std::string _fir , std::string _sec) ;
+	HttpResponseBase(const std::string& _status);
+	void appendHeader(const std::string _fir , const std::string _sec) ;
 
 	virtual size_t length() const = 0;
 	virtual size_t stringize(uint8_t **buff) = 0;
@@ -107,23 +107,24 @@ class HttpResponse : public HttpResponseBase{
 public :
 	explicit HttpResponse() = default;
 	explicit HttpResponse(std::string _body) ;
-	explicit HttpResponse(std::string _body , std::string _status);
+	explicit HttpResponse(std::string _body , const std::string _status);
 
 	virtual size_t length() const override;
 	virtual size_t stringize(uint8_t **buff) override;
 };
 
 
-// class FileResponse : public HttpResponseBase{
-//     Json body;
-// public :
-//     explicit FileResponse() = default;
-//     explicit FileResponse(Json &_body) : body( std::move(_body) ) {};
-//     explicit FileResponse(Json &_body , const std::string _status) : 
-//                             HttpResponseBase(_status) , body( std::move( _body )) {};
+class FileResponse : public HttpResponseBase{
+    std::fstream body;
+	size_t body_len = 0;
+public :
+    explicit FileResponse() = default;
+    explicit FileResponse(std::fstream &_body , const std::string _type);
+    explicit FileResponse(std::fstream &_body , const std::string _type , const std::string _status) ;
 
-//     virtual size_t stringize(char *buff) override;
-// };
+	virtual size_t length() const override;
+    virtual size_t stringize(uint8_t **buff) override;
+};
 
 #include "SimpleJson.hpp"
 using namespace SimpleJson;
@@ -133,7 +134,7 @@ class JsonResponse : public HttpResponseBase{
 public :
 	explicit JsonResponse() = default;
 	explicit JsonResponse(Json &_body);
-	explicit JsonResponse(Json &_body , std::string _status);
+	explicit JsonResponse(Json &_body , const std::string _status);
 
 	virtual size_t length() const override;
 	virtual size_t stringize(uint8_t **buff) override;

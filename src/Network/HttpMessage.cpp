@@ -115,9 +115,10 @@ void HttpResponseBase::setDefaultHeaders()
         return;
     headers->push("Date", getGMTtime());
     headers->push("Server", "Cjango/1.0");
+    headers->push("Connection", "keep-alive");
 }
 
-HttpResponseBase::HttpResponseBase(std::string &_status) : status(std::move(_status))
+HttpResponseBase::HttpResponseBase(const std::string &_status) : status(std::move(_status))
 {
     setDefaultHeaders();
 }
@@ -135,11 +136,13 @@ void HttpResponseBase::appendHeader(std::string _fir, std::string _sec)
 HttpResponse::HttpResponse(std::string _body) : HttpResponseBase(), body(std::move(_body))
 {
     appendHeader("Content-Type", "text/html; charset=utf-8");
+    appendHeader("Content-Length" , std::to_string( body.length() ));
 }
 
 HttpResponse::HttpResponse(std::string _body, std::string _status) : HttpResponseBase(_status), body(_body)
 {
     appendHeader("Content-Type", "text/html; charset=utf-8");
+    appendHeader("Content-Length" , std::to_string( body.length() ));
 }
 
 size_t HttpResponse::length() const
@@ -159,16 +162,64 @@ size_t HttpResponse::stringize(uint8_t **buff)
     cur += headers->stringize((char *)*buff + cur);
     
     if(buff_size < cur + body.length() )
-    {
         *buff =  (uint8_t *)realloc(*buff , (buff_size = cur + body.length() + 1) ) ;
-    }
 
     strcpy((char *)(*buff) + cur, body.c_str());
     cur += body.length();
     return cur;
 }
 
-JsonResponse::JsonResponse(Json &_body) : body(std::move(_body))
+FileResponse::FileResponse(std::fstream &_body , const std::string _type) : HttpResponseBase() , body( std::move(_body) ) 
+{
+    appendHeader("Content-Type" , _type);
+    //appendHeader("Transfer-Encoding" , "chunked");
+}
+FileResponse::FileResponse(std::fstream &_body , const std::string _type , const std::string _status) 
+                                                    : HttpResponseBase(_status), body(std::move(_body))
+{
+    appendHeader("Content-Type" , _type);
+    //appendHeader("Transfer-Encoding" , "chunked");
+
+}
+
+size_t FileResponse::length() const 
+{
+    return (status.length() + headers->length() + body_len);    
+}
+
+size_t FileResponse::stringize(uint8_t **buff) 
+{
+    size_t buff_size = BUFF_INIT_SIZE;
+    size_t cur = 0;
+
+    *buff = (uint8_t *)calloc(1 , buff_size) ;
+
+    strcpy((char *)(*buff), status.c_str());
+    cur += status.length();
+    cur += headers->stringize((char *)*buff + cur);
+
+
+    body_len = cur;
+    body.seekg(0 , std::ios::beg);
+    while(!body.eof()) {
+        body.read( (char *)*buff + cur , buff_size - cur);
+        cur += body.gcount();
+        std::cerr << "Get FIle : " <<cur << "\n";
+        if(cur == buff_size) 
+            *buff = (uint8_t *)realloc(*buff , (buff_size <<= 1) ) ;
+    }
+    body.close();
+	std::cerr << "Now Send : \n" ;
+	for(int i = 0 ; i < 1024 ; i ++) putchar((*buff)[i]);    
+    //low posibility bug;
+    strcpy((char *)*buff + cur , "\r\n\0\r\n");
+    cur += 5;
+    body_len = cur - body_len;
+    std::cerr << "File Info : \nBuff_size : " << buff_size << " File Size : " << body_len << "\n";
+    return cur;
+}
+
+JsonResponse::JsonResponse(Json &_body) : HttpResponseBase() , body(std::move(_body))
 {
     appendHeader("Content-Type", "application/json");
 }
@@ -196,11 +247,12 @@ size_t JsonResponse::stringize(uint8_t **buff)
 
     const char *tmp = body.stringize();
     if(buff_size < cur + body.length() )
-    {
         *buff =  (uint8_t *)realloc(*buff , (buff_size = cur + body.length() + 1) ) ;
-    }
     memcpy(*buff + cur , tmp , body.length());
     cur += body.length();
 
+    //low posibility bug;
+    strcpy((char *)*buff + cur , "\r\n\0\r\n");
+    cur += 5;
     return cur;
 }

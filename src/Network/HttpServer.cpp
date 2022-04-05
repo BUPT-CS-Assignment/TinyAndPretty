@@ -10,11 +10,12 @@ HttpServer::HttpServer(uint16_t _port) {
 //fd conn bug!
 
 void HttpServer::createHttpTask(Connection *conn) {
-	printf("*FD IN : \t%d\n" , conn->getFD());
+	std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n";
 	HttpResponseBase *ret = nullptr;
+	size_t len = 0;
 	try {
 		uint8_t *raw = nullptr;
-		size_t len = sock->recvData(conn->getFD() , &raw);
+		len = sock->recvData(conn->getFD() , &raw);
 		if      (len == -1ULL) throw HttpException::OUT_OF_LIMIT;
 		else if (len == 0)     throw HttpException::NON_CONN;
 
@@ -41,7 +42,7 @@ void HttpServer::createHttpTask(Connection *conn) {
 				break; 
 			case HttpException::NON_CONN  :
 				std::cerr << "NON_CONN" << "\n";
-				delete conn;    break; 
+				delete conn; break; 
 			default: 
 				std::cerr << "ELSE" << (int)e<< "\n";
 				break;
@@ -49,10 +50,11 @@ void HttpServer::createHttpTask(Connection *conn) {
 	}
 
 	uint8_t *buff = nullptr;
-	size_t len = ret->stringize(&buff);
-	sock->sendData(conn->getFD() , buff , len );
-	if(ret != nullptr) delete ret;
-	delete conn; // near future
+	len = ret->stringize(&buff);
+	len = sock->sendData(conn->getFD() , buff , len );
+	if(ret != nullptr) 	delete ret;
+	
+	delete conn; // near future , now long connection is not supported 
 }
 
 void HttpServer::start() {

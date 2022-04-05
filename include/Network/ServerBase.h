@@ -49,7 +49,7 @@ public :
     Socket(uint16_t _port);
     ~Socket();
     size_t recvData(int _connfd , uint8_t **data);
-    void sendData(int _connfd , uint8_t *data , size_t len );
+    size_t sendData(int _connfd , uint8_t *data , size_t len );
     Connection* onConnect();
     int getFD() const {return sockfd;}
 };

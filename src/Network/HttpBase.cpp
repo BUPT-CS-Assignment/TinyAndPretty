@@ -29,7 +29,6 @@ std::string &StringDict::get(std::string_view str)
 {
     for (auto &it : item)
     {
-        // std::cerr << "Whats : " << str << " : " << it.first << "\n";
         if (it.first == str)
             return it.second;
     }
