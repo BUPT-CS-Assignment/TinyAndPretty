@@ -15,7 +15,7 @@ else
 $(error bad target=$(NAME))
 endif
 
-include $(WORK_DIR)/scripts/build.mk
+include build.mk
 
 $(obj)/lexer.lex.o: $(obj)/parser.tab.h
 $(obj)/lexer.lex.c: lexer.l $(obj)/parser.tab.h
