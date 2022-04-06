@@ -78,7 +78,7 @@
         "thread": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "*.conf": "cpp"
+        "*.conf": "kconfig"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

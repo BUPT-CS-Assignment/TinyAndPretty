@@ -1,5 +1,5 @@
 # **TinyAndPretty 自动化配置手册**
-![avatar](https://badgen.net/badge/Language/C++11/orange)
+![avatar](https://badgen.net/badge/Language/C++17/orange)
 ![stars](https://badgen.net/badge/Dev%20Env./Linux/green)
 ![license](https://badgen.net/badge/License/Apache-2.0/blue)
 
@@ -7,23 +7,37 @@
 ```
 .
 ├── include             //存放头文件（接口声明）
-│   ├── common.h
-│   └── module1
-│       └── head.h
+│   ├── common.h        //程序共用头
+│   ├── interfaces.h    //模块接口,包含所有模块对外使用的函数定义
+│   ├── Network         //网络服务模块
+│   │   ├── HttpProtocal.h
+│   │   ├── HttpServer.h
+│   │   ├── Network.h
+│   │   ├── ServerBase.h
+│   │   ├── SimpleJson.hpp
+│   │   └── URLParser.h
+│   ├── router.conf
+│   └── test
+│       └── define.h
+├── Kconfig             //参数配置
+├── LICENSE
 ├── Makefile
 ├── README.md
 ├── scripts             //存放脚本及文档
-│   └── colors.mk
-├── src
-│   ├── main.cpp        //程序入口
-│   ├── module1
-│   │   ├── m1in.cpp
-│   │   └── te1.cpp
-│   ├── module2
-│   │   ├── case.cpp
-│   │   └── print.cpp
-│   ├── test-main.cpp   //测试用程序入口
-│   └── t.h
+│   ├── build.mk
+│   ├── colors.mk
+│   └── config.mk
+├── src                 //项目源代码
+│   ├── main.cpp
+│   ├── Network
+│   │   ├── HttpBase.cpp
+│   │   ├── HttpMessage.cpp
+│   │   ├── HttpServer.cpp
+│   │   ├── HttpUtils.cpp
+│   │   ├── ServerBase.cpp
+│   │   └── URLParser.cpp
+│   └── test
+│       └── test.cpp
 └── utils               //存放工具组
 ```
 
@@ -37,21 +51,25 @@
 ```
     $ make run
 ```
-* iii . 清除`build`编译文件夹。
+* iii . 清除`build`编译文件夹。`disrclean`可清除`menuconfig`生成的配置文件。
 ```
-    $make clean
+    $ make (dist)?clean
 ```
-* iv . 添加参数`MODE`可切换为`DEBUG`模式，该模式下工程入口为`test-main.cpp`。
+* iv . 启动菜单配置，调整程序运行参数
 ```
-    $ make MODE=debug (run)?
+    $ make menuconfig
 ```
-* v . 添加参数`MODS`可仅使选择的模块编译到工程中。可与`MODE`指令组合使用。
+* v . 添加参数`MODS`可仅使选择的模块编译到工程中。
 ```
     $ make MODS="module1 module2" (run)?
 ```
 * vi. 添加参数`MAINARGS`可添加运行时命令行参数到`main()`函数中。
 ```
     $ make MAINARGS="sql.db" run
+```
+* vii. 多线程编译，加快编译速度。如`-j2`双线程编译
+```
+    $ make -j(\d*)
 ```
 
 ## 三.添加模块说明 ##

@@ -16,9 +16,4 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define ERROR(cond , msg , ...) if(!(cond)) {\
-    fprintf(stderr ,"\033[1;41m" msg "\033[0m""\n", ## __VA_ARGS__);\
-    assert(cond);\
-}
-
 #endif

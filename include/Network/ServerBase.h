@@ -9,18 +9,7 @@
 
 #include <functional>
 
-#define IPV_4           AF_INET
-#define PROTO_FAMILT    IPV_4
-#define HOST_ADDR       INADDR_ANY
-#define SOCK_TYPE       SOCK_STREAM | SOCK_NONBLOCK
-#define LISTEN_Q_MAX    16
-#define ADDR_REUSE      1
-#define RECV_TIMEOUT    {0,500000}
-#define SEND_TIMEOUT    {0,500000}
-#define MAX_EVENTS      128
-#define BUFF_INIT_SIZE  4096
-#define BUFF_MAX_SIZE   134217728 // (1024*1024*128) bytes
-#define TIME_CLIP       30000
+#include "ServerConfig.h"
 
 class Connection {
     bool close_flag;
@@ -39,12 +28,8 @@ public:
 
 class Socket {
     int sockfd ;
-    int addr_reuse;
-    uint16_t port;
 
     struct sockaddr_in address;
-    struct timeval recv_timeout;
-    struct timeval send_timeout;
 public : 
     Socket(uint16_t _port);
     ~Socket();

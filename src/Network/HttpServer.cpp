@@ -10,7 +10,9 @@ HttpServer::HttpServer(uint16_t _port) {
 //fd conn bug!
 
 void HttpServer::createHttpTask(Connection *conn) {
+#ifdef DEBUG
 	std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n";
+#endif
 	HttpResponseBase *ret = nullptr;
 	size_t len = 0;
 	try {
@@ -18,8 +20,9 @@ void HttpServer::createHttpTask(Connection *conn) {
 		len = sock->recvData(conn->getFD() , &raw);
 		if      (len == -1ULL) throw HttpException::OUT_OF_LIMIT;
 		else if (len == 0)     throw HttpException::NON_CONN;
-
-		printf("*Data Size :\t%lu\n" , len);
+#ifdef DEBUG
+		std::cerr << "*Data Size :\t" << len <<"\n";
+#endif
 		HttpRequest request {conn , raw , len};
 		auto &entry = URLParser::getInstance().URLparse( request.Path() );
 		ret = entry(request);
@@ -54,14 +57,23 @@ void HttpServer::createHttpTask(Connection *conn) {
 	len = sock->sendData(conn->getFD() , buff , len );
 	if(ret != nullptr) 	delete ret;
 	
-	delete conn; // near future , now long connection is not supported 
+	delete conn; // near future , now long connection is not supported
+#ifdef DEBUG
+	std::cerr << "##### Connection offline. #####\n";
+#endif 
 }
 
 void HttpServer::start() {
 	epool->Loop( [&] (epoll_data_t data , int type) {
 		if(data.fd == sock->getFD()) {
-			Connection* con = sock->onConnect();
-			epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
+			while(true) {
+				Connection* con = sock->onConnect();
+				if(con == nullptr) break;
+			#ifdef DEBUG
+				std::cerr << "Connection : " << con->getFD() << "handshake!\n"; 
+			#endif
+				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
+			}
 		}else if (type & EPOLLIN) {
 			createHttpTask( static_cast<Connection *>(data.ptr) );
 		}

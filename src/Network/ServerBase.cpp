@@ -1,6 +1,6 @@
 #include <Network/ServerBase.h>
 
-Socket::Socket(uint16_t _port) : port(_port)
+Socket::Socket(uint16_t _port)
 {
 	/*----------------------------------------*/
 	// Initialize socket port
@@ -12,29 +12,27 @@ Socket::Socket(uint16_t _port) : port(_port)
 #ifdef IPV_4
 	address = sockaddr_in{
 		sin_family : PROTO_FAMILT,
-		sin_port : htons(port),
+		sin_port : htons(PORT),
 		sin_addr : {s_addr : htonl(HOST_ADDR)},
 	};
 #elif IPV_6 // near future
-	address = sockaddr_in{
-		sin_family : PROTO_FAMILT,
-		sin_port : htons(port),
-		sin_addr : {s_addr : htonl(HOST_ADDR)},
-	};
 #endif
-	/*----------------------------------------*/
-	// Permit to reuse address
-	addr_reuse = ADDR_REUSE;
+
+/*----------------------------------------*/
+// Permit to reuse address
+#ifdef ADDR_REUSE
+	int addr_reuse = ADDR_REUSE;
 	NETERROR(
 		setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &addr_reuse, sizeof(int)) < 0, "set address reuse");
-	/*----------------------------------------*/
-	// Set up timeout limit for receive and send
-	 recv_timeout = (timeval)RECV_TIMEOUT;
+#endif
+/*----------------------------------------*/
+// Set up timeout limit for receive and send
+	struct timeval recv_timeout = (timeval)RECV_TIMEOUT;
 	 NETERROR(
 	     setsockopt(sockfd,SOL_SOCKET,SO_RCVTIMEO,&recv_timeout,sizeof(timeval)) < 0
 	 , "set timeVal error");
 
-	send_timeout = (timeval)SEND_TIMEOUT;
+	struct timeval send_timeout = (timeval)SEND_TIMEOUT;
 	NETERROR(
 	    setsockopt(sockfd,SOL_SOCKET,SO_SNDTIMEO,&send_timeout,sizeof(timeval)) < 0
 	, "set timeVal error");
@@ -52,10 +50,11 @@ Socket::Socket(uint16_t _port) : port(_port)
 
 Connection *Socket::onConnect()
 {
-	sockaddr_in _addr = {0};
+	struct sockaddr_in _addr {0};
 	socklen_t _len = sizeof(_addr);
 	int _connfd = accept(sockfd, (sockaddr *)&_addr, &_len);
-	return new Connection{_connfd, _len, _addr};
+	if(_connfd == -1) {errno = 0; return nullptr;}
+	else return new Connection{_connfd, _len, _addr};
 }
 
 size_t Socket::recvData(int _connfd, uint8_t **data)
@@ -67,8 +66,10 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 
 	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
 	{
-		//std::cerr << "Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
-		//std::cerr << "errno : " << errno << " ## " << std::endl;
+#ifdef DEBUG
+		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
+		std::cerr << "errno : " << errno << " ## " << std::endl;
+#endif
 		if (buff_len == -1)
 		{
 			if 		(errno == EAGAIN)	{errno = 0 ;break;}
@@ -102,10 +103,11 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	
 	while( ( buff_len = send(_connfd , buff + cur, _len - cur, 0 ) ) ) {
 		cur += buff_len;
+#ifdef DEBUG
+		std::cerr << "Send Buff Info : " << _len << " " << cur  << " " << buff_len << std::endl;
 		std::cerr << "errno : " << errno << " ## " << std::endl;
-		std::cerr << "Buff Max Len : " << _len << " " << cur  << " " << buff_len << std::endl;
+#endif
 	}
-		std::cerr << "Buff Max Len : " << _len << " " << cur  << " " << buff_len << std::endl;
 
 	errno = 0 ;
 	return ( cur == _len ) ? cur : -1ULL;

@@ -10,7 +10,9 @@ std::string getGMTtime();
 
 HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : conn(_conn)
 {
+#ifdef DEBUG
     std::cerr << "---------------In HttpRequest---------------" << std::endl;
+#endif
     size_t cur = 0;
     method = nsplit((char *)str, " ", 1);
     CUR_MOV(method, 1);
@@ -39,9 +41,11 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
     try
     {
         std::string_view content_length = queryHeader("Content-Length");
-        std::cerr << "In Header : \n"
-                  << content_length << "\n"
+#ifdef DEBUG
+        std::cerr << "In Header Length: "
+                  << content_length << "\nReal Length: "
                   << length << std::endl;
+#endif
         if (content_length != "" && content_length != std::to_string(length))
             throw HttpException::ERROR_LEN;
     }
@@ -67,10 +71,14 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
     }
 
     std::string_view status = queryHeader("Connection");
+#ifdef DEBUG
     std::cerr << "Connection Status : " << status << "\n";
+#endif
     if (status != "keep-alive")
         conn->setCloseFlag();
+#ifdef DEBUG
     std::cerr << "---------------HttpRequest Finish---------------" << std::endl;
+#endif
 }
 
 FormItem& HttpRequest::queryForm ( std::string_view _idx) 
@@ -204,18 +212,21 @@ size_t FileResponse::stringize(uint8_t **buff)
     while(!body.eof()) {
         body.read( (char *)*buff + cur , buff_size - cur);
         cur += body.gcount();
+#ifdef DEBUG
         std::cerr << "Get FIle : " <<cur << "\n";
+#endif
         if(cur == buff_size) 
             *buff = (uint8_t *)realloc(*buff , (buff_size <<= 1) ) ;
     }
     body.close();
-	std::cerr << "Now Send : \n" ;
-	for(int i = 0 ; i < 1024 ; i ++) putchar((*buff)[i]);    
+
     //low posibility bug;
     strcpy((char *)*buff + cur , "\r\n\0\r\n");
     cur += 5;
     body_len = cur - body_len;
+#ifdef DEBUG
     std::cerr << "File Info : \nBuff_size : " << buff_size << " File Size : " << body_len << "\n";
+#endif
     return cur;
 }
 

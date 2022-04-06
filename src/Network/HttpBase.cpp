@@ -18,8 +18,8 @@ void StringDict::__init__(char *str, const char *token_1, const char *token_2)
     while (true)
     {
         fir = nsplit(str + cur, token_1, len_1);
-        CUR_MOV(strlen(fir) + len_1);            // std::cerr << fir << "\n";
-        sec = nsplit(str + cur, token_2, len_2); // std::cerr << sec << "\n";
+        CUR_MOV(strlen(fir) + len_1);            
+        sec = nsplit(str + cur, token_2, len_2); 
         item.push_back(std::make_pair(std::string(fir), std::string(sec)));
         CUR_MOV(strlen(sec) + len_2);
     }
@@ -100,13 +100,15 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
         name = name.substr(1, name.length() - 2);// erase ""
         disposition = disposition.substr(0, t_pos - 2);// 2 : sizeof "; "
     }
-    std::cerr << "Name : " << name << " & FileName : " << filename << "\n";
     _begin += headers->length() + 4;
 
     len = _end - _begin;
-    std::cerr << "Item Len : " << len << std::endl;
     data = std::make_unique<uint8_t[]>(len);
     memcpy(data.get(), _begin, len);
+#ifdef DEBUG
+    std::cerr << "Name : " << name << " & FileName : " << filename << "\n";
+    std::cerr << "Item Len : " << len << std::endl;
+#endif
 }
 
 std::fstream &operator<<(std::fstream &out, const FormItem &_this)
@@ -130,7 +132,9 @@ void FormItem::show()
 
 FormData::FormData(std::string &_boundary, uint8_t *body, size_t len) : boundary(std::move(_boundary))
 {
+#ifdef DEBUG
     std::cerr << "String Boundary: " << boundary << " Len: " << len << "\n";
+#endif
     uint8_t *fir = nullptr;
 
     for (size_t cur = 0; cur < len; cur++)
@@ -144,7 +148,9 @@ FormData::FormData(std::string &_boundary, uint8_t *body, size_t len) : boundary
             fir = body + cur;
         }
     }
+#ifdef DEBUG
     std::cerr << "Finish Form Data\n";
+#endif
 }
 
 FormItem &FormData::queryItem(std::string_view _name)
