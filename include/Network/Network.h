@@ -1,10 +1,8 @@
 #ifndef __NET__
 #define __NET__
 
-#include "HttpServer.h"
-
 // Json Module
-#include "SimpleJson.hpp"
+#include <libs/SimpleJson.hpp>
 using namespace SimpleJson;
 
 // Http protocal

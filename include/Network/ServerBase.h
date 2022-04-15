@@ -31,12 +31,15 @@ class Socket {
 
     struct sockaddr_in address;
 public : 
-    Socket(uint16_t _port);
+    Socket();
     ~Socket();
     size_t recvData(int _connfd , uint8_t **data);
     size_t sendData(int _connfd , uint8_t *data , size_t len );
     Connection* onConnect();
     int getFD() const {return sockfd;}
+
+    auto recvData(int _confd)
+        -> std::tuple<std::shared_ptr<uint8_t> , size_t > ;
 };
 
 class EventPool{

@@ -1,6 +1,6 @@
 #include <Network/ServerBase.h>
 
-Socket::Socket(uint16_t _port)
+Socket::Socket()
 {
 	/*----------------------------------------*/
 	// Initialize socket port
@@ -46,6 +46,8 @@ Socket::Socket(uint16_t _port)
 	// Set up max capacity of listening queue
 	NETERROR(
 		listen(sockfd, LISTEN_Q_MAX) < 0, "listen error");
+
+	::printf("Successfully Listen on %d\n" , PORT);
 }
 
 Connection *Socket::onConnect()
@@ -95,7 +97,16 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	}
 	return len;
 }
-	
+
+auto Socket::recvData(int _confd)
+	-> std::tuple<std::shared_ptr<uint8_t> , size_t > 
+{
+	uint8_t* data = nullptr;
+	size_t len = recvData(_confd , &data);
+	return std::make_tuple( std::shared_ptr<uint8_t>(data) , len);
+}
+
+
 size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
 {
 	int buff_len = 0 ;

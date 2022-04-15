@@ -10,8 +10,6 @@
 #define HTTP_STATUS_404 "HTTP/1.1 404 Not Found\r\n"
 #define HTTP_STATUS_502 "HTTP/1.1 502 Bad Gateway\r\n"
 
-enum class HttpException {NON_POS , ERROR_LEN , OUT_OF_LIMIT, NON_PATH , NON_CONN , NON_FORM};
-
 using Dict = std::vector<std::pair<std::string ,std::string>>;
 
 class StringDict {
@@ -96,6 +94,8 @@ public :
 	HttpResponseBase(const std::string& _status);
 	void appendHeader(const std::string _fir , const std::string _sec) ;
 
+	auto stringize()
+		->std::tuple<std::shared_ptr<uint8_t>, size_t>;
 	virtual size_t length() const = 0;
 	virtual size_t stringize(uint8_t **buff) = 0;
 	virtual ~HttpResponseBase() {};
@@ -121,12 +121,13 @@ public :
     explicit FileResponse() = default;
     explicit FileResponse(std::fstream &_body , const std::string _type);
     explicit FileResponse(std::fstream &_body , const std::string _type , const std::string _status) ;
+	explicit FileResponse(std::filesystem::path _file , const std::string _type);
 
 	virtual size_t length() const override;
     virtual size_t stringize(uint8_t **buff) override;
 };
 
-#include "SimpleJson.hpp"
+#include <libs/SimpleJson.hpp>
 using namespace SimpleJson;
 
 class JsonResponse : public HttpResponseBase{

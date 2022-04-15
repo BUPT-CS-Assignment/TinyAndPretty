@@ -1,5 +1,6 @@
 #ifndef __SJSON__
 #define __SJSON__
+#include <bits/stdc++.h>
 //NON THREAD SAFE! buff error
 namespace SimpleJson {
 

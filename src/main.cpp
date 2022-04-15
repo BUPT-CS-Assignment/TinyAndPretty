@@ -1,10 +1,8 @@
 #include <common.h>
-#include <interfaces.h>
+#include <Network/HttpServer.h>
 
 int main(int argv , char* argc[]) {
-
-    HttpServer server(9006);
-    
+    HttpServer server;
     server.start();
     return 0;
 }

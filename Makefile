@@ -7,9 +7,10 @@ INCLUDE_DIR = $(WORK_DIR)/include
 
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
 
-# set stdc++ 17
-CXXFLAGS += $(addprefix -I ,$(INCLUDE_DIR)) -Wall -std=c++17
+# set stdc++ 17 and multi-threads
+CXXFLAGS += -Wall -std=c++17 -pthread
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
+INCLUDES = $(addprefix -I ,$(INCLUDE_DIR))
 
 OBJ_DIR = $(BUILD_DIR)/$(NAME)-obj
 

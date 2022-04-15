@@ -1,8 +1,8 @@
 mainmenu "Server Configuration Menu"
 
-config MULTI_THREADS
-  bool "Enable multi-threads"
-  default n
+config THREADS_MAXIMUM
+  int "Set threads maximum (0 for auto)"
+  default 0
 
 menu "Configure Network Arguments"
 choice

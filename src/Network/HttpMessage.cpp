@@ -1,12 +1,16 @@
 #include <Network/HttpProtocal.h>
 #include <Network/URLParser.h>
 #include <Network/ServerBase.h>
+#include <Network/HttpException.h>
 
 char *nsplit(char *str, const char *token, int n);
 std::string getGMTtime();
 
 #define NOW_POS ((char *)str + cur)
 #define CUR_MOV(obj, offset) (cur += (obj.length() + offset))
+
+/*---------------------------------HttpRequest---------------------------------*/
+
 
 HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : conn(_conn)
 {
@@ -116,6 +120,8 @@ std::string_view HttpRequest::queryHeader(std::string_view _idx) noexcept
         return std::string_view("");
     }
 }
+/*---------------------------------HttpResponseBase---------------------------------*/
+
 
 void HttpResponseBase::setDefaultHeaders()
 {
@@ -140,6 +146,17 @@ void HttpResponseBase::appendHeader(std::string _fir, std::string _sec)
 {
     headers->push(std::move(_fir), std::move(_sec));
 }
+
+auto HttpResponseBase::stringize()
+    -> std::tuple<std::shared_ptr<uint8_t>, size_t> 
+{
+   uint8_t* data = nullptr;
+   size_t len = stringize(&data);
+   return std::make_tuple( std::shared_ptr<uint8_t>(data) , len);
+}
+
+/*---------------------------------HttpResponse---------------------------------*/
+
 
 HttpResponse::HttpResponse(std::string _body) : HttpResponseBase(), body(std::move(_body))
 {
@@ -177,18 +194,23 @@ size_t HttpResponse::stringize(uint8_t **buff)
     return cur;
 }
 
+/*---------------------------------FileResponse---------------------------------*/
+
 FileResponse::FileResponse(std::fstream &_body , const std::string _type) : HttpResponseBase() , body( std::move(_body) ) 
 {
     appendHeader("Content-Type" , _type);
-    //appendHeader("Transfer-Encoding" , "chunked");
 }
 FileResponse::FileResponse(std::fstream &_body , const std::string _type , const std::string _status) 
                                                     : HttpResponseBase(_status), body(std::move(_body))
 {
     appendHeader("Content-Type" , _type);
-    //appendHeader("Transfer-Encoding" , "chunked");
+}
+
+FileResponse::FileResponse(std::filesystem::path _file , const std::string _type) 
+{
 
 }
+
 
 size_t FileResponse::length() const 
 {
@@ -229,6 +251,8 @@ size_t FileResponse::stringize(uint8_t **buff)
 #endif
     return cur;
 }
+
+/*---------------------------------JsonResponse---------------------------------*/
 
 JsonResponse::JsonResponse(Json &_body) : HttpResponseBase() , body(std::move(_body))
 {

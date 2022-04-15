@@ -1,4 +1,5 @@
 #include <Network/HttpProtocal.h>
+#include <Network/HttpException.h>
 
 char *nsplit(char *str, const char *token, int n);
 

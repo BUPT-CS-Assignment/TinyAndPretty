@@ -5,16 +5,19 @@ OBJS = $(subst cpp,o,$(subst src,$(OBJ_DIR),$(SOURCES)))
 root : .detect $(PACKAGE) 
 	@echo "$(C_GREEN)[$(shell date +%F%n%T)] Compile Complete!$(C_END)"
 
+-include $(OBJS:.o=.d)
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo + CXX $<
 	@mkdir -p $(dir $@)
-	@$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< 
+	@$(CXX) $(INCLUDES) $< -MM -MF $(subst .o,.d,$@) -MT $@ -MT $(subst .o,.d,$@)
 
 $(PACKAGE): $(OBJS)
 	@echo + LD $@
-	@$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $(OBJS)
 
-.PHONY: run root
+.PHONY: run root 
 
 run : .detect $(PACKAGE) 
 	@echo  "$(C_BLUE)[$(shell date +%F%n%T)] RUNNING...$(C_END)"

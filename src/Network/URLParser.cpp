@@ -1,4 +1,5 @@
 #include <Network/URLParser.h>
+#include <Network/HttpException.h>
 #include <interfaces.h>
 
 #define SET_STATIC(_url) 

@@ -4,7 +4,9 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <filesystem>
 #include <memory>
+#include <tuple>
 
 #include <cstdio>
 #include <cstring>
