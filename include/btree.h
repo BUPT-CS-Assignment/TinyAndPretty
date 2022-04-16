@@ -51,7 +51,7 @@ class BalanceTree{
      * @brief B+树结构类
      *
      */
-    private:
+private:
     int __ID__; //树结构标识
     Node<DAT, Idx> *__Data__; //首节点指针
     Node<DAT, Idx> *__Root__; //根节点指针
@@ -66,7 +66,7 @@ class BalanceTree{
         if(node->__type == __LEAF__) return node;
         return findHead(node->__child[0]);
     }
-    public:
+public:
     BalanceTree(int id);    //树创建
     DataNode<DAT, Idx> LocateData(Idx *); //数据查找
     DAT *AccurateLoacte(Idx *); //数据查找
@@ -75,6 +75,7 @@ class BalanceTree{
     //void UpdateData(Idx*,DAT*);
     void CheckAll();   //遍历树
     DataNode<DAT, Idx> getLink();
+    void CutDown();
 
 };
 
@@ -86,7 +87,7 @@ template<class DAT, class Idx>
 class Node{
     friend class BalanceTree<DAT, Idx>;  //树结构类友元
     friend struct DataNode<DAT, Idx>;
-    
+private:
     __NodeType__  __type;    //节点类型
     Node<DAT, Idx> *__parent, *__left, *__right;  //父节点指针/左右叶子节点指针
     Node<DAT, Idx> **__child; //孩子节点指针数组
@@ -95,6 +96,7 @@ class Node{
     int __cursor;   //索引数组光标
     //
     Node(__NodeType__ type);//构造函数(指定节点类型)
+    void erase();
     //
     void remove();  //节点删除
     void insert(Idx *, DAT *);  //数据插入
@@ -112,10 +114,15 @@ class Node{
     void right_merge(Node<DAT, Idx> *);    //与右节点合并
     void left_lend(Idx *);   //从左节点借
     void right_lend(Idx *);  //从右节点借
-    void print_node();  //打印节点数据
     void delete_index(int); //根据位置抹除索引及子节点
     bool find_node(Node<DAT, Idx> *); //寻找节点
     ///////////////////////////
+public:
+    void print_node();  //打印节点数据
+    int get_cursor(){
+        return __cursor;
+    }  //返回光标
+    Node<DAT, Idx> *get_side(int);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,6 +165,37 @@ void BalanceTree<DAT, Idx>::CheckAll(){
     }
     cout << "----------------------------------------\n" << endl;
 }
+
+template<class DAT, class Idx>
+void BalanceTree<DAT, Idx>::CutDown(){
+    Node<DAT, Idx> *node = __Root__;
+    while(node != NULL){
+        Node<DAT, Idx> *temp = node;
+        while(temp != NULL){
+            if(temp->__type != __LEAF__){
+                for(int i = 0; i < temp->__cursor; i++){
+                    temp->__child[i + 1] = NULL;
+                }
+                if(temp != node){
+                    temp->__child[0] = NULL;
+                }
+            }
+            temp->__parent = NULL;
+            delete[] temp->__index;
+            delete[] temp->__data;
+            if(temp != node){
+                delete[] temp->__child;
+            }
+            temp = temp->__right;
+            if(temp != NULL) temp->__left->__right = NULL;
+        }
+        if(node->__type == __LEAF__) break;
+        temp = node;
+        node = node->__child[0];
+        delete[] temp->__child;
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////
 /**
@@ -255,19 +293,18 @@ void Node<DAT, Idx>::remove(){
     /**
      * @brief 移除节点
      */
-    for(int i = 0; i < __cursor; i++){
+    for(int i = 0; i < __ORDER__; i++){
         __index[i] = NULL;
     }
     if(__type == __INTERNAL__){
-        for(int i = 0; i < __cursor + 1; i++)    __child[i] = NULL;
+        for(int i = 0; i < __ORDER__ + 1; i++)    __child[i] = NULL;
     }
     else{
-        for(int i = 0; i < __cursor; i++){
+        for(int i = 0; i < __ORDER__; i++){
             //__index[i] = NULL;
             __data[i] = NULL;
         }
     }
-    delete __data;  delete __child;  delete __index;
     if(__left != NULL) __left->__right = this->__right;
     __parent = __left = __right = NULL;
 }
@@ -280,6 +317,15 @@ void Node<DAT, Idx>::print_node(){
     for(int i = 0; i < __cursor; i++){
         cout << *__index[i] << " ";
     }cout << endl;
+}
+template<class DAT, class Idx>
+Node<DAT, Idx> *Node<DAT, Idx>::get_side(int side){
+    if(side == 0){
+        return (__left == NULL ? NULL : __left);
+    }
+    else{
+        return (__right == NULL ? NULL : __right);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -345,9 +391,9 @@ int Node<DAT, Idx>::find_insert_position(Idx *idx){
     if(idx == NULL || isFull()) return -1;
     if(__cursor == 0 || *idx < *__index[0]) return 0;
     if(*idx >= *__index[__cursor - 1]) return __cursor;
-    for(int i = 0; i < __cursor-1; i ++){
-        if(*__index[i] <= *idx && *idx < *__index[i+1]){
-            return i+1;
+    for(int i = 0; i < __cursor - 1; i ++){
+        if(*__index[i] <= *idx && *idx < *__index[i + 1]){
+            return i + 1;
         }
     }
     return -1;
@@ -487,7 +533,9 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
     //合并节点优先///////////////////////////////////////////////////////////////////
     if(node->__left != NULL && node->isMerge(node->__left)){
         //左合并
+        Node<DAT, Idx> *temp = node;
         node = node->left_merge(node->__left);
+        temp->__cursor = 0;
         if(node->__parent == __Root__ && node->__parent->__cursor == 0){
             __Root__ = node;
             __Root__->__parent = NULL;
@@ -548,12 +596,12 @@ bool Node<DAT, Idx>::DeleteData(Idx *idx){
      */
     int p = find_delete_position(idx);
     if(p == -1) return false;
-    __data[p] = NULL;
-    __index[p] = NULL;
     for(int i = p; i < __cursor - 1; i++){
         __data[i] = __data[i + 1];
         __index[i] = __index[i + 1];
     }
+    __index[__cursor - 1] = NULL;
+    __data[__cursor - 1] = NULL;
     __cursor --;
     return true;
 }
@@ -564,10 +612,12 @@ void Node<DAT, Idx>::delete_index(int p){
      * @brief 合并节点后删除父节点索引 <parm>删除索引位置
      */
     if(p == -1) return;
-    for(int i = p; i < __cursor; i++){
+    for(int i = p; i < __cursor - 1; i++){
         __index[i] = __index[i + 1];
         __child[i + 1] = __child[i + 2];
     }
+    __index[__cursor - 1] = NULL;
+    __child[__cursor] = NULL;
     __cursor --;
 }
 
@@ -605,7 +655,9 @@ void BalanceTree<DAT, Idx>::delete_adjust(Node<DAT, Idx> *node){
             //定位父索引
             p = node->__parent->find_insert_position(node->__left->__index[node->__left->__cursor - 1]);
             Idx *temp_idx = new Idx(*node->__parent->__index[p]);   //拉取父索引
+            Node<DAT, Idx> *temp = node;
             node = node_merge(node->__left, temp_idx, node);  //合并
+            temp->__cursor = 0;
             node->__parent->delete_index(p);    //删除父索引
         }
         else if(node->__right != NULL && node->__right->__parent == node->__parent){
@@ -637,11 +689,14 @@ Node<DAT, Idx> *BalanceTree<DAT, Idx>::node_merge(Node<DAT, Idx> *nodeA, Idx *id
     //节点数据迁移
     for(int i = 0; i < nodeB->__cursor; i++){
         nodeA->__index[nodeA->__cursor] = nodeB->__index[i];
-        nodeA->__child[nodeA->__cursor] = nodeB->__child[i];
+        nodeB->__index[i] = NULL;
         nodeB->__child[i]->__parent = nodeA;
+        nodeA->__child[nodeA->__cursor] = nodeB->__child[i];
+        nodeB->__child[i] = NULL;
         nodeA->__cursor++;
     }
     nodeA->__child[nodeA->__cursor] = nodeB->__child[nodeB->__cursor];
+    nodeB->__child[nodeB->__cursor] = NULL;
     nodeA->__child[nodeA->__cursor]->__parent = nodeA;
     //节点间指针更新
     nodeA->__right = nodeB->__right;
@@ -684,7 +739,7 @@ void Node<DAT, Idx>::right_merge(Node<DAT, Idx> *node){
     if(node->__right != NULL) node->__right->__left = this;
     this->__right = node->__right;
     node->__left = node->__right = node->__parent = NULL;
-    __parent->delete_index(p);
+    __parent->delete_index(p-1);
 }
 
 template<class DAT, class Idx>
@@ -731,12 +786,14 @@ void Node<DAT, Idx>::right_lend(Idx *new_idx){
             }
             right->__child[i] = right->__child[i + 1];
         }
+        right->__index[right->__cursor - 1] = NULL;
+        right->__child[right->__cursor] = NULL;
         __index[__cursor] = new Idx(*new_idx);
 
     }
     else if(__type == __LEAF__){
         __data[__cursor] = right->__data[0];
-        __index[__cursor] = new Idx(*right->__index[0]);
+        __index[__cursor] = right->__index[0];
         for(int i = 0; i < right->__cursor - 1; i++){
             right->__index[i] = right->__index[i + 1];
             right->__data[i] = right->__data[i + 1];
