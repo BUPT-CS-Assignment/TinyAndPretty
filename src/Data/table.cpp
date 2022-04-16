@@ -2,7 +2,7 @@
 #include<implement.h>
 
 //数据表创建
-Table::Table(NEDB* db,string name){
+Table::Table(NEDB *db, string name){
     db_ = db;
     page_size_ = db_->getDefaultPageSize();
     strcpy(table_name_, name.c_str());
@@ -13,7 +13,7 @@ Table::Table(NEDB* db,string name){
     max_rows_per_page_ = 0;
     parm_names_ = NULL;
     pages_tree_ = new BalanceTree<__uint16_t, Index>(0);
-    index_tree_ = NULL;
+    //index_tree_ = NULL;
 }
 
 
@@ -21,20 +21,20 @@ void Table::Init(string parameters){
     /*
         数据表初始化, 判空
     */
-    try{    
+    try{
         if(parameters.length() == 0) throw PARAM_EMPTY;
         //参数分离
         int number;
         string *params = Split(parameters, ',', number);
         parm_num_ = number;
         //分配空间
-        index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
+        //index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
         parm_types_ = new DATA_TYPE[parm_num_];
         parm_names_ = new char[parm_num_][32]{{0}};
         bool key_assigned = 0;
         //参数分析
         for(int i = 0; i < parm_num_; i++){
-            index_tree_[i] = NULL;
+            //index_tree_[i] = NULL;
             string *str = Split(params[i], ' ', number);
             if(number != 2 && number != 3)  throw PARAM_FORM_ERROR;
             //数据类型解析
@@ -88,7 +88,8 @@ void Table::Init(string parameters){
         max_rows_per_page_ = (page_size_ - PAGE_HEAD_SIZE) / row_take_up_;
         Memorizer RAM(this);
         RAM.TableStore();
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -139,12 +140,12 @@ string Table::getStructure(){
     }
     cout << "+-----------+-----------\n" << endl;
     */
-    string str = * new string("{"); 
+    string str = "{";
     str = str + to_string((int)page_size_) + ",";
     for(int i = 0; i < parm_num_; i++){
-        str = str +parm_names_[i] + ":"+ kTypeName[parm_types_[i]]
+        str = str + parm_names_[i] + ":" + kTypeName[parm_types_[i]]
             + (i == prim_key_ ? "(key)" : "");
-        str = str + (i==parm_num_-1? "}":", ");
+        str = str + (i == parm_num_ - 1 ? "}" : ", ");
     }
     return str;
 
@@ -194,7 +195,16 @@ int Table::ParmLocate(string name){
     return -1;
 }
 
-void Table::FreeTable(){
-    delete parm_names_;
+void Table::Erase(){
+    try{
+        delete parm_names_;
+        parm_names_ = NULL;
+        delete parm_types_;
+        parm_types_ = NULL;
+        pages_tree_->CutDown();
+    }
+    catch(exception &e){
+        throw SYSTEM_ERROR;
+    }
 }
 

@@ -11,8 +11,9 @@ Analyzer::Analyzer(Table *table){
     cond_origin = new string[10];
     parm_num = 0;
     key_pos = -1;
-    stop_flag = 0;  
+    stop_flag = 0;
     key_range[0] = key_range[1] = NULL;
+    parm_pos = NULL;
 }
 
 int Analyzer::getCompareType(int pos){
@@ -85,7 +86,8 @@ void Analyzer::Extract(string conditions, string pattern){
                     key_pos = cond_num;
                     key_range[1] = &cond_val[cond_num];
                 }
-            }else{
+            }
+            else{
                 key_pos = cond_num;
             }
         }
@@ -142,10 +144,7 @@ bool Analyzer::Match(Row *row){
         }
         else if(cond_cmp[i] == '<'){
             if(cond_pos[i] == table_ptr_->prim_key_){
-                if(key_range[1] == NULL){
-                    continue;
-                }
-                else if(temp < *key_range[1]){
+                if(key_range[1] == NULL || temp < *key_range[1]){
                     continue;
                 }
                 else{
@@ -164,10 +163,7 @@ bool Analyzer::Match(Row *row){
         }
         else if(cond_cmp[i] == '>'){
             if(cond_pos[i] == table_ptr_->prim_key_){
-                if(key_range[0] == NULL){
-                    continue;
-                }
-                else if(temp > *key_range[0]){
+                if(key_range[0] == NULL || temp > *key_range[0]){
                     continue;
                 }
                 else{
@@ -186,4 +182,14 @@ bool Analyzer::Match(Row *row){
         }
     }
     return true;
+}
+
+Analyzer::~Analyzer(){
+    table_ptr_ = NULL;
+    delete cond_pos;
+    delete cond_cmp;
+    delete cond_val;
+    key_range[0] = key_range[1] = NULL;
+    delete[] cond_origin;
+    delete parm_pos;
 }

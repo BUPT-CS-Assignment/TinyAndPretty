@@ -40,7 +40,8 @@ Index::Index(string index, DATA_TYPE type){
             strcpy(index_.t_index, str);
         }
         type_ = type;
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
     }
 }
@@ -64,9 +65,6 @@ Index::Index(string s){
     type_ = __TEXT;
     strcpy(index_.t_index, s.c_str());
 }
-
-
-
 
 
 ostream &operator << (ostream &out, Index &index){

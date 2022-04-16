@@ -82,10 +82,9 @@ private:
     //TableBody
     //In-Memory
     BalanceTree<__uint16_t, Index> *pages_tree_;   //索引B+树
-    BalanceTree<Index, Index> **index_tree_;//非主键索引
+    //BalanceTree<Index, Index> **index_tree_;//非主键索引
     /////////////////////////////////////////////////////
     Page *page_locate(Index);       //数据页搜索
-    ///////////////////////////////////////////////////////
     //INSERT
     //bool check_empty(int);
     __uint16_t  get_empty_page_offset();
@@ -122,7 +121,7 @@ public:
     //DATA_TYPE* getDataType(); //获取数据元素类型
     string getName();               //获取表名
     DATA_TYPE getKeyType();
-    void FreeTable();           //释放内存空间
+    void Erase();           //释放内存空间
     
 };
 
@@ -175,6 +174,7 @@ class Page{
     //Clear
     void Clear(__uint16_t);
     //void print_page();  //打印整页
+    void Erase();        //释放内存空间
 };
 
 /**
@@ -214,6 +214,7 @@ public:
     void update_values(int[],string[],int);
     void update_value(int,string);
     void Erase();   //内容清空
+    //
     Index &getIndex();
     void index_update();
     bool operator<(Row &);
@@ -248,6 +249,7 @@ public:
     int stop_flag;  
     //////////////////////////////
     Analyzer(Table* table);
+    ~Analyzer();
     void Extract(string, string);
     bool Match(Row* row);
     void Locate(string params);

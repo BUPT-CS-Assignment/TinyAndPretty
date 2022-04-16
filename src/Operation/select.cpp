@@ -6,7 +6,7 @@ string Table::SelectValues(string param, string condition){
         Analyzer ANZ(this);
         ANZ.Locate(param);
         ANZ.Extract(condition, " and ");
-        string res = *new string("");
+        string res = "";
         if(ANZ.KeySupport()){
             res = select_by_key(ANZ);
         }
@@ -17,7 +17,8 @@ string Table::SelectValues(string param, string condition){
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 
@@ -30,7 +31,7 @@ string Table::select_by_key(Analyzer &ANZ){
             return "";
         }
         Memorizer RAM(this);
-        string res = *new string("");
+        string res = "";
         Page *page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         while(data_node.getData() != NULL){
@@ -39,15 +40,17 @@ string Table::select_by_key(Analyzer &ANZ){
             if(cmp == -1) res = temp + res;
             else res = res + temp;
             if(cmp == 0 || ANZ.stop_flag == 2) break;
-            else if(cmp == -1) --data_node;
+            else if(cmp == -1){ --data_node;}
             else ++data_node;
+            page->Erase();
         }
         res = res.substr(0, res.length() - 1);
         return res;
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -56,7 +59,7 @@ string Table::select_by_key(Analyzer &ANZ){
 string Table::select_by_traverse(Analyzer &ANZ){
     //遍历搜索
     try{
-        string res = *new string("");
+        string res = "";
         Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
@@ -65,6 +68,7 @@ string Table::select_by_traverse(Analyzer &ANZ){
             Page *page = RAM.PageLoad(*page_offset);
             res = res + page->SelectRow(ANZ);
             ++ data_node;
+            page->Erase();
         }
         if(res.length() > 1){
             res = res.substr(0, res.length() - 1);
@@ -73,14 +77,15 @@ string Table::select_by_traverse(Analyzer &ANZ){
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 
 string Row::get_values(int values[], int n){
-    string str = *new string("{");
+    string str = "{";
     if(n == -1){
         for(int i = 0; i < table_ptr_->parm_num_; i++){
             str = str + get_value(i) + (i == table_ptr_->parm_num_ - 1 ? "}" : ",");
@@ -97,7 +102,7 @@ string Row::get_values(int values[], int n){
 
 string Row::get_value(int i){
     DATA_TYPE type = table_ptr_->parm_types_[i];
-    string str = *new string("");
+    string str = "";
     switch(type){
         case __INT:
             str = to_string(*((int *)content_[i]));
@@ -117,7 +122,7 @@ string Row::get_value(int i){
 
 
 string Page::SelectRow(Analyzer &ANZ){
-    string str = *new string("");
+    string str = "";
     if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
         //递减顺序筛选
         for(int i = cursor_pos_ - 1; i >= 0; i--){

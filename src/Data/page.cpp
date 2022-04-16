@@ -22,3 +22,18 @@ void Page::print_page(){
     }cout<<" [Page Index : "<<page_index_<<"]\t"<<endl;
 }
 */
+
+void Page::Erase(){
+    try{
+        for(int i = 0; i < cursor_pos_; i++){
+            rows_[i]->Erase();
+        }
+        delete rows_;
+        rows_ = NULL;
+        table_ptr_ = NULL;
+    }catch(NEexception &e){
+        throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
+    }
+}

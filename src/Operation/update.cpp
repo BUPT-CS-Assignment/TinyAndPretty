@@ -42,6 +42,7 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
             if(cmp == 0 || CANZ.stop_flag == 2) break;
             else if(cmp == -1) --data_node;
             else ++data_node;
+            page->Erase();
         }
     }
     catch(NEexception &e){
@@ -61,6 +62,7 @@ void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
             page->UpdateRow(SANZ, CANZ);
             RAM.PageStore(*page_offset, page);
             ++ data_node;
+            page->Erase();
         }
     }
     catch(NEexception &e){

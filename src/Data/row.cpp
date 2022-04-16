@@ -39,7 +39,7 @@ Row::Row(Table *table){
 //格式化字符串
 //Format  @  'element_1,_element_2,element_3,...'
 string Row::Format(){
-    string temp = *new string("{");
+    string temp = "{";
     for(int i = 0; i < table_ptr_->parm_num_; i++){
         switch(table_ptr_->parm_types_[i]){
             case __INT:
@@ -61,6 +61,36 @@ string Row::Format(){
     return temp;
 }
 
+
+void Row::Erase(){
+    try{
+        for(int i = 0; i < table_ptr_->parm_num_; i++){
+            DATA_TYPE type = table_ptr_->parm_types_[i];
+            switch(type){
+                case __INT:
+                    delete (int*)content_[i];
+                    break;
+                case __INT64:
+                    delete (long long*)content_[i];
+                    break;
+                case __REAL:
+                    delete (double*)content_[i];
+                    break;
+                case __TEXT: case __LONGTEXT:
+                    delete (char*)content_[i];
+                    break;
+            }
+            content_[i] = NULL;
+        }
+        content_ = NULL;
+        table_ptr_ = NULL;
+        
+    }catch(NEexception &e){
+        throw e;
+    }catch(exception &e){
+        throw SYSTEM_ERROR;
+    }
+}
 
 
 void Row::index_update(){

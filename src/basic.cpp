@@ -86,12 +86,14 @@ void NEDB::dropTable(string name){
             }
             string temp = __Tables__[i]->getName();
             if(temp == name){
-                __Tables__[i]->FreeTable();
+                __Tables__[i]->Erase();
                 Memorizer RAM(__Tables__[i]);
                 RAM.TableDrop();
+                delete[] __Tables__[i];
                 for(int j = i; j < __Cursor__ - 1; j++){
                     __Tables__[j] = __Tables__[j + 1];
                 }
+                __Tables__[__Cursor__ - 1] = NULL;
                 -- __Cursor__;
                 return;
             }
@@ -211,7 +213,7 @@ int NEDB::exec(string sql){
 int NEDB::close(){
     try{
         for(int i = 0; i < __Cursor__; i++){
-            __Tables__[i]->FreeTable();
+            __Tables__[i]->Erase();
         }
         delete[] __Tables__;
         __Msg__ = "complete";

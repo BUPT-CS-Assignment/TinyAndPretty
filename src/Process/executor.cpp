@@ -4,7 +4,7 @@
 #include<storage.h>
 
 
-Executor::Executor(Parser *parser,NEDB* db){
+Executor::Executor(Parser *parser, NEDB *db){
     db_ = db;
     parser_ = parser;
 }
@@ -45,9 +45,11 @@ void Executor::execute_operation(){
             default:
                 throw SQL_UNDEFINED;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -67,38 +69,42 @@ void Executor::execute_command(){
             case __SETDIR:
                 if(parser_->statement_ == "-d"){
                     db_->setDir(__DefaultDir__);
-                }else{
+                }
+                else{
                     if(!db_->setDir(parser_->statement_)){
                         throw DIR_ERROR;
                     }
                 }
                 break;
             case __SHOWDIR:
-                cout<<db_->getDir()<<endl;
+                cout << db_->getDir() << endl;
                 break;
             case __DIRINIT:
                 db_->dirInit();
                 break;
             case __SHOWPAGESIZE:
-                cout<<db_->getDefaultPageSize()<<endl;
+                cout << db_->getDefaultPageSize() << endl;
                 break;
             case __SETPAGESIZE:
                 if(parser_->statement_ == "-d"){
                     db_->setDefaultPageSize(DEFAULT_PAGE_SIZE);
-                }else{
-                    parm_check(parser_->statement_,__INT);
+                }
+                else{
+                    parm_check(parser_->statement_, __INT);
                     if(!db_->setDefaultPageSize(stoi(parser_->statement_))){
                         throw SIZE_NOT_ALLOWED;
                     }
                 }
-                
+
                 break;
             default:
                 throw COMMAND_UNDEFINED;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -106,22 +112,24 @@ void Executor::execute_command(){
 
 void Executor::execute_create_table(){
     try{
-        if(db_->getCursor()>=MAX_TABLES){
+        if(db_->getCursor() >= MAX_TABLES){
             throw TABLE_NUM_REACH_LIMIT;
         }
         string table_name = parser_->object_;
         string parameters = parser_->value_;
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             throw TABLE_EXIST;
         }
         ///////////////////////////////////////////////////////////文件操作
-        Table *new_table = new Table(db_,table_name);
+        Table *new_table = new Table(db_, table_name);
         new_table->Init(parameters);
         db_->addTable(new_table);
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -132,15 +140,18 @@ void Executor::execute_insert_values(){
         string table_name = parser_->object_;
         string values = parser_->value_;
         string conditions = parser_->condition_;
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             table->InsertValues(conditions, values);
-        }else{
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -154,15 +165,18 @@ void Executor::execute_delete_values(){
     try{
         string table_name = parser_->object_;
         string conditions = parser_->condition_;
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             table->DeleteValues(conditions);
-        }else{
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -172,71 +186,87 @@ void Executor::execute_drop_table(){
     try{
         string table_name = parser_->object_;
         db_->dropTable(table_name);
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 void Executor::execute_describe_table(){
     try{
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            db_->setData(table->getStructure());
-        }else{
+            string str = table->getStructure();
+            db_->setData(str);
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 void Executor::execute_create_index(){
     try{
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             return;
             //db_->setMsg(table->getStructure());
-        }else{
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 void Executor::execute_drop_index(){
     try{
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             return;
             //db_->setMsg(table->getStructure());
-        }else{
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 void Executor::execute_select_values(){
     try{
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            db_->setData(table->SelectValues(parser_->value_, parser_->condition_));
-        }else{
+            string str = table->SelectValues(parser_->value_, parser_->condition_);
+            db_->setData(str);
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -246,30 +276,35 @@ void Executor::execute_update_values(){
         string table_name = parser_->object_;
         string values = parser_->value_;
         string condition = parser_->condition_;
-        Table* table = db_->getTable(parser_->object_);
+        Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             table->UpdateValues(condition, values);
-        }else{
+        }
+        else{
             throw TABLE_NOT_FOUND;
         }
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
 
 void Executor::execute_select_tables(){
     try{
-        string str = *new string("{");
+        string str = "{";
         for(int i = 0; i < db_->getCursor(); i++){
-            str = str + db_->getTable(i)->getName() + (i==db_->getCursor()-1?"":", ");
+            str = str + db_->getTable(i)->getName() + (i == db_->getCursor() - 1 ? "" : ", ");
         }
         str = str + "}";
         db_->setData(str);
-    }catch(NEexception &e){
+    }
+    catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }

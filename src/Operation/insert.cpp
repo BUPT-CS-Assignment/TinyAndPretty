@@ -24,6 +24,7 @@ void Table::InsertValues(string conditions, string values){
             new_page->page_index_ = *new Index(new_row->getIndex());
             pages_tree_->InsertData(&(new_row->getIndex()), new_page_offset);
             RAM.PageStore(*new_page_offset, new_page);
+            new_page->Erase();
             return;
         }
         /////读入内存//////////////////////////////////////////////////////
@@ -44,12 +45,15 @@ void Table::InsertValues(string conditions, string values){
             pages_tree_->InsertData(&(new_page->page_index_), new_page_offset);
             RAM.PageFlush(*page_offset);
             RAM.PageStore(*new_page_offset, new_page);
+            new_page->Erase();
         }
         RAM.PageStore(*page_offset, page);
+        page->Erase();
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -70,7 +74,8 @@ void Page::InsertRow(Row *Node){
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
@@ -114,7 +119,8 @@ void Row::Padding(string condition, string value){
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 
@@ -163,7 +169,8 @@ void Row::update_value(int pos, string value){
     }
     catch(NEexception &e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception &e){
         throw SYSTEM_ERROR;
     }
 }
