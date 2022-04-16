@@ -201,9 +201,9 @@ int NEDB::exec(string sql){
         __Msg__ = "complete";
         return 1;
     }
-    catch(NEexception &e){
+    catch(NEexception &E){
         __Data__ = res;
-        __Msg__ = NEexceptionName[e];
+        __Msg__ = NEexceptionName[E];
         return 0;
     }
 }

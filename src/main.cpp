@@ -1,6 +1,8 @@
 #include<basic.h>
 
 int main(/*int argv , char* argc[]*/){
+    __START__();
+    /*
     NEdb db("");
     cout<<db.getDir()<<endl;
     db.setDir("/home/jianxf/.nesrc/");
@@ -21,32 +23,6 @@ int main(/*int argv , char* argc[]*/){
     cout<<db.getMsg()<<endl;
     cout<<db.getData()<<endl;
     db.close();
-    /*
-    delete from test where id < 44;
-    NEDB* db = NULL;
-    char* msg = NULL,*data=NULL;
-    const char *sql = "describe table test2;select * from test2;drop table test2;";
-    //const char *name="test";
-    if(!nedb_auto(&db,&msg)){
-        cout<<msg<<endl;
-    }
-    if(!nedb_exec(db,sql,&data,&msg)){
-        cout<<msg<<endl;
-    }else{
-        cout<<data<<endl;
-    }
-    nedb_close(db,&msg);
-    cout<<msg<<endl;
-    */
-    /*
-    BalanceTree<int,int> B(0);
-    for(int i = 1;i <= 50; i++){
-        B.insert_data(new int(i),new int(i));
-    }
-    for(int i = 5; i <= 30; i+=2){
-        B.DeleteValues(new int(i));
-        B.print_tree();
-    }
     */
 }
 

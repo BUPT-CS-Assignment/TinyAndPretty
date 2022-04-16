@@ -27,7 +27,7 @@ void Parser::i_analyse(string input){
         deconstruct();
     }
     catch(NEexception &e){
-        throw &e;
+        throw e;
     }
 
 }
