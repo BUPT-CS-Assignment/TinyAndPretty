@@ -24,12 +24,13 @@ void Table::delete_by_key(Analyzer &ANZ){
     try{
         Index *index = ANZ.getCondVal(ANZ.getKeyPos());
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
-        if(data_node.getData() == NULL){
-            throw DATA_NOT_FOUND;
-        }
         Memorizer RAM(this);
         Page *page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
+        if(data_node.getData() == NULL){
+            if(cmp == 1)data_node = pages_tree_->getLink();
+            else throw DATA_NOT_FOUND;
+        }
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
             page->DeleteRow(ANZ);
@@ -39,19 +40,26 @@ void Table::delete_by_key(Analyzer &ANZ){
             else{
                 RAM.PageStore(*data_node.getData(), page);
             }
+            /////
             if(cmp == 0 || ANZ.stop_flag == 2){
                 if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
                 break;
             }
-            else if(cmp == -1){
-                -- data_node;
-                if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
-            }
             else{
-                if(page->cursor_pos_ != 0)  ++ data_node;
-                else  pages_tree_->DeleteData(&page->page_index_);
+                if(cmp == -1) --data_node;
+                else if(cmp == 1 && page->cursor_pos_ != 0) ++data_node;
+                //考虑节点合并对迭代器影响
+                if(page->cursor_pos_ == 0){
+                    //记录当前节点左节点的值
+                    Node<uint16_t, Index> *temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
+                    pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
+                    if(temp != NULL && data_node.node->get_cursor() == 0){
+                        data_node.node = temp;
+                        data_node.pos = temp->get_cursor() + (cmp == 1 ? data_node.pos : - 1);
+                    }
+                }
             }
-
+            page->Erase();
         }
     }
     catch(NEexception &e){
@@ -78,10 +86,19 @@ void Table::delete_by_traverse(Analyzer &ANZ){
             else{
                 RAM.PageStore(*page_offset, page);
                 if(page->cursor_pos_ != 0)  ++ data_node;
-                else if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
+                if(page->cursor_pos_ == 0){
+                    //记录当前节点左节点的值
+                    Node<uint16_t, Index> *temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
+                    pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
+                    if(temp != NULL && data_node.node->get_cursor() == 0){
+                        data_node.node = temp;
+                        data_node.pos = temp->get_cursor() + data_node.pos;
+                    }
+                }
             }
-            RAM.PageStore(*page_offset, page);
+            page->Erase();
         }
+
     }
     catch(NEexception &e){
         throw e;
@@ -121,6 +138,7 @@ void Page::DeleteRow(Analyzer &ANZ){
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];
                     }
+                    rows_[cursor_pos_ - 1] = NULL;
                     cursor_pos_--;
                 }
                 else{
@@ -138,7 +156,9 @@ void Page::DeleteRow(Analyzer &ANZ){
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];
                     }
+                    rows_[cursor_pos_ - 1] = NULL;
                     cursor_pos_--;
+                    i--;
                 }
                 else{
                     if(ANZ.stop_flag == 2){
@@ -157,32 +177,5 @@ void Page::DeleteRow(Analyzer &ANZ){
     }
 }
 
-
-void Row::Erase(){
-    /*
-        删除行
-    */
-    for(int i = 0; i < table_ptr_->parm_num_; i++){
-        //删除非主键索引, 释放内存空间
-        switch(table_ptr_->parm_types_[i]){
-            case __INT:
-                //if(table_ptr_->index_tree_[i]!=NULL) table_ptr_->index_tree_[i]->DeleteData(new Index(*(int*)content_[i]));
-                delete[](int *)content_[i];
-                break;
-            case __INT64:
-                //if(table_ptr_->index_tree_[i]!=NULL) table_ptr_->index_tree_[i]->DeleteData(new Index(*(long long*)content_[i]));
-                delete[](long long *)content_[i];
-                break;
-            case __REAL:
-                //if(table_ptr_->index_tree_[i]!=NULL) table_ptr_->index_tree_[i]->DeleteData(new Index(*(double*)content_[i]));
-                delete[](double *)content_[i];
-                break;
-            default:
-                //if(table_ptr_->index_tree_[i]!=NULL) table_ptr_->index_tree_[i]->DeleteData(new Index((char*)content_[i]));
-                delete[](char *)content_[i];
-                break;
-        }
-    }
-}
 
 
