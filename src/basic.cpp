@@ -142,7 +142,7 @@ int NEDB::scan(){
             string file_name = dirfiles->d_name;
             if(regex_match(file_name, layout)){
                 file_name = file_name.substr(0, file_name.find("."));
-                if(open(file_name)){
+                if(!open(file_name)){
                     return 0;
                 }
             }
