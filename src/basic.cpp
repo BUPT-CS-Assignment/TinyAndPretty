@@ -167,7 +167,7 @@ int NEDB::open(string name){
             throw TABLE_NUM_REACH_LIMIT;
         }
         table = RAM.TableLoad(this, name);
-        if(getTable(name)!=NULL){
+        if(getTable(name)==NULL){
             __Tables__[__Cursor__] = table;
             ++__Cursor__;
         }
