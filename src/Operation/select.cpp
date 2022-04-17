@@ -27,13 +27,14 @@ string Table::select_by_key(Analyzer &ANZ){
     try{
         Index *index = ANZ.getCondVal(ANZ.getKeyPos());
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+        int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         if(data_node.getData() == NULL){
-            return "";
+            if(cmp == 1)data_node = pages_tree_->getLink();
+            else return "";
         }
         Memorizer RAM(this);
         string res = "";
         Page *page;
-        int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
             string temp = page->SelectRow(ANZ);

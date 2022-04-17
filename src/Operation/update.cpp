@@ -29,12 +29,13 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
     try{
         Index *index = CANZ.getCondVal(CANZ.getKeyPos());
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+        int cmp = CANZ.getCompareType(CANZ.getKeyPos());
         if(data_node.getData() == NULL){
-            throw DATA_NOT_FOUND;
+            if(cmp == 1)data_node = pages_tree_->getLink();
+            else throw DATA_NOT_FOUND;
         }
         Memorizer RAM(this);
         Page *page;
-        int cmp = CANZ.getCompareType(CANZ.getKeyPos());
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
             page->UpdateRow(SANZ, CANZ);
