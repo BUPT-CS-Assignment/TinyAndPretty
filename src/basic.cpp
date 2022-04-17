@@ -149,10 +149,12 @@ int NEDB::scan(){
         }
         closedir(dp);
         __Msg__ = "complete";
+        __Data__ = "";
         return 1;
     }
     catch(NEexception &e){
         __Msg__ = NEexceptionName[e];
+        __Data__ = "";
         return 0;
     }
 }
@@ -165,8 +167,10 @@ int NEDB::open(string name){
             throw TABLE_NUM_REACH_LIMIT;
         }
         table = RAM.TableLoad(this, name);
-        __Tables__[__Cursor__] = table;
-        ++__Cursor__;
+        if(getTable(name)!=NULL){
+            __Tables__[__Cursor__] = table;
+            ++__Cursor__;
+        }
         __Msg__ = "complete";
         return 1;
     }
