@@ -177,6 +177,7 @@ int NEDB::open(string name){
 }
 
 int NEDB::exec(string sql){
+    __Data__ = __Msg__ = "";
     if(sql.length() == 0 || sql[sql.length()-1]!=';'){
         __Msg__ = NEexceptionName[SQL_FORM_ERROR];
         return 0;
