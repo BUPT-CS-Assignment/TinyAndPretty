@@ -18,4 +18,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include<libs/NEdb.h>
+extern NEdb DB;
+
 #endif

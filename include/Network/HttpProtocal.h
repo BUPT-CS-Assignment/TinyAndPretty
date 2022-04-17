@@ -80,7 +80,7 @@ public :
 	std::string_view Method()   const { return method;}
 	std::string_view HttpVer()  const { return version;}
 	std::string getBody(){
-		if(body != nullptr) return std::string((char*)body.get());
+		if(body != nullptr) return std::string((char*)body.get(),length);
 		return "__NULL__";
 	}
 	size_t Length() const { return length; }

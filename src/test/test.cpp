@@ -1,4 +1,5 @@
 #include <test/define.h>
+#include <common.h>
 #include <libs/NEdb.h>
 
 
@@ -41,26 +42,23 @@ def_HttpEntry(Lent_Book){
 }
 
 def_HttpEntry(SQL_HELP){
-    std::cerr<<"SQL Help Test\n";
     std::fstream fs("utils/sql_help.html", std::ios::in | std::ios::binary);
-    if(fs.is_open()) std::cerr << "Return README\n";
+    if(fs.is_open()) std::cerr << "SQl HELP INFO SEND\n";
     return new FileResponse{fs , "text/html"};
 
 
 }
 
-static NEdb DB("/home/jianxf/.nesrc");
+
 
 def_HttpEntry(SQL_Run){
-    std::cerr << "SQL Run Test\n";
     std::string msg = "";
     std::string val = "";
     std::string ans = request.getBody();
     if(ans == "__NULL__"){
         std::fstream fs("utils/database.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) std::cerr << "Return HTML\n";
-        DB.dirInit();
-        DB.scan();
+        std::cerr << "SQL RUN SUCCESS\n";
         return new FileResponse{fs , "text/html"};
     }
     std::cerr<<ans<<std::endl;
@@ -68,6 +66,7 @@ def_HttpEntry(SQL_Run){
     DB.exec(sql);
     msg = DB.getMsg();
     val = DB.getData();
+    std::cerr << "SQL RUN SUCCESS\n";
     return new HttpResponse{msg + "&" + val};
 }
 

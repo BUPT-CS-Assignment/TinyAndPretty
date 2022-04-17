@@ -112,7 +112,7 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	int buff_len = 0 ;
 	size_t cur = 0;
 	
-	while( ( buff_len = send(_connfd , buff + cur, _len - cur, 0 ) ) ) {
+	while( ( buff_len = send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
 		cur += buff_len;
 #ifdef DEBUG
 		std::cerr << "Send Buff Info : " << _len << " " << cur  << " " << buff_len << std::endl;
