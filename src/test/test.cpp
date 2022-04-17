@@ -49,7 +49,7 @@ def_HttpEntry(SQL_HELP){
 
 }
 
-NEdb DB("/home/jianxf/.nesrc");
+static NEdb DB("/home/jianxf/.nesrc");
 
 def_HttpEntry(SQL_Run){
     std::cerr << "SQL Run Test\n";
@@ -63,10 +63,7 @@ def_HttpEntry(SQL_Run){
         DB.scan();
         return new FileResponse{fs , "text/html"};
     }
-    if(ans == "stop"){
-        DB.close();
-        return new HttpResponse{"DataBase Close&"};
-    }
+    std::cerr<<ans<<std::endl;
     const char *sql = ans.c_str();
     DB.exec(sql);
     msg = DB.getMsg();
