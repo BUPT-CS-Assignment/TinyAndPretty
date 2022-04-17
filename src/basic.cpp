@@ -226,6 +226,8 @@ int NEDB::close(){
             __Tables__[i]->Erase();
         }
         delete[] __Tables__;
+        __Cursor__ = -1;
+        __Tables__ = NULL;
         __Msg__ = "complete";
         return 1;
     }
@@ -291,14 +293,14 @@ void __START__(){
 ////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.17 <Stable>" << endl;
+    cout << "Server version: 22.4.18 <Stable>" << endl;
     cout << "Default resource-dir: " << __DefaultDir__ << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
 
 ////////////////////////////////////////////////////////////////
 void __HELP__(){
-    cout << "NEDB version: 22.4.17 <Stable>" << endl;
+    cout << "NEDB version: 22.4.18 <Stable>" << endl;
     cout << " " << endl;
     cout << "Data Type Support >" << endl;
     cout << " " << endl;

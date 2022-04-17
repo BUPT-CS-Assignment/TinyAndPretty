@@ -202,6 +202,7 @@ void Table::Erase(){
         delete parm_types_;
         parm_types_ = NULL;
         pages_tree_->CutDown();
+        pages_tree_ = NULL;
     }
     catch(exception &e){
         throw SYSTEM_ERROR;
