@@ -15,7 +15,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 $(PACKAGE): $(OBJS)
 	@echo + LD $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $(OBJS)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $(OBJS) $(LDFLAGS) $(DATABASE)
 
 .PHONY: run root 
 
