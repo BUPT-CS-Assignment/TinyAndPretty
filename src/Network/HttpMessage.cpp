@@ -20,9 +20,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
     size_t cur = 0;
     method = nsplit((char *)str, " ", 1);
     CUR_MOV(method, 1);
-
     path = nsplit(NOW_POS, " ", 1);
-
     nsplit(NOW_POS, "?", 1);
     if (size_t t_len = path.length(); strlen(NOW_POS) != t_len)
     {
@@ -34,7 +32,6 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
 
     if (URLParser::getInstance().preCheck(path, method))
         throw HttpException::NON_PATH;
-
     version = nsplit(NOW_POS, "\r\n", 2);
     CUR_MOV(version, 2);
 
@@ -54,17 +51,16 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
             throw HttpException::ERROR_LEN;
     }
     catch (const HttpException &e) { throw e; }
-
+   
     if (length > 0)
     {
         body = std::make_unique<uint8_t[]>(length);
         memcpy(body.get(), NOW_POS, length);
         try
         {
-            std::string &type = headers->get("Content-Type");
-
+            std::string &type = headers->get("Content-type");
             if (type.find("multipart/form-data") != type.npos)
-            {
+            {   
                 size_t t_pos = type.find("boundary");
                 std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
                 type = "multipart/form-data";
@@ -73,7 +69,6 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         }
         catch (const HttpException &e) { ; }
     }
-
     std::string_view status = queryHeader("Connection");
 #ifdef DEBUG
     std::cerr << "Connection Status : " << status << "\n";

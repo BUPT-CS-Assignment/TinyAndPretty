@@ -79,7 +79,10 @@ public :
 	std::string_view Path()     const { return path;}
 	std::string_view Method()   const { return method;}
 	std::string_view HttpVer()  const { return version;}
-
+	std::string getBody(){
+		if(body != nullptr) return std::string((char*)body.get());
+		return "__NULL__";
+	}
 	size_t Length() const { return length; }
 };
 

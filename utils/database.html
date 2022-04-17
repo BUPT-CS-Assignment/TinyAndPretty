@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TAP DATABASE TEST</title>
+    </head>
+    <body>
+        <h1>DataBase Test For TAP</h1>
+        <br>
+
+        <button id="help" onclick="window.open('http://101.43.201.20:9008/sql/help')">NEDB SQL Info</button>
+        <button id="nedb" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+        <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        <h2>    
+            <form>
+                SQL Statement : <br>
+                <input type= "text" id = "sql" style = "width: 400px; height: 40px;"/>
+                <br>
+                <button type = "button" onclick="req_sql() ">Send</button>    
+                <br>
+            </form>
+            <br>
+            <div>
+                <div style = "float:left" >Request Msg:  </div>
+                <div id = "req_msg" style = "float:left"></div>
+            </div><br>
+            <div>
+                <div style = "float:left" >Request Val:  </div>
+                <div id = "req_val" style = "float:left"></div>
+            </div>
+        </h2>
+        <script>
+            function req_sql(){
+                var xhttp = new XMLHttpRequest();
+                var str = document.getElementById("sql").value;
+                xhttp.onreadystatechange = function(){
+                    if(this.readyState == 4 && this.status == 200){
+                        var rec_val = "",rec_msg = "";
+                        var rec = this.responseText;
+                        console.log(rec);
+                        var pos = rec.indexOf("&");
+                        rec_msg = rec.substring(0,pos);
+                        rec_val = rec.substring(pos+1);
+                        document.getElementById("req_msg").innerHTML = rec_msg;
+                        document.getElementById("req_val").innerHTML = rec_val;
+                    }
+                };
+                xhttp.open("POST","http://101.43.201.20:9008/sql",true);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                if(str=="") str = "NULL";
+                xhttp.send(str);
+            }
+        </script>
+    </body>
+</html>

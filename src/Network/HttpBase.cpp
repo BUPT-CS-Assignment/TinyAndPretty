@@ -29,7 +29,7 @@ void StringDict::__init__(char *str, const char *token_1, const char *token_2)
 std::string &StringDict::get(std::string_view str)
 {
     for (auto &it : item)
-    {
+    {   
         if (it.first == str)
             return it.second;
     }
@@ -157,7 +157,7 @@ FormData::FormData(std::string &_boundary, uint8_t *body, size_t len) : boundary
 FormItem &FormData::queryItem(std::string_view _name)
 {
     for (auto &it : form)
-    {
+    {   
         if (it.name == _name)
             return it;
     }

@@ -40,27 +40,37 @@ def_HttpEntry(Lent_Book){
     return new FileResponse{book , "application/pdf"};
 }
 
-def_HttpEntry(DataBase_Test){
-    std::cerr << "Start DataBase Test\n";
-    std::string t = "";
-    NEdb DB("/home/jianxf/.nesrc");
-    if(!DB.dirInit()){
-        t = DB.getMsg();
-    }
-    else{
-        if(!DB.exec("create table tap_test(id int,name text,email text);\
-                    insert into tap_test values (0,user1,email_test1@tap.com);\
-                    insert into tap_test values (1,user2,email_test2@tap.com);\
-                    select * from tap_test;\
-        ")){
-            t = DB.getMsg();
-        }else{
-            t = DB.getData();
-        }
-        std::cerr<<DB.getMsg()<<std::endl;
-        DB.exec("drop table tap_test;");
-    }
-    DB.close();
-    return new HttpResponse{t};
+def_HttpEntry(SQL_HELP){
+    std::cerr<<"SQL Help Test\n";
+    std::fstream fs("utils/sql_help.html", std::ios::in | std::ios::binary);
+    if(fs.is_open()) std::cerr << "Return README\n";
+    return new FileResponse{fs , "text/html"};
+
 
 }
+
+NEdb DB("/home/jianxf/.nesrc");
+
+def_HttpEntry(SQL_Run){
+    std::cerr << "SQL Run Test\n";
+    std::string msg = "";
+    std::string val = "";
+    std::string ans = request.getBody();
+    if(ans == "__NULL__"){
+        std::fstream fs("utils/database.html", std::ios::in | std::ios::binary);
+        if(fs.is_open()) std::cerr << "Return HTML\n";
+        DB.dirInit();
+        DB.scan();
+        return new FileResponse{fs , "text/html"};
+    }
+    if(ans == "stop"){
+        DB.close();
+        return new HttpResponse{"DataBase Close&"};
+    }
+    const char *sql = ans.c_str();
+    DB.exec(sql);
+    msg = DB.getMsg();
+    val = DB.getData();
+    return new HttpResponse{msg + "&" + val};
+}
+
