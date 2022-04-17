@@ -281,14 +281,14 @@ void __START__(){
 ////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.2 <Stable>" << endl;
+    cout << "Server version: 22.4.17 <Stable>" << endl;
     cout << "Default resource-dir: " << __DefaultDir__ << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
 
 ////////////////////////////////////////////////////////////////
 void __HELP__(){
-    cout << "NEDB version: 22.4.2 <Stable>" << endl;
+    cout << "NEDB version: 22.4.17 <Stable>" << endl;
     cout << " " << endl;
     cout << "Data Type Support >" << endl;
     cout << " " << endl;
@@ -304,15 +304,32 @@ void __HELP__(){
     cout << "   " << endl;
     cout << "\t[HELP] .help" << endl;
     cout << "   " << endl;
+    cout << "\t[GET DIR] .dir" << endl;
+    cout << "\t * Default dir : '/home/jianxf/.nesrc/'." << endl;
+    cout << "   " << endl;
+    cout << "\t[SET DIR] .setdir 'full_dir'" << endl;
+    cout << "\t * Use '-d' replacing 'full_dif' to return to default." << endl;
+    cout << "   " << endl;
+    cout << "\t[DIR INIT] .dirinit" << endl;
+    cout << "\t * Automatically check and create current dir." << endl;
+    cout << "   " << endl;
     cout << "\t[OPEN FILE] .open 'table_name'" << endl;
-    cout << "\t * Just enter the table name, without suffix." << endl;
+    cout << "\t * Enter table name without suffix." << endl;
     cout << "   " << endl;
     cout << "\t[OPEN ALL] .openall" << endl;
+    cout << "\t * Open all table from current dir." << endl;
+    cout << "   " << endl;
+    cout << "\t[GET SIZE] .size" << endl;
+    cout << "\t * Default size : 400 with unit 'Byte'." << endl;
+    cout << "   " << endl;
+    cout << "\t[SET PAGE SIZE] .setsize 'size'." << endl;
+    cout << "\t * Size range : 100 - 4000 with unit 'Byte'." << endl;
+    cout << "\t * Use '-d' replacing 'size' to return to default." << endl;
     cout << "   " << endl;
     cout << "\t[TABLE CREATE] create table 'table_name' ('data_title' 'data_type', ... );" << endl;
     cout << "\t * The first parm will be set as PRIMARY KEY by default." << endl;
     cout << "\t * Add 'key' after a parm to designate." << endl;
-    cout << "\t * Parm typed 'longtext' is not allowed to be set as the PRIMARY KEY" << endl;
+    cout << "\t * Parm typed 'longtext' is not allowed to be set as the PRIMARY KEY." << endl;
     cout << "   " << endl;
     cout << "\t[TABLE REMOVE] drop table 'table_name';" << endl;
     cout << "   " << endl;
