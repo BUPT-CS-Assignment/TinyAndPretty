@@ -177,6 +177,11 @@ int NEDB::open(string name){
 }
 
 int NEDB::exec(string sql){
+    if(sql.length() == 0 || sql[sql.length()-1]!=';'){
+        __Msg__ = NEexceptionName[SQL_FORM_ERROR];
+        return 0;
+    }
+    /////
     Parser p;
     Executor e(&p, this);
     int sql_num;
@@ -373,7 +378,7 @@ int NEdb::setDir(const char *dir){
 }
 
 char *NEdb::getMsg(){
-    if(nedb == NULL) return new char[19]{"NEdb pointer error"};
+    if(nedb == NULL) return new char[16]{"Pointer error"};
     string dir = nedb->getMsg();
     char *res = new char[dir.length() + 1];
     strcpy(res, dir.c_str());

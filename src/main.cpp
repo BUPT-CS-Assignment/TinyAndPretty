@@ -4,7 +4,6 @@ int main(/*int argv , char* argc[]*/){
     __START__();
     /*
     NEdb db("");
-    cout<<db.getDir()<<endl;
     db.setDir("/home/jianxf/.nesrc/");
     db.setDefaultPageSize(100);
     cout<<db.getMsg()<<endl;
