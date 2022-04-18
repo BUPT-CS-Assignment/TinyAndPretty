@@ -36,6 +36,7 @@
             function SendVal(){
                 var xhttp = new XMLHttpRequest();
                 var str = document.getElementById("sql").value;
+                if(str == "") return;
 		        document.getElementById("sql").value = "";
                 document.getElementById("req").innerHTML = str;
 		        document.getElementById("msg").innerHTML = "";
@@ -63,7 +64,6 @@
                 var page = "http://" + location.host + "/sql";
                 xhttp.open("POST",page,true);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                if(str=="") str = "NULL";
                 xhttp.send(str);
 		        status = 1;
             }
