@@ -1,2 +1,7 @@
-build
-.vscode/
+/build
+.vscode
+.vscode/settings.json
+.config
+.config.old
+include/config
+include/generated

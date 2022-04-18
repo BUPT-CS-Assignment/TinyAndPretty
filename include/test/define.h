@@ -1,5 +1,7 @@
-#pragma once
-#include <cstdio>
+#ifndef TEST
+#define TEST
+
+#include <common.h>
 #include <interfaces.h>
 
-HttpResponseBase* Link_Start(HttpRequest &a) ;
+#endif

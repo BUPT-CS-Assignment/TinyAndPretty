@@ -1,0 +1,116 @@
+mainmenu "Server Configuration Menu"
+
+config THREADS_MAXIMUM
+  int "Set threads maximum (0 for auto)"
+  default 0
+
+menu "Configure Network Arguments"
+choice
+  prompt "Internet Protocol Version"
+  default IPV4
+config IPV4
+  bool "IPv4"
+config IPV6
+  bool "IPv6"
+endchoice
+
+menu "Configure time out for recv"
+config RECV_SECOND
+  int "Second(s)"
+  default 0
+config RECV_MICROSECOND
+  int "Microsecond(us)"
+  default 500000
+endmenu
+
+menu "Configure time out for send"
+config SEND_SECOND
+  int "Second(s)"
+  default 0
+config SEND_MICROSECOND
+  int "Microsecond(us)"
+  default 500000
+endmenu
+
+menu "Configure transmission buffer"
+config BUFF_INIT_SIZE
+  int "Initial Capacity of buffer"
+  default 4096
+config BUFF_MAX_SIZE
+  int "Maximum Capacity of buffer(Max File Size)"
+  default 134217728
+endmenu
+
+
+config ADDR_ANY
+  bool "Enable to bind port to all NIC on server machine"
+  default y
+
+config HOST_ADDR
+  string "Configure host ip address"
+  depends on !ADDR_ANY
+
+config ADDR_REUSE
+  bool "Enable to reuse address or port immediately"
+  default y
+
+config PORT
+  int "Configure server port"
+  default 9006
+
+
+config LINTEN_Q_MAX
+  int "Configure Maximum of connections in socket listening queue"
+  default 16
+
+config MAX_EVENTS
+  int "Configure Maximum of events in events pool"
+  default 128
+
+endmenu
+
+menu "Build Options"
+choice
+  prompt "Compiler"
+  default CC_GPP
+config CC_GCC
+  bool "gcc"
+config CC_GPP
+  bool "g++"
+config CC_CLANG
+  bool "clang++"
+endchoice
+
+config CC
+  string
+  default "gcc" if CC_GCC
+  default "g++" if CC_GPP
+  default "clang++" if CC_CLANG
+  default "none"
+
+choice
+  prompt "Optimization Level"
+  default CC_O2
+config CC_O0
+  bool "O0"
+config CC_O1
+  bool "O1"
+config CC_O2
+  bool "O2"
+config CC_O3
+  bool "O3"
+endchoice
+
+config CC_OPT
+  string
+  default "-O0" if CC_O0
+  default "-O1" if CC_O1
+  default "-O2" if CC_O2
+  default "-O3" if CC_O3
+  default "none"
+
+config CC_DEBUG
+  bool "Enable debug information"
+  default n
+
+endmenu

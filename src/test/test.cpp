@@ -1,19 +1,44 @@
 #include <test/define.h>
 
 
-HttpResponseBase* Link_Start(HttpRequest &request) {
+def_HttpEntry(Link_Start) {
+    std::cerr << "FUNC START\n";
+    std::string t = "";
+    try {
+        std::string ans = request.queryForm("Key");
+        t += ans;
+        ans = request.queryForm("Action");
+        t += ans;
+    } catch (const HttpException& e) {
+        switch (e)
+        {
+        case HttpException::NON_POS :
+            t += "OMG , I FAIL!";
+            break;
+        case HttpException::NON_FORM:
+            t += "Maybe I got sth. wrong...";
+            break;
+        default: break;
+        }
+    }
+    //Json j;
+    // j.push_back({"name" , "lzc"});
+    // j.push_back({"age",18});
+    // j.push_back({"email" ,"lingzichao@bupt.edu.cn"});
+    std::cout << t << std::endl;
+
+    std::cout << t.length() << std::endl;
+    return new HttpResponse{t};
+    //return new JsonResponse{j};
+}
 
 
-    // //db
-    // int id = a.pramas["id"];
+def_HttpEntry(Lent_Book) {
+    std::cerr << "Start Lent\n";
 
+    std::fstream book("utils/out" , std::ios::in | std::ios::binary);
+    if(book.is_open()) std::cerr << "Find IT!\n";
+    std::cerr << "Send Back\n";
 
-    // int ret = select id from ....
-    // //cmp
-
-
-    // //return
-
-
-    return new HttpResponse("<h1>Hello ,New Lord</h1>");
+    return new FileResponse{book , "application/pdf"};
 }

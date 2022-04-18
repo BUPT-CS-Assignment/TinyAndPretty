@@ -10,10 +10,17 @@
 */
 
 /*----------------- Network Module ----------------- */
-#include <Network/Network.h>
+#define def_HttpEntry(name) HttpResponseBase* (name)(HttpRequest &request) 
+#include <HttpProtocal/HttpProtocal.h>
+#include <HttpProtocal/HttpException.h>
+
+#include <Network/TAPManager.h>
+#include <libs/SimpleJson.hpp>
+using namespace SimpleJson;
 
 
 /*----------------- Hello-World Module ----------------- */
-#include <test/define.h>
+def_HttpEntry(Link_Start);
+def_HttpEntry(Lent_Book);
 
 #endif
