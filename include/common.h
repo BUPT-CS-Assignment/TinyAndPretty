@@ -1,5 +1,9 @@
 #ifndef __COMMON__
 #define __COMMON__
+/*
+	This header file mainly contains std library
+	and might be included in the whole project.
+*/
 
 #include <vector>
 #include <string>
@@ -19,7 +23,7 @@
 #include <errno.h>
 
 #ifdef DEBUG
-#define IFDEBUG(...) (__VA_ARGS__)
+#define IFDEBUG(...) __VA_ARGS__
 #else
 #define IFDEBUG(...) 
 #endif

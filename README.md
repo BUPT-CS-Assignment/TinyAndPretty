@@ -14,11 +14,15 @@
 │   │   ├── HttpServer.h
 │   │   ├── Network.h
 │   │   ├── ServerBase.h
-│   │   ├── SimpleJson.hpp
 │   │   └── URLParser.h
+│   ├── libs
+│   │   ├── NEdb.h      //数据库接口头文件
+│   │   └── SimpleJson.hpp
 │   ├── router.conf
 │   └── test
 │       └── define.h
+├── lib
+│   └── libnedb.so      //数据库动态库文件
 ├── Kconfig             //参数配置
 ├── LICENSE
 ├── Makefile

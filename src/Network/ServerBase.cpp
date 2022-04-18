@@ -66,7 +66,7 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	int buff_len = 0;
 	*data = (uint8_t *)calloc(1 , buff_size);
 
-	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
+	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, MSG_NOSIGNAL)) )
 	{
 	IFDEBUG(
 		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
@@ -112,7 +112,7 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	int buff_len = 0 ;
 	size_t cur = 0;
 	
-	while( ( buff_len = send(_connfd , buff + cur, _len - cur, 0 ) ) ) {
+	while( ( buff_len = send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
 		cur += buff_len;
 	IFDEBUG(
 		std::cerr << "Send Buff Info : " << _len << " " << cur  << " " << buff_len << std::endl;

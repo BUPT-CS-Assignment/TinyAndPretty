@@ -4,6 +4,7 @@
 #include <HttpProtocal/HttpException.h>
 
 char *nsplit(char *str, const char *token, int n);
+static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept;
 std::string getGMTtime();
 
 #define NOW_POS ((char *)str + cur)
@@ -60,7 +61,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
             std::string &type = headers->get("Content-Type");
 
             if (type.find("multipart/form-data") != type.npos)
-            {
+            {   
                 size_t t_pos = type.find("boundary");
                 std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
                 type = "multipart/form-data";
@@ -69,7 +70,6 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         }
         catch (const HttpException &e) { ; }
     }
-
     std::string_view status = queryHeader("Connection");
     IFDEBUG(std::cerr << "Connection Status : " << status << "\n");
 
@@ -87,7 +87,7 @@ static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
     IFDEBUG(
         std::cerr << "In Header Length: "
                 << content_length << "\nReal Length: "
-                << length << std::endl
+                << real << std::endl;
     );
     if (content_length != "" && content_length != std::to_string(real))
         return false;
@@ -130,6 +130,13 @@ std::string_view HttpRequest::queryHeader(std::string_view _idx) noexcept
         return std::string_view("");
     }
 }
+
+std::string HttpRequest::getBody()
+{
+    if(body != nullptr) return std::string((char*)body.get(),length);
+    return "__NULL__";
+}
+
 /*---------------------------------HttpResponseBase---------------------------------*/
 
 
@@ -254,7 +261,8 @@ size_t FileResponse::stringize(uint8_t **buff)
     cur += 5;
     body_len = cur - body_len;
     IFDEBUG(
-        std::cerr << "File Info : \nBuff_size : " << buff_size << " File Size : " << body_len << "\n";
+        std::cerr << "File Info : \nBuff_size : " << buff_size 
+                  << " File Size : " << body_len << "\n"
     );
     return cur;
 }

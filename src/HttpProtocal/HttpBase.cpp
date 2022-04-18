@@ -125,8 +125,9 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
 	memcpy(data.get(), _begin, len);
 
 	IFDEBUG(
-		std::cerr << "Name : " << name << " & FileName : " << filename << "\n";
-		std::cerr << "Item Len : " << len << std::endl;
+		std::cerr << "Name : " << name 
+				  << " & FileName : " << filename << "\n"
+				  << "Item Len : " << len << std::endl
 	);
 }
 
