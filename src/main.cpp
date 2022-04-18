@@ -1,8 +1,12 @@
 #include <common.h>
-#include <Network/HttpServer.h>
+#include <Network/TAPManager.h>
+#include <HttpProtocal/HttpManager.h>
 
 int main(int argv , char* argc[]) {
-    HttpServer server;
+    TAPManager server;
+
+    server.loadSubManager( std::make_unique<HttpManager>() );
+    
     server.start();
     return 0;
 }

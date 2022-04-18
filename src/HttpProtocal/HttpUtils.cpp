@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string>
 
+////split str by token string
 char *nsplit(char *str, const char *token, int n)
 {
 	char *ret = str;
@@ -10,6 +11,7 @@ char *nsplit(char *str, const char *token, int n)
 	return ret;
 }
 
+////get GMT time 
 static const char *wday[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 static const char *mons[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
 std::string getGMTtime()
@@ -26,6 +28,7 @@ std::string getGMTtime()
 			p.tm_hour		 , p.tm_min	, p.tm_sec );
 	return buff;
 }
+
 
 size_t preFetchLength(const char * str) {
 	char buff[32] = {0};

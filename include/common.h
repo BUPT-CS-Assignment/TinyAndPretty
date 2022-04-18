@@ -18,4 +18,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef DEBUG
+#define IFDEBUG(...) (__VA_ARGS__)
+#else
+#define IFDEBUG(...) 
+#endif
+
 #endif

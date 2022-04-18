@@ -5,7 +5,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "HttpProtocal.h"
+#include <HttpProtocal/HttpProtocal.h>
 using EntryFunc = std::function<HttpResponseBase* (HttpRequest&)>;
 
 

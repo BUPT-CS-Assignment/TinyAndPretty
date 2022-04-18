@@ -68,10 +68,10 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 
 	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
 	{
-#ifdef DEBUG
+	IFDEBUG(
 		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
 		std::cerr << "errno : " << errno << " ## " << std::endl;
-#endif
+	)
 		if (buff_len == -1)
 		{
 			if 		(errno == EAGAIN)	{errno = 0 ;break;}
@@ -114,10 +114,10 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	
 	while( ( buff_len = send(_connfd , buff + cur, _len - cur, 0 ) ) ) {
 		cur += buff_len;
-#ifdef DEBUG
+	IFDEBUG(
 		std::cerr << "Send Buff Info : " << _len << " " << cur  << " " << buff_len << std::endl;
 		std::cerr << "errno : " << errno << " ## " << std::endl;
-#endif
+	);
 	}
 
 	errno = 0 ;
