@@ -20,6 +20,8 @@ using namespace SimpleJson;
 
 
 /*----------------- Data-Base Module ----------------- */
+#include <libs/NEdb.h>
+extern NEdb DB;
 
 /*----------------- Hello-world Module ----------------- */
 def_HttpEntry(Link_Start);

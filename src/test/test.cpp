@@ -1,6 +1,5 @@
 #include <test/define.h>
-#include <libs/NEdb.h>
-extern NEdb DB;
+
 def_HttpEntry(Link_Start){
     //std::cerr << "FUNC START\n";
     std::string t = "";
