@@ -1,5 +1,9 @@
 #ifndef __COMMON__
 #define __COMMON__
+/*
+	This header file mainly contains std library
+	and might be included in the whole project.
+*/
 
 #include <vector>
 #include <string>
@@ -18,7 +22,10 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include<libs/NEdb.h>
-extern NEdb DB;
+#ifdef DEBUG
+#define IFDEBUG(...) __VA_ARGS__
+#else
+#define IFDEBUG(...) 
+#endif
 
 #endif

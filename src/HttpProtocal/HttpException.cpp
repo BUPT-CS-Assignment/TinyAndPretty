@@ -1,7 +1,9 @@
-#include <Network/HttpException.h>
-#include <Network/HttpProtocal.h>
+#include <HttpProtocal/HttpProtocal.h>
+#include <HttpProtocal/HttpException.h>
+#include <HttpProtocal/HttpManager.h>
 
-HttpResponse* dispatchException(const HttpException &e)
+////handle HTTP Exception
+HttpResponse* HttpManager::dispatchException(const HttpException &e)
 {
 	switch (e) // near future
 	{

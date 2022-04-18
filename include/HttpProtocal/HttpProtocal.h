@@ -3,6 +3,7 @@
 
 #include <common.h>
 
+////commonly used http status code
 #define HTTP_STATUS_200 "HTTP/1.1 200 OK\r\n"
 #define HTTP_STATUS_300 "HTTP/1.1 300 Multiple Choice\r\n"
 #define HTTP_STATUS_400 "HTTP/1.1 400 Bad Request\r\n"
@@ -11,25 +12,38 @@
 #define HTTP_STATUS_502 "HTTP/1.1 502 Bad Gateway\r\n"
 
 using Dict = std::vector<std::pair<std::string ,std::string>>;
-
+////implementation of K-V string-pair dictionary
 class StringDict {
 	Dict item;
 	size_t len;
 
+	//init stringdict by two significant tokens
 	void __init__(char * , const char * , const char *);
 public : 
 	StringDict() = default;
+	//allow delayed construct
 	StringDict(char *str , const char *token_1 , const char *token_2) {__init__(str , token_1 , token_2);}
 	
+	//query and fetch origin data in this dict. HttpException::NON_POS would occur when not found
 	std::string& get(std::string_view);
-	std::string& operator[] (const std::string& str) ;
+	
+	//query and fetch origin data in this dict. HttpException::NON_POS would occur when not found
+	std::string& operator[] (const std::string& str) noexcept;
+	
+	//append one pair to dict in the end
 	void push(std::string _fir , std::string _sec) ;
-	size_t length() const { return len;}
+	
+	//display this stringdict on stdout
 	void show();    
+	
+	//calculate total length
+	size_t length() const { return len;}
 
+	//stringize to byte stream / string
 	size_t stringize(char *buff);
-	//virtual ~StringDict() {};
 };
+
+////implementation of the item in multipart/form-fata
 class FormData;
 class FormItem {
 friend class FormData;
@@ -39,21 +53,37 @@ friend class FormData;
 	std::string filename = "";
 	size_t len;
 public :
+	//constructor by byte range
 	FormItem(uint8_t*_begin , uint8_t* _end);
+
+	//method of inverting tostring.			NOT guarantee correctness 
 	operator std::string() const {return std::string((char *)data.get() , len);}
+	
+	//method of inverting to filestream.	NOT guarantee correctness 
 	friend std:: fstream& operator << (std:: fstream& out , const FormItem& _this);
 	friend std::ofstream& operator << (std::ofstream& out , const FormItem& _this);
-	size_t length() const {return len;}
-	std::string_view queryName() const {return name;}
+	
+	//calculate total length
+	size_t length() 				 const {return len;}
+	
+	//query form key name
+	std::string_view queryName() 	 const {return name;}
+	
+	//query form file name
+	std::string_view queryFilename() const {return filename;}
+
+	//display this form item on stdout in the way of char
 	void show();
 };
 
+////implementation of the multipart/form-fata
 class FormData {
 	std::string boundary;
 	std::vector<FormItem> form;
 public : 
 	FormData(std::string& , uint8_t* , size_t) ;
 	
+	//query form item by key nam
 	FormItem& queryItem(std::string_view _name);
 };
 
@@ -72,17 +102,28 @@ class HttpRequest {
 public : 
 	HttpRequest(Connection * _conn , uint8_t* str, const size_t len);
 	
+	//query form data by item key name
 	FormItem&   	 queryForm	( std::string_view _idx);
-	std::string_view queryParam ( std::string_view _idx) noexcept; 
-	std::string_view queryHeader( std::string_view _idx) noexcept; 
 
-	std::string_view Path()     const { return path;}
-	std::string_view Method()   const { return method;}
-	std::string_view HttpVer()  const { return version;}
-	std::string getBody(){
-		if(body != nullptr) return std::string((char*)body.get(),length);
-		return "__NULL__";
-	}
+	//query parameters in url (GET only)
+	std::string_view queryParam ( std::string_view _idx) noexcept; 
+	
+	//query header item
+	std::string_view queryHeader( std::string_view _idx) noexcept; 
+	
+	//fetch and construct http body to string
+	std::string 	 getBody() ;
+
+	//query url path
+	std::string_view Path() 	const noexcept { return path;}
+	
+	//query url method
+	std::string_view Method() 	const noexcept { return method;}
+	
+	//query http protocal version
+	std::string_view HttpVer() 	const noexcept { return version;}
+
+
 	size_t Length() const { return length; }
 };
 
@@ -94,7 +135,7 @@ protected :
 	void setDefaultHeaders();
 public :
 	HttpResponseBase();
-	HttpResponseBase(const std::string& _status);
+	HttpResponseBase( const std::string& _status);
 	void appendHeader(const std::string _fir , const std::string _sec) ;
 
 	auto stringize()
