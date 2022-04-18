@@ -66,7 +66,7 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	int buff_len = 0;
 	*data = (uint8_t *)calloc(1 , buff_size);
 
-	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
+	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, MSG_NOSIGNAL)) )
 	{
 #ifdef DEBUG
 		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
