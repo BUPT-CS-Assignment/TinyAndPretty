@@ -35,7 +35,7 @@ def_HttpEntry(Lent_Book){
     //std::cerr << "Start Lent\n";
     std::fstream book("utils/out", std::ios::in | std::ios::binary);
     if(book.is_open()) //std::cerr << "Find IT!\n";
-    std::cerr << "Sending Back\n";
+    //std::cerr << "Sending Back\n";
 
     return new FileResponse{book , "application/pdf"};
 }
@@ -43,7 +43,7 @@ def_HttpEntry(Lent_Book){
 def_HttpEntry(SQL_HELP){
     std::fstream fs("utils/sql_help.html", std::ios::in | std::ios::binary);
     if(fs.is_open()){
-        std::cerr << "SQl HELP\n";
+        //std::cerr << "SQl HELP\n";
         return new FileResponse{fs , "text/html"};
     }else{
         return new HttpResponse{"404\nNOT FOUND"};
@@ -68,10 +68,10 @@ def_HttpEntry(SQL_Run){
     if(ans == "__NULL__"){
         std::fstream fs("utils/database.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) //std::cerr << "Return HTML\n";
-        std::cerr << "SQL RUN\n";
+        //std::cerr << "SQL RUN\n";
         return new FileResponse{fs , "text/html"};
     }
-    std::cerr<<"Sql:"<<ans<<std::endl;
+    std::cerr<<"SQL-req: "<<ans<<std::endl;
     const char *sql = ans.c_str();
     DB.exec(sql);
     msg = DB.getMsg();

@@ -15,7 +15,7 @@ URLParser::URLParser() {
 }
 
 EntryFunc& URLParser::URLparse( std::string_view _url) {
-    std::cerr<<"Req:"<<_url<<std::endl;
+    std::cerr<<"URL-req:"<<_url<<std::endl;
     if(_url == static_url) return StaticResponse;
     else try {
         return url_table.at( _url );

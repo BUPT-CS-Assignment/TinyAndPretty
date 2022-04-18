@@ -40,13 +40,18 @@
                         var rec = this.responseText;
                         console.log(rec);
                         var pos = rec.indexOf("&");
-                        rec_msg = rec.substring(0,pos);
-                        rec_val = rec.substring(pos+1);
+                        if(pos == -1){
+                            rec_msg = pos;
+                        }else{  
+                            rec_msg = rec.substring(0,pos);
+                            rec_val = rec.substring(pos+1);
+                        }
                         document.getElementById("req_msg").innerHTML = rec_msg;
                         document.getElementById("req_val").innerHTML = rec_val;
                     }
                 };
-                xhttp.open("POST","http://101.43.201.20:9008/sql",true);
+                var page = "http://" + location.host + "/sql";
+                xhttp.open("POST",page,true);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
                 if(str=="") str = "NULL";
                 xhttp.send(str);
