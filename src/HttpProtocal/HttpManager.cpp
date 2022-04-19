@@ -11,13 +11,12 @@ bool HttpManager::protocalConfirm()
 void HttpManager::createTask(Connection* conn)
 {
 	//get full data from socket
-	std::cerr << conn->getFD() << "\n";
 	auto [raw, rlen] = sock->recvData(conn->getFD());
-
 	//execute
 	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
-	if (ret != nullptr)// successfully get response(even exception occurs)
+	if (ret != nullptr)
+	// successfully get response(even exception occurs)
 	{
 		//send back to socket 
 		auto [buff, slen] = ret->stringize();
@@ -36,9 +35,7 @@ HttpResponseBase *HttpManager::taskExecute(Connection* conn, std::shared_ptr<uin
 		else if (len == 0)
 			throw HttpException::NON_CONN;
 
-#ifdef DEBUG
-		std::cerr << "*Data Size :\t" << len << "\n";
-#endif
+		IFDEBUG(std::cerr << "*Data Size :\t" << len << "\n");
 
 		HttpRequest request {conn, raw.get(), len};
 		auto &entry = URLParser::getInstance().URLparse(request.Path());

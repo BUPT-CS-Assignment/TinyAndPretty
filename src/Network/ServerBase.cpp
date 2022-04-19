@@ -58,7 +58,7 @@ Connection *Socket::onConnect()
 	if(_connfd == -1) {errno = 0; return nullptr;}
 	else return new Connection{_connfd, _len, _addr};
 }
-
+////block recv with time out 
 size_t Socket::recvData(int _connfd, uint8_t **data)
 {
 	size_t buff_size = BUFF_INIT_SIZE;
@@ -106,7 +106,7 @@ auto Socket::recvData(int _confd)
 	return std::make_tuple( std::shared_ptr<uint8_t>(data) , len);
 }
 
-
+////block send with time out 
 size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
 {
 	int buff_len = 0 ;
@@ -114,10 +114,12 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	
 	while( ( buff_len = send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
 		cur += buff_len;
-	IFDEBUG(
-		std::cerr << "Send Buff Info : " << _len << " " << cur  << " " << buff_len << std::endl;
-		std::cerr << "errno : " << errno << " ## " << std::endl;
-	);
+		IFDEBUG(
+			std::cerr << "Send Buff Info : " << _len << " " 
+					  << cur  << " " << buff_len <<"\n"
+					  << "errno : " << errno << " ## " << std::endl
+		);
+		if(buff_len == -1) break;
 	}
 
 	errno = 0 ;
