@@ -9,7 +9,7 @@ bool HttpManager::protocalConfirm()
 
 void HttpManager::createTask(Connection* conn)
 {
-	std::cerr << conn->getFD() << "\n";
+	std::cerr << "connFD:"<<conn->getFD() << "\n";
 	auto [raw, rlen] = sock->recvData(conn->getFD());
 	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 

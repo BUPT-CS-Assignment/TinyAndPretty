@@ -3,5 +3,6 @@
 
 #include <common.h>
 #include <interfaces.h>
+std::string getGMTtime();
 
 #endif

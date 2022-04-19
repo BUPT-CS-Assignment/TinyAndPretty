@@ -29,7 +29,6 @@ std::string getGMTtime()
 	return buff;
 }
 
-
 size_t preFetchLength(const char * str) {
 	char buff[32] = {0};
 	size_t cur = 0;

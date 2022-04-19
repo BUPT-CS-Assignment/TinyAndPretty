@@ -72,7 +72,8 @@ def_HttpEntry(SQL_Run){
         //std::cerr << "SQL RUN\n";
         return new FileResponse{fs , "text/html"};
     }
-    std::cerr<<"SQL-req: "<<ans<<std::endl;
+    
+    std::cerr<<"["<<getGMTtime()<<"] "<<"SQL-req: "<<ans<<std::endl;
     const char *sql = ans.c_str();
     DB.exec(sql);
     msg = DB.getMsg();
