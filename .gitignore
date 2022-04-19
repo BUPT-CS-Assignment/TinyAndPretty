@@ -7,3 +7,4 @@ include/config
 include/generated
 nohup.out
 tap.log
+build/main-service

@@ -1,25 +1,28 @@
 #include <HttpProtocal/HttpManager.h>
 #include <Network/URLParser.h>
 
+////Judge by clip 
 bool HttpManager::protocalConfirm() 
 {
-	return true;
+	return true;//currently only itself , so return true default
 }
 
 
 void HttpManager::createTask(Connection* conn)
 {
-	std::cerr << "connFD:"<<conn->getFD() << "\n";
+	//get full data from socket
 	auto [raw, rlen] = sock->recvData(conn->getFD());
+	//execute
 	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
 	if (ret != nullptr)
+	// successfully get response(even exception occurs)
 	{
+		//send back to socket 
 		auto [buff, slen] = ret->stringize();
 		slen = sock->sendData(conn->getFD(), buff.get(), slen);
-
-		if(slen == -1ULL) conn->closeFD();
 	}
+	conn->closeFD(); // near future
 }
 
 
@@ -32,9 +35,7 @@ HttpResponseBase *HttpManager::taskExecute(Connection* conn, std::shared_ptr<uin
 		else if (len == 0)
 			throw HttpException::NON_CONN;
 
-#ifdef DEBUG
-		std::cerr << "*Data Size :\t" << len << "\n";
-#endif
+		IFDEBUG(std::cerr << "*Data Size :\t" << len << "\n");
 
 		HttpRequest request {conn, raw.get(), len};
 		auto &entry = URLParser::getInstance().URLparse(request.Path());
