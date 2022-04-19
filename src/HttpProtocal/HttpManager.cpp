@@ -1,25 +1,29 @@
 #include <HttpProtocal/HttpManager.h>
 #include <Network/URLParser.h>
 
+////Judge by clip 
 bool HttpManager::protocalConfirm() 
 {
-	return true;
+	return true;//currently only itself , so return true default
 }
 
 
 void HttpManager::createTask(Connection* conn)
 {
+	//get full data from socket
 	std::cerr << conn->getFD() << "\n";
 	auto [raw, rlen] = sock->recvData(conn->getFD());
+
+	//execute
 	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
-	if (ret != nullptr)
+	if (ret != nullptr)// successfully get response(even exception occurs)
 	{
+		//send back to socket 
 		auto [buff, slen] = ret->stringize();
 		slen = sock->sendData(conn->getFD(), buff.get(), slen);
-
-		if(slen == -1ULL) conn->closeFD();
 	}
+	conn->closeFD(); // near future
 }
 
 
