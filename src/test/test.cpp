@@ -74,9 +74,9 @@ def_HttpEntry(SQL_Run){
     }
     std::cerr<<"SQL-req: "<<ans<<std::endl;
     const char *sql = ans.c_str();
-    DB.exec(sql);
-    msg = DB.getMsg();
-    val = DB.getData();
+    // DB.exec(sql);
+    // msg = DB.getMsg();
+    // val = DB.getData();
     return new HttpResponse{msg + "&" + val};
 }
 

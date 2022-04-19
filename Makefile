@@ -4,14 +4,11 @@ WORK_DIR 	= $(shell pwd)
 SRC_DIR  	= $(WORK_DIR)/src
 BUILD_DIR 	= $(WORK_DIR)/build
 INCLUDE_DIR = $(WORK_DIR)/include
-LIB_DIR 	= $(WORK_DIR)/lib
-DATABASE	= -lnedb
 
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
 
 # set stdc++ 17 and multi-threads
 CXXFLAGS += -Wall -std=c++17 -pthread
-LDFLAGS = -L$(LIB_DIR) -Wl,-rpath $(LIB_DIR)
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 INCLUDES = $(addprefix -I ,$(INCLUDE_DIR))
 
