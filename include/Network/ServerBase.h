@@ -21,10 +21,10 @@ public:
             : close_flag(false) ,  connfd(_connfd) , len(_len) , client_addr(_addr){}
 
     int  getFD()        const {return connfd;}
-    char*getAdress()    const {return inet_ntoa(client_addr.sin_addr);}
     bool getCloseFlag() const {return close_flag;}
     void setCloseFlag()       {close_flag = true;}
     void closeFD()            {close(connfd);}
+    const char*getAddr()    const {return inet_ntoa(client_addr.sin_addr);}
 };
 
 ////unix socket

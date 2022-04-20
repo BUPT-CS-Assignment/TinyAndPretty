@@ -28,10 +28,11 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
     //split parameters in url 
     nsplit(NOW_POS, "?", 1);
     if (size_t t_len = path.length(); strlen(NOW_POS) != t_len)
-    {
+    {   
         path = NOW_POS;
+        CUR_MOV(path , 1);
         params = std::make_unique<StringDict>(NOW_POS, "=", "&");
-        cur += t_len + 1;
+        cur += params->length() + 1;
     }
     else CUR_MOV(path, 1);
 
@@ -85,9 +86,8 @@ static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
 
     std::string_view content_length = re->queryHeader("Content-Length");
     IFDEBUG(
-        std::cerr << "In Header Length: "
-                << content_length << "\nReal Length: "
-                << real << std::endl;
+        std::cerr << "In Header Length: " << content_length 
+                  << "\n\tReal Length: "  << real << std::endl;
     );
     if (content_length != "" && content_length != std::to_string(real))
         return false;
@@ -137,6 +137,12 @@ std::string HttpRequest::getBody()
         return std::string((char*)body.get() , length);
     return "__NULL__";
 }
+
+std::string_view HttpRequest::queryClientIP() const noexcept 
+{
+    return conn->getAddr();
+}
+
 
 /*---------------------------------HttpResponseBase---------------------------------*/
 

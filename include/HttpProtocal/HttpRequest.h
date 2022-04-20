@@ -39,7 +39,8 @@ public :
 	//query http protocal version
 	std::string_view HttpVer() 	const noexcept { return version;}
 
-
+	//Connection
+	std::string_view queryClientIP() const noexcept ;
 	size_t Length() const { return length; }
 };
 #endif
