@@ -34,11 +34,10 @@ def_HttpEntry(Link_Start){
 
 def_HttpEntry(Lent_Book){
     //std::cerr << "Start Lent\n";
-    std::fstream book("utils/out", std::ios::in | std::ios::binary);
     //if(book.is_open()) std::cerr << "Find IT!\n";
     //std::cerr << "Sending Back\n";
 
-    return new FileResponse{book , "application/pdf"};
+    return new FileResponse{"utils/out" , "application/pdf"};
 }
 
 def_HttpEntry(SQL_HELP){
@@ -75,9 +74,9 @@ def_HttpEntry(SQL_Run){
     
     std::cerr<<"["<<getGMTtime()<<"] "<<"SQL-req: "<<ans<<std::endl;
     const char *sql = ans.c_str();
-    DB.exec(sql);
-    msg = DB.getMsg();
-    val = DB.getData();
+    // DB.exec(sql);
+    // msg = DB.getMsg();
+    // val = DB.getData();
     return new HttpResponse{msg + "&" + val};
 }
 

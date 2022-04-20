@@ -3,8 +3,8 @@
 
 #include <common.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 
 #include <functional>
@@ -27,6 +27,7 @@ public:
     void closeFD()            {close(connfd);}
 };
 
+////unix socket
 class Socket {
     int sockfd ;
 
@@ -34,15 +35,25 @@ class Socket {
 public : 
     Socket();
     ~Socket();
-    size_t recvData(int _connfd , uint8_t **data);
-    size_t sendData(int _connfd , uint8_t *data , size_t len );
-    Connection* onConnect();
+
+    //get socket file descriptor in unix
     int getFD() const {return sockfd;}
 
-    auto recvData(int _confd)
-        -> std::tuple<std::shared_ptr<uint8_t> , size_t > ;
+    //recv raw data in the format of byte stream
+    size_t recvData(int _connfd , uint8_t **data);
+
+    //send raw data in the format of byte stream
+    size_t sendData(int _connfd , uint8_t *data , size_t len );
+    //send file (FULL path needed)
+    size_t sendFile(int _connfd , const char* _fpath);
+    //send file (FULL path needed) with header
+    size_t sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *header ,  size_t header_len);
+    
+    //get one connection in TCP socket
+    Connection* onConnect();
 };
 
+////unix event pool based on epoll
 class EventPool{
     int epfd;
 
