@@ -15,18 +15,18 @@
 #include <Network/TAPManager.h>
 
 ////simplize entry define 
-#define def_HttpEntry(name) HttpResponseBase* (name)(HttpRequest &request) 
+#define def_HttpEntry(name , request) HttpResponseBase* (name)(HttpRequest &request) 
 
 /*----------------- Data-Base Module ---------------- */
 // #include <libs/NEdb.h>
 // extern NEdb DB;
 
 /*---------------- Hello-world Module --------------- */
-def_HttpEntry(Link_Start);
-def_HttpEntry(Lent_Book);
-def_HttpEntry(SQL_Run);
-def_HttpEntry(SQL_HELP);
-def_HttpEntry(ICON);
-
+def_HttpEntry(Link_Start , request);
+def_HttpEntry(Lent_Book , req);
+def_HttpEntry(SQL_Run , req);
+def_HttpEntry(SQL_HELP ,  req);
+def_HttpEntry(ICON , req);
+def_HttpEntry(Check_It , req);
 
 #endif
