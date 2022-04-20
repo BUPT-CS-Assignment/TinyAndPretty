@@ -17,7 +17,8 @@ URLParser::URLParser(){
 
 EntryFunc &URLParser::URLparse(std::string_view _url)
 {
-    std::cerr << "URL-req:" << _url << std::endl;
+    IFDEBUG(std::cerr << "URL-req:" << _url << std::endl);
+    
     if (_url == static_url)
         return StaticResponse;
     else

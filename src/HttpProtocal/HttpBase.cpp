@@ -10,7 +10,7 @@ char *nsplit(char *str, const char *token, int n);
 	if (cur >= len)     \
 		break;
 
-//initialize. the first token is the separator between two string in one pair
+//Initialize. the first token is the separator between two string in one pair
 //			  the second one is between two different pairs       
 void StringDict::__init__(char *str, const char *token_1, const char *token_2)
 {
@@ -23,13 +23,14 @@ void StringDict::__init__(char *str, const char *token_1, const char *token_2)
 	while (true)
 	{
 		fir = nsplit(str + cur, token_1, len_1);
-		CUR_MOV(strlen(fir) + len_1);            
+		CUR_MOV(strlen(fir) + len_1);   \
+
 		sec = nsplit(str + cur, token_2, len_2); 
 		item.push_back(std::make_pair(std::string(fir), std::string(sec)));
 		CUR_MOV(strlen(sec) + len_2);
 	}
 }
-//query and fetch origin data in this dict. HttpException::NON_POS would occur when not found
+//Query and Fetch origin data in this dict. HttpException::NON_POS would occur when not found
 std::string &StringDict::get(std::string_view str)
 {
 	for (auto &it : item)
@@ -39,13 +40,14 @@ std::string &StringDict::get(std::string_view str)
 	}
 	throw HttpException::NON_POS;
 }
-//append one pair to dict in the end
+//Append one pair to dict in the end
 void StringDict::push(std::string _fir, std::string _sec)
 {
+	len += _fir.length() + 2 + _sec.length() + 2;
 	item.push_back(std::make_pair(std::move(_fir), std::move(_sec)));
 }
 
-//display this stringdict on stdout
+//Display this stringdict on stdout
 void StringDict::show()
 {
 	for (auto &it : item)
@@ -79,7 +81,7 @@ size_t StringDict::stringize(char *buff)
 		strcpy(buff + cur, it.first.c_str());
 		cur += it.first.length();
 		strcpy(buff + cur, ": ");
-		cur += 2;
+		cur += 2; //  2: sizeof ": "
 
 		//value string
 		strcpy(buff + cur, it.second.c_str());
@@ -132,7 +134,7 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
 }
 
 //method of inverting to filestream.	NOT guarantee correctness 
-std::fstream &operator<<(std::fstream &out, const FormItem &_this)
+std::fstream  &operator<<(std::fstream  &out, const FormItem &_this)
 {
 	out.write((char *)(_this.data.get()), _this.len);
 	return out;
