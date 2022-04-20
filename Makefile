@@ -10,7 +10,7 @@ DATABASE	= -lnedb
 PACKAGE 	= $(BUILD_DIR)/$(NAME) 
 
 # set stdc++ 17 and multi-threads
-CXXFLAGS += -Wall -std=c++17 -pthread
+CXXFLAGS += -Wall -std=c++17 -pthread -lstdc++fs
 LDFLAGS = -L$(LIB_DIR) -Wl,-rpath $(LIB_DIR)
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 INCLUDES = $(addprefix -I ,$(INCLUDE_DIR))
