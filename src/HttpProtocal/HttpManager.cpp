@@ -1,6 +1,5 @@
 #include <HttpProtocal/HttpManager.h>
 #include <Network/URLParser.h>
-
 ////Judge by clip 
 bool HttpManager::protocalConfirm() 
 {
@@ -11,18 +10,13 @@ bool HttpManager::protocalConfirm()
 void HttpManager::createTask(Connection* conn)
 {
 	//get full data from socket
-	auto [raw, rlen] = sock->recvData(conn->getFD());
+	auto [raw, rlen] = wrapper->recvHttpData(conn);
 	//execute
 	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
-	if (ret != nullptr)
-	// successfully get response(even exception occurs)
-	{
-		//send back to socket 
-		auto [buff, slen] = ret->stringize();
-		slen = sock->sendData(conn->getFD(), buff.get(), slen);
-	}
+	wrapper->sendHttpData( conn , std::move(ret) );
 	conn->closeFD(); // near future
+	delete conn;
 }
 
 

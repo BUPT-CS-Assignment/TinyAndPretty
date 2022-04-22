@@ -1,14 +1,18 @@
 #include <Network/ServerBase.h>
+#include <sys/sendfile.h>
+#include <netinet/tcp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 Socket::Socket()
 {
-	/*----------------------------------------*/
 	// Initialize socket port
 	sockfd = socket(PROTO_FAMILT, SOCK_TYPE, 0);
 	NETERROR(sockfd < 0, "init socket error ");
 
-	/*----------------------------------------*/
-	// Set up host address
+// Set up host address
 #ifdef IPV_4
 	address = sockaddr_in{
 		sin_family : PROTO_FAMILT,
@@ -18,15 +22,15 @@ Socket::Socket()
 #elif IPV_6 // near future
 #endif
 
-/*----------------------------------------*/
 // Permit to reuse address
 #ifdef ADDR_REUSE
 	int addr_reuse = ADDR_REUSE;
 	NETERROR(
-		setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &addr_reuse, sizeof(int)) < 0, "set address reuse");
+		setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &addr_reuse, sizeof(int)) < 0
+	, "set address reuse");
 #endif
-/*----------------------------------------*/
-// Set up timeout limit for receive and send
+
+	// Set up timeout limit for receive and send
 	struct timeval recv_timeout = (timeval)RECV_TIMEOUT;
 	 NETERROR(
 	     setsockopt(sockfd,SOL_SOCKET,SO_RCVTIMEO,&recv_timeout,sizeof(timeval)) < 0
@@ -37,49 +41,58 @@ Socket::Socket()
 	    setsockopt(sockfd,SOL_SOCKET,SO_SNDTIMEO,&send_timeout,sizeof(timeval)) < 0
 	, "set timeVal error");
 
-	/*----------------------------------------*/
 	// Bind port to socket file
 	NETERROR(
-		bind(sockfd, (sockaddr *)(&address), sizeof(address)) < 0, "bind error");
+		bind(sockfd, (sockaddr *)(&address), sizeof(address)) < 0
+	, "bind error");
 
-	/*----------------------------------------*/
 	// Set up max capacity of listening queue
 	NETERROR(
-		listen(sockfd, LISTEN_Q_MAX) < 0, "listen error");
+		listen(sockfd, LISTEN_Q_MAX) < 0
+	, "listen error");
 
 	::printf("Successfully Listen on %d\n" , PORT);
 }
 
+////get one connection
 Connection *Socket::onConnect()
 {
 	struct sockaddr_in _addr {0};
 	socklen_t _len = sizeof(_addr);
 	int _connfd = accept(sockfd, (sockaddr *)&_addr, &_len);
-	if(_connfd == -1) {errno = 0; return nullptr;}
-	else return new Connection{_connfd, _len, _addr};
+
+	if(_connfd == -1) 
+		{errno = 0; return nullptr;}
+	else 
+		return new Connection{_connfd, _len, _addr};
 }
 ////block recv with time out 
 size_t Socket::recvData(int _connfd, uint8_t **data)
 {
-	size_t buff_size = BUFF_INIT_SIZE;
-	size_t len = 0;
-	int buff_len = 0;
+	//initial temporary length var
+	size_t  len 	  = 0;
+	size_t  buff_size = BUFF_INIT_SIZE;
+	ssize_t buff_len  = 0;
 	*data = (uint8_t *)calloc(1 , buff_size);
 
+	//loop recv and dynamically adjust buff size
 	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, MSG_NOSIGNAL)) )
 	{
+
 	IFDEBUG(
-		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << std::endl;
-		std::cerr << "errno : " << errno << " ## " << std::endl;
+		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << "\n"
+				  << "\terrno : " << errno << " ## " << std::endl;
 	)
+		//handle errno occurs
 		if (buff_len == -1)
 		{
-			if 		(errno == EAGAIN)	{errno = 0 ;break;}
-			else if (errno == EINTR)	{errno = 0 ;continue;}
-			else						{errno = 0 ;break;}
+			if 		(errno == EAGAIN)	{errno = 0; break;}
+			else if (errno == EINTR)	{errno = 0; continue;}
+			else						{errno = 0; break;}
 		}
 		
 		len += buff_len;
+		//adjust buff size to 2x
 		if (len == buff_size)
 		{
 			buff_size <<= 1;
@@ -97,34 +110,72 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	}
 	return len;
 }
-
-auto Socket::recvData(int _confd)
-	-> std::tuple<std::shared_ptr<uint8_t> , size_t > 
-{
-	uint8_t* data = nullptr;
-	size_t len = recvData(_confd , &data);
-	return std::make_tuple( std::shared_ptr<uint8_t>(data) , len);
-}
-
 ////block send with time out 
 size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
 {
-	int buff_len = 0 ;
-	size_t cur = 0;
+	//initial temporary length var
+	ssize_t buff_len = 0;
+	size_t  cur      = 0;
 	
+	//loop send
 	while( ( buff_len = send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
+		if(buff_len == -1) {errno = 0; break;}
+
 		cur += buff_len;
 		IFDEBUG(
 			std::cerr << "Send Buff Info : " << _len << " " 
 					  << cur  << " " << buff_len <<"\n"
-					  << "errno : " << errno << " ## " << std::endl
+					  << "\terrno : " << errno << " ## " << std::endl
 		);
-		if(buff_len == -1) break;
 	}
-
-	errno = 0 ;
 	return ( cur == _len ) ? cur : -1ULL;
 }
+
+////specially send file base on unix/sendfile() 
+size_t Socket::sendFile(int _connfd , const char* _fpath) 
+{
+	struct stat target {0};
+	//check whether file exists and get it size
+	if( stat(_fpath , &target) < 0 ) {errno = 0; return 0;}
+
+	//initial temporary length var and open valid file
+	int     fd  	 = open(_fpath , O_RDONLY);
+	ssize_t cur 	 = 0;
+	ssize_t buff_len = 0;
+
+	//loop send
+	while( ( buff_len = sendfile(_connfd , fd , (off_t *)&cur , target.st_size - cur) ) ) {
+		if(buff_len == -1) {errno = 0; break;}
+
+		IFDEBUG (
+			std::cerr << "Send FILE Info : " << target.st_size << " " 
+					  << cur  << " " << buff_len <<"\n"
+					  << "\terrno : " << errno << " ## " << std::endl
+		);
+	}
+	close(fd);
+	return ( cur == target.st_size ) ? cur : -1ULL;
+}
+
+////same as sendFile() just with a header
+size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *header ,  size_t header_len)
+{
+	//int opt = 1; // use TCP_CORK , but segmentation fault ***
+	// NETERROR(
+	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
+	// , "cork error");
+
+	size_t len = 0;
+	len += sendData(_connfd , header , header_len);
+	len += sendFile(_connfd , _fpath);
+
+	//opt = 0;
+	// NETERROR(
+	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
+	// , "cork error");
+	return len;
+}
+ 
 
 Socket::~Socket()
 {
@@ -145,8 +196,8 @@ bool EventPool::mountFD(int _fd, uint32_t _type)
 	};
 
 	NETERROR(
-		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0,
-		"add epoll error");
+		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0 
+	, "add epoll error");
 	return true;
 }
 
@@ -158,8 +209,8 @@ bool EventPool::mountPtr(void *_ptr, int _fd, uint32_t _type)
 	};
 
 	NETERROR(
-		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0,
-		"add epoll error");
+		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0
+	, "add epoll error");
 	return true;
 }
 

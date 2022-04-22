@@ -3,14 +3,15 @@
 #include <interfaces.h>
 #include <test/define.h>
 
-#define SET_STATIC(_url) 
-#define ADD_URL(_url, _func) url_table.emplace( _url ,  _func );
+#define SET_STATIC(_url)
+#define ADD_URL(_url, _func) url_table.emplace(_url, _func);
 
-EntryFunc StaticResponse = [](HttpRequest& AS){
+EntryFunc StaticResponse = [](HttpRequest &AS)
+{
     return new HttpResponse("FILE");
 };
 
-URLParser::URLParser() {
+URLParser::URLParser(){
 #include <router.conf>
 
 }
@@ -25,10 +26,12 @@ EntryFunc& URLParser::URLparse( std::string_view _url) {
     }
 }
 
+bool URLParser::preCheck(std::string_view _url, std::string_view _method) noexcept
+{
+    if (_method == "GET" && _url == static_url)
+        return true;
+    else
+        return false;
 
-bool URLParser::preCheck( std::string_view _url , std::string_view _method ) noexcept{ 
-    if(_method == "GET" &&  _url == static_url ) return true;
-    else return false;
-    
     return (url_table.find(_url) == url_table.end());
-} 
+}
