@@ -26,6 +26,10 @@
 		        <div id = "msg" style = "float:left"></div>
             </div><br>
             <div>
+                <div style = "float:left" >Count :&nbsp</div>
+		        <div id = "count" style = "float:left"></div>
+            </div><br>
+            <div>
                 <div style = "float:left" >Value :&nbsp</div>
 		        <div id = "val" style = "float:left"></div>
             </div><br>
@@ -42,20 +46,26 @@
 		        console.log(str);
                 xhttp.onreadystatechange = function(){
                     if(this.readyState == 4 && this.status == 200){
-                        var value = "",msg = "";
+                        var value = "",msg = "",count = "";
                         var rec = this.responseText;
                         console.log(rec);
-                        var pos = rec.indexOf("&");
-                        if(pos == -1){
-                            msg = pos;
-                        }else{  
-                            msg = rec.substring(0,pos);
-                            value = rec.substring(pos+1);
-                        }
+                        var pos1 =rec.indexOf("?")
+                        var pos2 = rec.indexOf("&");
+                        msg = rec.substring(0,pos1);
+                        count = rec.substring(pos1+1,pos2);
+                        value = rec.substring(pos2+1);
 			            if(value == ""){
 			                value = "&lt;null&gt;";
+                        }else if(count > 0){
+                            var pos3 = value.indexOf(";");
+                            if(pos3 > 0){
+                                var str1 = value.substring(0,pos3);
+                                var str2 = value.substring(pos3+1);
+                                value = "[" + str1 + "]<br>"+str2;
+                            }
                         }
                         document.getElementById("msg").innerHTML = msg;
+                        document.getElementById("count").innerHTML = count
                         document.getElementById("val").innerHTML = value;
                     }
                 };

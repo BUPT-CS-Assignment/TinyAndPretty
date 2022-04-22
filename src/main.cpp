@@ -7,7 +7,7 @@ NEdb DB("/home/jianxf/.nesrc");
 
 int main(int argv , char* argc[]) {
     DB.dirInit();
-    DB.scan();
+    DB.openall();
     
     TAPManager server;
     server.loadSubManager( std::make_unique<HttpManager>() );

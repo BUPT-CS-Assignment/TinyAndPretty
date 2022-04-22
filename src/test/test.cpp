@@ -99,6 +99,7 @@ def_HttpEntry(Check_It , req) {
 def_HttpEntry(SQL_Run , req){
     std::string msg = "";
     std::string val = "";
+    int count = 0;
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
         std::fstream fs("utils/database.html", std::ios::in | std::ios::binary);
@@ -112,6 +113,7 @@ def_HttpEntry(SQL_Run , req){
     DB.exec(sql);
     msg = DB.getMsg();
     val = DB.getData();
-    return new HttpResponse{msg + "&" + val};
+    count = DB.getCount();
+    return new HttpResponse{msg + "?" + std::to_string(count) + "&"+ val};
 }
 
