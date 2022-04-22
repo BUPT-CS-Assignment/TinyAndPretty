@@ -11,7 +11,7 @@ PACKAGE 	= $(BUILD_DIR)/$(NAME)
 
 # set stdc++ 17 and multi-threads
 CXXFLAGS += -Wall -std=c++17 -pthread
-LDFLAGS = -L$(LIB_DIR) -Wl,-rpath $(LIB_DIR)
+LDFLAGS = -L$(LIB_DIR)
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 INCLUDES = $(addprefix -I ,$(INCLUDE_DIR))
 
