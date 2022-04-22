@@ -6,7 +6,7 @@ Page::Page(Table *table){
     not_empty_ = true;
     is_full_ = false;
     table_ptr_ = table;
-    page_index_ = *new Index(table->getKeyType());
+    page_index_.setVal(table->getKeyType(),NULL);
     cursor_pos_ = 0;
     rows_ = NULL;
     rows_ = new Row * [table_ptr_->max_rows_per_page_];

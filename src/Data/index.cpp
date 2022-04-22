@@ -3,10 +3,7 @@
 
 Index::Index(){
     type_ = __TEXT;
-}
-
-Index::Index(DATA_TYPE type){
-    type_ = type;
+    memset(&index_,0,sizeof(INDEX));
 }
 
 int Index::getSize(){
@@ -15,13 +12,33 @@ int Index::getSize(){
         case __INT64: case __REAL:
             return 8;
         case __TEXT: return 32;
-        case __LONGTEXT: return 255;
         default: return 0;
     }
 }
 
+void Index::setVal(DATA_TYPE type,void* src){
+    try{
+        type_ = type;
+        if(src == NULL) return;
+        memset(&index_,0,sizeof(INDEX));
+        if(type == __INT){
+            index_.i_index = *(int*)src;
+        }else if(type == __INT64){
+            index_.l_index = *(long long*)src;
+        }else if(type == __REAL){
+            index_.d_index = *(double*)src;
+        }else if(type == __TEXT){
+            strcpy(index_.t_index, (char*)src);
+        }
+    }catch(NEexception &e){
+        throw e;
+    }
+    
+}
+
 Index::Index(string index, DATA_TYPE type){
     try{
+        memset(&index_,0,sizeof(INDEX));
         if(type == __INT){
             parm_check(index, __INT);
             index_.i_index = stoi(index);
@@ -48,24 +65,40 @@ Index::Index(string index, DATA_TYPE type){
 
 Index::Index(int i){
     type_ = __INT;
+    memset(&index_,0,sizeof(INDEX));
     index_.i_index = i;
 }
 
 Index::Index(long long ll){
     type_ = __INT64;
+    memset(&index_,0,sizeof(INDEX));
     index_.l_index = ll;
 }
 
 Index::Index(double d){
     type_ = __REAL;
+    memset(&index_,0,sizeof(INDEX));
     index_.d_index = d;
 }
 
 Index::Index(string s){
     type_ = __TEXT;
+    memset(&index_,0,sizeof(INDEX));
     strcpy(index_.t_index, s.c_str());
 }
 
+Index::Index(const Index& src){
+    memset(&index_,0,sizeof(INDEX));
+    memcpy(&index_,&src.index_,sizeof(INDEX));
+    type_ = src.type_;
+}
+
+Index& Index::operator=(Index& src){
+    memset(&index_,0,sizeof(INDEX));
+    memcpy(&index_,&src.index_,sizeof(INDEX));
+    type_ = src.type_;
+    return *this;
+}
 
 ostream &operator << (ostream &out, Index &index){
     if(index.type_ == __INT) out << index.index_.i_index;

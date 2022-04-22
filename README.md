@@ -9,7 +9,7 @@
 
 ## Schedule
 
-### 项目进度 **`2022.4.17`**
+### 项目进度 **`2022.4.22`**
 - [x] 基本表结构
 - [x] 终端控制
 - [x] 命令解析器
@@ -289,6 +289,13 @@
          */
         char* getData();                //获取sql语句执行数据信息
 
+        ```
+        ```
+        /**
+         * @brief get operate num of select or delete
+         * @return sql-operation num                
+         */
+        int getCount();                 //获取sql查询/删除数据个数信息
         ```
 
     3. 其他功能接口

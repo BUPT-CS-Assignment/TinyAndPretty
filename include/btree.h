@@ -194,6 +194,8 @@ void BalanceTree<DAT, Idx>::CutDown(){
         node = node->__child[0];
         delete[] temp->__child;
     }
+    __Root__ = NULL;
+    __Data__ = NULL;
 }
 
 
@@ -557,13 +559,13 @@ void BalanceTree<DAT, Idx>::DeleteData(Idx *idx){
         //cout << "l lend" << endl;
         node->left_lend(NULL);
         Idx *common_idx = common_index_locate(node->__left, node, __Root__); //找到共同父索引
-        *common_idx = *(new Idx(*node->__index[0]));    //更新共同父索引
+        *common_idx = *node->__index[0];    //更新共同父索引
     }
     else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
         //cout << "r lend" << endl;
         node->right_lend(NULL);
         Idx *common_idx = common_index_locate(node, node->__right, __Root__); //找到共同父索引
-        *common_idx = *(new Idx(*node->__right->__index[0])); //更新共同父索引
+        *common_idx = *node->__right->__index[0]; //更新共同父索引
     }
     /* 借节点优先/////////////////////////////////////////////////////////////
     if(node->__left != NULL && node->__left->isLend()){ //左节点可借
@@ -654,7 +656,7 @@ void BalanceTree<DAT, Idx>::delete_adjust(Node<DAT, Idx> *node){
             //左合并
             //定位父索引
             p = node->__parent->find_insert_position(node->__left->__index[node->__left->__cursor - 1]);
-            Idx *temp_idx = new Idx(*node->__parent->__index[p]);   //拉取父索引
+            Idx *temp_idx = node->__parent->__index[p];   //拉取父索引
             Node<DAT, Idx> *temp = node;
             node = node_merge(node->__left, temp_idx, node);  //合并
             temp->__cursor = 0;
@@ -663,7 +665,7 @@ void BalanceTree<DAT, Idx>::delete_adjust(Node<DAT, Idx> *node){
         else if(node->__right != NULL && node->__right->__parent == node->__parent){
             //右合并
             p = node->__parent->find_insert_position(node->__index[node->__cursor - 1]);  //定位父索引
-            Idx *temp_idx = new Idx(*node->__parent->__index[p]);   //拉取父索引
+            Idx *temp_idx = node->__parent->__index[p];   //拉取父索引
             node = node_merge(node, temp_idx, node->__right); //合并
             node->__parent->delete_index(p);    //删除父索引
         }
@@ -685,7 +687,7 @@ Node<DAT, Idx> *BalanceTree<DAT, Idx>::node_merge(Node<DAT, Idx> *nodeA, Idx *id
     /**
      * @brief 拉取父节点索引后合并 <parm>左节点指针, 父索引, 右节点指针
      */
-    nodeA->__index[nodeA->__cursor++] = new Idx(*idx);  //加入父索引
+    nodeA->__index[nodeA->__cursor++] = idx;  //加入父索引
     //节点数据迁移
     for(int i = 0; i < nodeB->__cursor; i++){
         nodeA->__index[nodeA->__cursor] = nodeB->__index[i];

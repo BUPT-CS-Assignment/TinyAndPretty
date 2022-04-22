@@ -12,18 +12,21 @@ class Index{
     DATA_TYPE    type_;
     public:
     Index(string index, DATA_TYPE);
-    Index(DATA_TYPE);
     Index(int);
     Index(long long);
     Index(double);
     Index(string);
     Index();
-    int getSize();
-    bool operator<(Index &);
-    bool operator>(Index &);
-    bool operator==(Index &);
-    bool operator<=(Index &);
-    bool operator>=(Index &);
+    Index(const Index &);
+    Index &operator=(Index &);
+    int     getSize();
+    void    setVal(DATA_TYPE, void *);
+    bool    operator<(Index &);
+    bool    operator>(Index &);
+    bool    operator==(Index &);
+    bool    operator!=(Index &);
+    bool    operator<=(Index &);
+    bool    operator>=(Index &);
     friend ostream &operator << (ostream &out, Index &index);
 };
 
@@ -62,7 +65,7 @@ class Table{
         ePage(){
             offset = -1; next = NULL;
         }
-    };
+    }empty_pages;
     private:
     //FileHead
     __uint16_t      page_size_;   //单页最大字节数
@@ -80,7 +83,6 @@ class Table{
     __uint16_t      row_take_up_;    //单行字节数
     __uint16_t      max_rows_per_page_;//单页最大行数 
     //////////////////////////////////////////////
-    ePage empty_pages;
     //TableBody
     //In-Memory
     BalanceTree<__uint16_t, Index> *pages_tree_;   //索引B+树
@@ -196,10 +198,6 @@ class Row{
     friend class Memorizer;
     friend class Page;
     friend class Analyzer;
-    /**
-     * @brief   [C]数行 
-     *
-     */
     private:
     //RowHaed
     Index row_index_;
@@ -235,7 +233,8 @@ class Analyzer{
     int *cond_pos;      //记录比较元素位置
     char *cond_cmp;     //记录比较符号
     Index *cond_val;    //搜索值索引
-    Index *key_range[2]; //记录主键搜索范围
+    int lower_bound;    //比较下界
+    int upper_bound;    //比较上界
     string *cond_origin; //记录比较原值
     //value match
     int parm_num;   //update 专用, 记录更新后的值

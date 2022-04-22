@@ -188,14 +188,18 @@ class NEDB{
     int __PageSize__;
     string __Msg__;
     string __Data__;
+    int __OperateCount__;
     void database_init();
 public:
     Table *getTable(int);
     Table *getTable(string name);
     void addTable(Table *);
     void dropTable(string name);
-    void setData(string data);
-    void setMsg(string msg);
+    void setData(string);
+    void setMsg(string);
+    void setCount(int);
+    void AddCount();
+    void SubCount();
     int getCursor();
     ///////////////////////////////////////////////
     string getDir();    //获取当前目录
@@ -204,6 +208,7 @@ public:
     int setDir(string dir); //设置目录
     string getMsg();    //获取sql语句执行返回信息
     string getData();   //获取sql语句执行数据信息
+    int getCount();     //获取操作数量
     NEDB(string dir);   //构造函数
     int dirInit();          //目录初始化
     int scan();             //打开目录下全表

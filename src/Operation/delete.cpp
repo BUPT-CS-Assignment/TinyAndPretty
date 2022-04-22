@@ -134,6 +134,7 @@ void Page::DeleteRow(Analyzer &ANZ){
             //递减顺序筛选
             for(int i = cursor_pos_ - 1; i >= 0; i--){
                 if(ANZ.Match(rows_[i])){
+                    table_ptr_->db_->AddCount();
                     rows_[i]->Erase();
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];
@@ -152,6 +153,7 @@ void Page::DeleteRow(Analyzer &ANZ){
             //递增顺序筛选
             for(int i = 0; i < cursor_pos_; i++){
                 if(ANZ.Match(rows_[i])){
+                    table_ptr_->db_->AddCount();
                     rows_[i]->Erase();
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];

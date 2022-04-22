@@ -12,7 +12,7 @@ Analyzer::Analyzer(Table *table){
     parm_num = 0;
     key_pos = -1;
     stop_flag = 0;
-    key_range[0] = key_range[1] = NULL;
+    lower_bound = upper_bound = -1;
     parm_pos = NULL;
 }
 
@@ -29,7 +29,7 @@ void Analyzer::Extract(string conditions, string pattern){
         cond_num = -1;
         return;
     }
-    key_range[0] = key_range[1] = NULL;
+    lower_bound = upper_bound = -1;
     int l = pattern.length();
     while(true){
         if(conditions.length() == 0){
@@ -66,25 +66,21 @@ void Analyzer::Extract(string conditions, string pattern){
             throw PARAM_NOT_FOUND;
         }
         cond_origin[cond_num] = str[1];
-        cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
+        Index temp_idx(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
+        cond_val[cond_num] = temp_idx;
         /////////////////////
-        if(cond_pos[cond_num] == -1){
-            throw PARAM_NOT_FOUND;
-        }
-        cond_origin[cond_num] = str[1];
-        cond_val[cond_num] = *new Index(str[1], table_ptr_->parm_types_[cond_pos[cond_num]]);
         if(cond_pos[cond_num] == table_ptr_->prim_key_){
             ///更新主键范围
             if(cond_cmp[cond_num] == '>'){
-                if(key_range[0] == NULL || *key_range[0] < cond_val[cond_num]){
+                if(lower_bound == -1 || cond_val[lower_bound] < cond_val[cond_num]){
                     key_pos = cond_num;
-                    key_range[0] = &cond_val[cond_num];
+                    lower_bound = cond_num;
                 }
             }
             else if(cond_cmp[cond_num] == '<'){
-                if(key_range[1] == NULL || *key_range[1] > cond_val[cond_num]){
+                if(upper_bound == -1 || cond_val[upper_bound] > cond_val[cond_num]){
                     key_pos = cond_num;
-                    key_range[1] = &cond_val[cond_num];
+                    upper_bound = cond_num;
                 }
             }
             else{
@@ -92,6 +88,7 @@ void Analyzer::Extract(string conditions, string pattern){
             }
         }
         cond_num++;
+        delete[] str;
     }
 }
 
@@ -112,6 +109,7 @@ void Analyzer::Locate(string params){
             throw PARAM_NOT_FOUND;
         }
     }
+    delete[] param;
 }
 
 bool Analyzer::Match(Row *row){
@@ -119,21 +117,7 @@ bool Analyzer::Match(Row *row){
     for(int i = 0; i < cond_num; i++){
         DATA_TYPE type = table_ptr_->parm_types_[cond_pos[i]];
         Index temp;
-        if(type == __INT){
-            temp = Index(*(int *)row->content_[cond_pos[i]]);
-        }
-        else if(type == __INT64){
-            temp = Index(*(long long *)row->content_[cond_pos[i]]);
-        }
-        else if(type == __REAL){
-            temp = Index(*(double *)row->content_[cond_pos[i]]);
-        }
-        else if(type == __TEXT){
-            temp = Index((char *)row->content_[cond_pos[i]], __TEXT);
-        }
-        else{
-            temp = Index((char *)row->content_[cond_pos[i]], __LONGTEXT);
-        }
+        temp.setVal(type, row->content_[cond_pos[i]]);
         if(cond_cmp[i] == '='){
             if(temp == cond_val[i]){
                 continue;
@@ -144,7 +128,7 @@ bool Analyzer::Match(Row *row){
         }
         else if(cond_cmp[i] == '<'){
             if(cond_pos[i] == table_ptr_->prim_key_){
-                if(key_range[1] == NULL || temp < *key_range[1]){
+                if(upper_bound == -1 || temp < cond_val[upper_bound]){
                     continue;
                 }
                 else{
@@ -163,7 +147,7 @@ bool Analyzer::Match(Row *row){
         }
         else if(cond_cmp[i] == '>'){
             if(cond_pos[i] == table_ptr_->prim_key_){
-                if(key_range[0] == NULL || temp > *key_range[0]){
+                if(lower_bound == -1 || temp > cond_val[lower_bound]){
                     continue;
                 }
                 else{
@@ -189,7 +173,6 @@ Analyzer::~Analyzer(){
     delete cond_pos;
     delete cond_cmp;
     delete cond_val;
-    key_range[0] = key_range[1] = NULL;
     delete[] cond_origin;
     delete parm_pos;
 }

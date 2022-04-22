@@ -21,8 +21,8 @@ void Table::InsertValues(string conditions, string values){
             Page *new_page = new Page(this);
             RAM.PageFlush(*new_page_offset);
             new_page->InsertRow(new_row);
-            new_page->page_index_ = *new Index(new_row->getIndex());
-            pages_tree_->InsertData(&(new_row->getIndex()), new_page_offset);
+            new_page->page_index_ = new_row->getIndex();
+            pages_tree_->InsertData(&new_page->page_index_, new_page_offset);
             RAM.PageStore(*new_page_offset, new_page);
             new_page->Erase();
             return;
@@ -41,7 +41,7 @@ void Table::InsertValues(string conditions, string values){
             }
             page->is_full_ = false;
             new_page->InsertRow(new_row);
-            new_page->page_index_ = *new Index(new_page->rows_[0]->getIndex());
+            new_page->page_index_ = new_page->rows_[0]->getIndex();
             pages_tree_->InsertData(&(new_page->page_index_), new_page_offset);
             RAM.PageFlush(*page_offset);
             RAM.PageStore(*new_page_offset, new_page);

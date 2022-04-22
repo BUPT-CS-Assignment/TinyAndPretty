@@ -28,7 +28,6 @@ void Table::Init(string parameters){
         string *params = Split(parameters, ',', number);
         parm_num_ = number;
         //分配空间
-        //index_tree_ = new BalanceTree<Index, Index>*[parm_num_];
         parm_types_ = new DATA_TYPE[parm_num_];
         parm_names_ = new char[parm_num_][32]{{0}};
         bool key_assigned = 0;
@@ -73,16 +72,6 @@ void Table::Init(string parameters){
                     prim_key_ = i;
                 }
             }
-            //非主键索引创建
-            /*
-            if(number == 3 && str[2]=="index"){
-                if(parm_types_[i] != __LONGTEXT){
-
-                    index_tree_[i] = new BalanceTree<Index, Index>(i);
-                }else{
-                    cout<<"<W> INDEX NOT CREATE : TYPE NOT ALLOWED"<<endl;
-                }
-            }*/
         }
         //计算单页行数
         max_rows_per_page_ = (page_size_ - PAGE_HEAD_SIZE) / row_take_up_;
@@ -140,12 +129,14 @@ string Table::getStructure(){
     }
     cout << "+-----------+-----------\n" << endl;
     */
-    string str = "{";
-    str = str + to_string((int)page_size_) + ",";
+    string str = "";
+    str = str + "[Name]" + table_name_;
+    str = str + ";[Bsp]" + to_string((int)page_size_);
+    str = str + ";[Field]";
     for(int i = 0; i < parm_num_; i++){
         str = str + parm_names_[i] + ":" + kTypeName[parm_types_[i]]
             + (i == prim_key_ ? "(key)" : "");
-        str = str + (i == parm_num_ - 1 ? "}" : ", ");
+        str = str + (i == parm_num_ - 1 ? "" : ",");
     }
     return str;
 

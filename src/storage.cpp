@@ -84,7 +84,8 @@ Table *Memorizer::TableLoad(NEDB* db, string name){
                 table->add_empty_page(i);
                 continue;
             }
-            Index *index = new Index(table->getKeyType());
+            Index *index = new Index();
+            index->type_ = table->getKeyType();
             res = fread(&index->index_, index->getSize(), 1, fp);
             table->pages_tree_->InsertData(index, new __uint16_t(i));
         }

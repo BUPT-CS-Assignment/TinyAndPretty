@@ -13,7 +13,18 @@ string Table::SelectValues(string param, string condition){
         else{
             res = select_by_traverse(ANZ);
         }
-        return "{" + res + "}";
+        /* set header */
+        string head;
+        if(param == "*"){
+            for(int i = 0; i < parm_num_; i++){
+                head += string(parm_names_[i]);
+                head += (i == parm_num_ - 1 ? ";" : ",");
+            }
+        }
+        else{
+            head = param + ";";
+        }
+        return head+res;
     }
     catch(NEexception &e){
         throw e;
@@ -41,7 +52,9 @@ string Table::select_by_key(Analyzer &ANZ){
             if(cmp == -1) res = temp + res;
             else res = res + temp;
             if(cmp == 0 || ANZ.stop_flag == 2) break;
-            else if(cmp == -1){ --data_node;}
+            else if(cmp == -1){
+                --data_node;
+            }
             else ++data_node;
             page->Erase();
         }
@@ -86,15 +99,15 @@ string Table::select_by_traverse(Analyzer &ANZ){
 
 
 string Row::get_values(int values[], int n){
-    string str = "{";
+    string str = "";
     if(n == -1){
         for(int i = 0; i < table_ptr_->parm_num_; i++){
-            str = str + get_value(i) + (i == table_ptr_->parm_num_ - 1 ? "}" : ",");
+            str = str + get_value(i) + (i == table_ptr_->parm_num_ - 1 ? "" : ",");
         }
     }
     else{
         for(int i = 0; i < n; i++){
-            str = str + get_value(values[i]) + (i == n - 1 ? "}" : ",");
+            str = str + get_value(values[i]) + (i == n - 1 ? "" : ",");
         }
     }
     return str;
@@ -128,6 +141,7 @@ string Page::SelectRow(Analyzer &ANZ){
         //递减顺序筛选
         for(int i = cursor_pos_ - 1; i >= 0; i--){
             if(ANZ.Match(rows_[i])){
+                table_ptr_->db_->AddCount();
                 str = rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + "," + str;
             }
             else{
@@ -141,6 +155,7 @@ string Page::SelectRow(Analyzer &ANZ){
         //递增顺序筛选
         for(int i = 0; i < cursor_pos_; i++){
             if(ANZ.Match(rows_[i])){
+                table_ptr_->db_->AddCount();
                 str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ",";
             }
             else{

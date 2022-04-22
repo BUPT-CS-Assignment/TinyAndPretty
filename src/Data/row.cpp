@@ -3,7 +3,7 @@
 
 Row::Row(Table *table){
     table_ptr_ = table;
-    row_index_ = *new Index(table->getKeyType());
+    row_index_.setVal(table->getKeyType(),NULL);
     content_ = new void *[table->parm_num_];
     for(int i = 0; i < table->parm_num_; i++){
         //初始化行数据
@@ -95,20 +95,7 @@ void Row::Erase(){
 
 void Row::index_update(){
     DATA_TYPE type = table_ptr_->parm_types_[table_ptr_->prim_key_];
-    row_index_ = *new Index(type);
-    switch(type){
-        case __INT:
-            row_index_.index_.i_index = *((int *)content_[table_ptr_->prim_key_]); break;
-        case __INT64:
-            row_index_.index_.l_index = *((long long *)content_[table_ptr_->prim_key_]); break;
-        case __REAL:
-            row_index_.index_.d_index = *((double *)content_[table_ptr_->prim_key_]); break;
-        case __TEXT:
-            strcpy(row_index_.index_.t_index, (char *)content_[table_ptr_->prim_key_]); break;
-        default:
-            break;
-    }
-
+    row_index_.setVal(type,content_[table_ptr_->prim_key_]);
 }
 
 Index &Row::getIndex(){

@@ -8,7 +8,8 @@ PACKAGE 	= $(BUILD_DIR)/$(NAME)
 LIBS		= $(BUILD_DIR)/libnedb.so
 LIBA		= $(BUILD_DIR)/libnedb.a
 
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror
+CXXFLAGS += -std=c++11
+CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror 
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
@@ -45,7 +46,7 @@ $(LIBS): $(OBJSN)
 
 $(LIBA): $(OBJSN)	
 	@echo + LD $@
-	ar cq $@ $^
+	ar -r $@ -o $^
 
 
 .PHONY: clean .detect run root

@@ -13,6 +13,7 @@ NEDB::NEDB(string dir){
     __Cursor__ = 0;
     __Msg__ = "";
     __Data__ = "";
+    __OperateCount__ = 0;
 }
 
 int NEDB::setDir(string dir){
@@ -46,6 +47,21 @@ int NEDB::getDefaultPageSize(){
 
 void NEDB::setMsg(string msg){
     __Msg__ = msg;
+}
+void NEDB::setCount(int count){
+    __OperateCount__ = count;
+}
+
+int NEDB::getCount(){
+    return __OperateCount__;
+}
+
+void NEDB::AddCount(){
+    __OperateCount__ ++;
+}
+
+void NEDB::SubCount(){
+    __OperateCount__ --;
 }
 
 Table *NEDB::getTable(int i){
@@ -130,6 +146,7 @@ int NEDB::dirInit(){
 int NEDB::scan(){
     try{
         DIR *dp = opendir(__SrcDir__.c_str());
+        __OperateCount__ = 0;
         if(dp == NULL){
             throw DIR_ERROR;
         }
@@ -145,6 +162,7 @@ int NEDB::scan(){
                 if(!open(file_name)){
                     return 0;
                 }
+                __OperateCount__ ++;
             }
         }
         closedir(dp);
@@ -182,6 +200,7 @@ int NEDB::open(string name){
 
 int NEDB::exec(string sql){
     __Data__ = __Msg__ = "";
+    __OperateCount__ = 0;
     if(sql.length() == 0 || sql[sql.length()-1]!=';'){
         __Msg__ = NEexceptionName[SQL_FORM_ERROR];
         return 0;
@@ -293,14 +312,14 @@ void __START__(){
 ////////////////////////////////////////////////////////////////
 void __MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.18 <Stable>" << endl;
+    cout << "Server version: 22.4.22 <Stable>" << endl;
     cout << "Default resource-dir: " << __DefaultDir__ << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
 
 ////////////////////////////////////////////////////////////////
 void __HELP__(){
-    cout << "NEDB version: 22.4.18 <Stable>" << endl;
+    cout << "NEDB version: 22.4.22 <Stable>" << endl;
     cout << " " << endl;
     cout << "Data Type Support >" << endl;
     cout << " " << endl;
@@ -361,12 +380,16 @@ NEdb::NEdb(const char *dir){
     nedb = new NEDB(dir);
 }
 
-char *NEdb::getDir(){
-    if(nedb == NULL) return new char[1]{{0}};
-    string dir = nedb->getDir();
-    char *res = new char[dir.length() + 1];
-    strcpy(res, dir.c_str());
+const string NEdb::getDir(){
+    const string str = nedb->getDir();
+    return str;
+    /*
+    if(nedb == NULL) return NULL;
+    string str = nedb->getDir();
+    char *res = new char[str.length() + 1];
+    strcpy(res, str.c_str());
     return res;
+    */
 }
 
 int NEdb::getDefaultPageSize(){
@@ -384,20 +407,32 @@ int NEdb::setDir(const char *dir){
     return nedb->setDir(dir);
 }
 
-char *NEdb::getMsg(){
-    if(nedb == NULL) return new char[16]{"Pointer error"};
-    string dir = nedb->getMsg();
-    char *res = new char[dir.length() + 1];
-    strcpy(res, dir.c_str());
+const string NEdb::getMsg(){
+    const string str = nedb->getMsg();
+    return str;
+    /*
+    if(nedb == NULL) return NULL;
+    string msg = nedb->getMsg();
+    char *res = new char[msg.length()+1];
+    strcpy(res, msg.c_str());
     return res;
+    */
 }
 
-char *NEdb::getData(){
-    if(nedb == NULL) return new char[1]{{0}};
-    string dir = nedb->getData();
-    char *res = new char[dir.length() + 1];
-    strcpy(res, dir.c_str());
+const string NEdb::getData(){
+    const string str = nedb->getData();
+    return str;
+    /*
+    if(nedb == NULL) return NULL;
+    string str = nedb->getData();
+    char *res = new char[str.length() + 1];
+    strcpy(res, str.c_str());
     return res;
+    */
+}
+
+int NEdb::getCount(){
+    return nedb->getCount();
 }
 
 int NEdb::dirInit(){
@@ -405,7 +440,7 @@ int NEdb::dirInit(){
     return nedb->dirInit();
 }
 
-int NEdb::scan(){
+int NEdb::openall(){
     if(nedb == NULL) return -1;
     return nedb->scan();
 }
