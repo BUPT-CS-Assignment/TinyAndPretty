@@ -294,12 +294,12 @@ void Executor::execute_update_values(){
 
 void Executor::execute_select_tables(){
     try{
-        string str = "{";
+        string str = "";
         for(int i = 0; i < db_->getCursor(); i++){
-            str = str + db_->getTable(i)->getName() + (i == db_->getCursor() - 1 ? "" : ", ");
+            str = str + db_->getTable(i)->getName() + (i == db_->getCursor() - 1 ? "" : ",");
         }
-        str = str + "}";
         db_->setData(str);
+        db_->setCount(db_->getCursor());
     }
     catch(NEexception &e){
         throw e;

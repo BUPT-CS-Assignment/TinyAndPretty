@@ -142,7 +142,7 @@ string Page::SelectRow(Analyzer &ANZ){
         for(int i = cursor_pos_ - 1; i >= 0; i--){
             if(ANZ.Match(rows_[i])){
                 table_ptr_->db_->AddCount();
-                str = rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + "," + str;
+                str = rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ";" + str;
             }
             else{
                 if(ANZ.stop_flag == 2){
@@ -156,7 +156,7 @@ string Page::SelectRow(Analyzer &ANZ){
         for(int i = 0; i < cursor_pos_; i++){
             if(ANZ.Match(rows_[i])){
                 table_ptr_->db_->AddCount();
-                str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ",";
+                str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ";";
             }
             else{
                 if(ANZ.stop_flag == 2){
