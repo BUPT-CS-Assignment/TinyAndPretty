@@ -33,4 +33,9 @@ def_HttpEntry(SQL_HELP ,  req);
 def_HttpEntry(ICON , req);
 def_HttpEntry(Check_It , req);
 
+/* User Service */
+def_HttpEntry(LOG_IN,req);
+def_HttpEntry(SIGN_UP,req);
+
+
 #endif

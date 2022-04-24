@@ -5,8 +5,6 @@
 // 2. router.conf
 // 3. test.cpp (your own .cpp)
 
-#pragma GCC diagnostic ignored "-Wnarrowing"
-#pragma GCC diagnostic ignored "-Wunused-variable"
 void stringConcat(std::string& tar){;}  //recursion ending
 template<typename T , typename... Args>
 void stringConcat(std::string& tar , T value , Args... args){
@@ -62,7 +60,7 @@ def_HttpEntry(Lent_Book , req){
 
 // EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
 def_HttpEntry(SQL_HELP , req){
-    std::fstream fs("utils/sql_help.html", std::ios::in | std::ios::binary);
+    std::fstream fs("web/sqlService/sql_help.html", std::ios::in | std::ios::binary);
     if(fs.is_open()){
         //std::cerr << "SQl HELP\n";
         return new FileResponse{fs , "text/html"};
@@ -102,7 +100,7 @@ def_HttpEntry(SQL_Run , req){
     int count = 0;
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("utils/database.html", std::ios::in | std::ios::binary);
+        std::fstream fs("web/sqlService/database.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) //std::cerr << "Return HTML\n";
         //std::cerr << "SQL RUN\n";
         return new FileResponse{fs , "text/html"};
