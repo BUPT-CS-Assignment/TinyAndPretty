@@ -2,6 +2,9 @@
 #define __NEDB_H__
 #include <iostream>
 
+/**
+ * @brief   change NEDB default settings 
+ */
 void NEDB_SETTING(
     int MAX_TABLES = 64,          /* Max Table Numbers */ 
     int DEFAULT_PAGE_SIZE = 400,  /* Default Page Size */
@@ -9,6 +12,9 @@ void NEDB_SETTING(
     int SIG_CHECK_TIMES = 5       /* Check Times While Waiting */
 );
 
+/**
+ * @brief   set NEDB debug signal 
+ */
 void NEDB_DEBUG(int SIG_DEBUG = 0 /* Debug Signal */);
 
 
@@ -78,9 +84,9 @@ typedef struct NEDB{
 
     /////basic///////////////////////////////////////////////
 
-        /**
-         * @brief nedb class pointer
-         */
+    /**
+     * @brief DataBase class pointer
+     */
     DataBase* nedb;
 
     /**
@@ -94,14 +100,14 @@ typedef struct NEDB{
     /**
      * @brief   set full path for NEDB resource folder
      * @param   full-path of resource folder
-     * @return  1:complete, 0:error, -1:pointer error
+     * @return  error code
      */
     int SetDir(const char* dir);    //设置目录
 
 
     /**
      * @brief   scan specified table at NEDB resource folder
-     * @return  1:complete, 0:error, -1:pointer error
+     * @return  error code
      */
     int Openall();                     //打开目录下全表
 
@@ -109,7 +115,7 @@ typedef struct NEDB{
     /**
      * @brief   open all tables at NEDB resource folder
      * @param   table-name
-     * @return  1:complete, 0:error, -1:pointer error
+     * @return  error code
      */
     int Open(const char* fileName); //载入数据表
 
@@ -124,16 +130,16 @@ typedef struct NEDB{
 
     /**
      * @brief   close and free NEDB
-     * @return  1:complete, 0:error
+     * @return  error code
      */
     int Close();                    //关闭数据库
 
 
     /**
-     * @brief   get sql command state, complete or error-message
-     * @return  sql-command state message
+     * @brief   get sql execute error code
+     * @return  error code
      */
-    int ErrCode();                 //获取sql语句执行返回信息
+    int ErrCode();                 //获取sql语句执行返回代码
 
 
     /**
@@ -163,20 +169,20 @@ typedef struct NEDB{
      * @brief   get NEDB default page size
      * @return  NEDB default page-size, default by 0.4KB, -1:pointer error
      */
-    int DefaultPageSize();
+    int DefaultPageSize();          //获取数据表单页最大字节数
 
 
     /**
      * @brief   set NEDB default page size
      * @param  NEDB default page-size, range: 100-4000 (Bytes)
-     * @return  1:complete, 0:error, -1:pointer error
+     * @return  error code
      */
     int SetDefaultPageSize(int);    //设置数据表单页最大字节数
 
 
     /**
      * @brief   initialize NEDB resource folder full path, attempt to create directory automatically
-     * @return  1:complete, 0:error, -1:pointer error
+     * @return  error code
      */
     int DirInit();                  //目录初始化
 
