@@ -173,7 +173,6 @@ int DataBase::openall(){
                 file_name = file_name.substr(0, file_name.find("."));
                 if(open(file_name) != NO_ERROR){
                     __ErrCode__ = FILE_DAMAGED;
-                    return __ErrCode__;
                 }
                 __OperateCount__ ++;
             }
