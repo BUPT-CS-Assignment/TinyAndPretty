@@ -43,7 +43,7 @@ def_Helper(std::string 	, String 	, STRING );
 def_Helper(std::vector<int> 		, IntArray 		, INT_ARRAY);
 def_Helper(std::vector<double> 		, DoubleArray 	, DOUBLE_ARRAY);
 def_Helper(std::vector<bool> 		, BoolArray 	, BOOL_ARRAY);
-def_Helper(std::vector<std::string> , StringArray 	, INT_ARRAY);
+def_Helper(std::vector<std::string> , StringArray 	, STRING_ARRAY);
 
 //json-object definition
 class JsonItemObject: public JsonItemBase {
@@ -99,7 +99,9 @@ public :
 		ptr = new JsonItemBoolArray(_key , _val);
 	}	
 	JsonCtor(std::string _key , std::vector<std::string> &_val){
+
 		ptr = new JsonItemStringArray(_key , _val );
+
 	}
 };
 // just for easy use...
@@ -122,7 +124,6 @@ public :
 *	@param _item 记录K-V对。请用 ' , ' 代替Json中的 ' : '，并使用'{ }'包括起来。
 */ 
 	void push_back(JsonCtor _item) {
-        buff = nullptr;
 		items.push_back( _item.ptr );
 	}
 /**
@@ -220,9 +221,9 @@ inline void Json::handleItemBaseVector(JsonItemCluster &items , char *buff , siz
             }
             case ItemType::BOOL_ARRAY : 
             {
-                JsonItemIntArray* p= dynamic_cast<JsonItemIntArray *>(it);
+                JsonItemBoolArray* p= dynamic_cast<JsonItemBoolArray *>(it);
                 BUFF_ADD('[');
-                for(auto &val : p->value) {
+                for(auto val : p->value) {
                 	if(val) {strcpy(buff + cur , "true");  cur += 4;}
                 	else    {strcpy(buff + cur , "false"); cur += 5;}                	
 					BUFF_ADD(',');
