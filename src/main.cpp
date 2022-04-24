@@ -2,12 +2,13 @@
 #include <Network/TAPManager.h>
 #include <HttpProtocal/HttpManager.h>
 
-#include <libs/NEdb.h>
-NEdb DB("/home/jianxf/.nesrc");
+#include <libs/NEDB.h>
+NEDB DB("/home/jianxf/.nesrc");
 
 int main(int argv , char* argc[]) {
-    DB.dirInit();
-    DB.openall();
+    NEDB_DEBUG(1);
+    DB.DirInit();
+    DB.Openall();
     
     TAPManager server;
     server.loadSubManager( std::make_unique<HttpManager>() );

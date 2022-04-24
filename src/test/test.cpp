@@ -95,7 +95,7 @@ def_HttpEntry(Check_It , req) {
 }
 
 def_HttpEntry(SQL_Run , req){
-    std::string msg = "";
+    int errCode = 0;
     std::string val = "";
     int count = 0;
     std::string ans = req.getBody();
@@ -108,10 +108,34 @@ def_HttpEntry(SQL_Run , req){
     
     std::cerr<<"["<<getGMTtime()<<"] "<<"SQL-req: "<<ans<<std::endl;
     const char *sql = ans.c_str();
-    DB.exec(sql);
-    msg = DB.getMsg();
-    val = DB.getData();
-    count = DB.getCount();
-    return new HttpResponse{msg + "?" + std::to_string(count) + "&"+ val};
+    DB.Exec(sql);
+    errCode = DB.ErrCode();
+    val = DB.ReturnVal();
+    count = DB.Count();
+    return new HttpResponse{std::to_string(errCode) + "?" + std::to_string(count) + "&"+ val};
 }
 
+def_HttpEntry(SQL_Test,req){
+    std::string sql = "select * from main;";
+    int errcode = DB.Exec(sql.c_str());
+    return new HttpResponse{std::to_string(errcode)};
+}
+
+static int id;
+
+def_HttpEntry(SQL_Test2,req){
+    id++;
+    std::cerr<<"DataBase "<<id<<" In"<<std::endl;
+    std::string sql = "drop table test2;create table test2(id int);";
+    for(int i = 0;i<100;i++){
+        sql += "insert into test2 values ("+std::to_string(i)+");";
+    }
+    for(int i = 30;i<60;i++){
+        sql += "delete from test2 where id = "+std::to_string(i)+";";
+    }
+    sql += "select * from test2;";
+    int errcode = DB.Exec(sql.c_str());
+    std::cerr<<"DataBase "<<id<<" OK : "<<errcode<<std::endl;
+    return new HttpResponse{std::to_string(errcode)};
+
+}

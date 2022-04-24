@@ -22,8 +22,8 @@ using namespace SimpleJson;
 #define def_HttpEntry(name , request) HttpResponseBase* (name)(HttpRequest &request) 
 
 /*----------------- Data-Base Module ----------------- */
-#include <libs/NEdb.h>
-extern NEdb DB;
+#include <libs/NEDB.h>
+extern NEDB DB;
 
 /*---------------- Hello-world Module --------------- */
 def_HttpEntry(Link_Start , request);
@@ -36,6 +36,8 @@ def_HttpEntry(Check_It , req);
 /* User Service */
 def_HttpEntry(LOG_IN,req);
 def_HttpEntry(SIGN_UP,req);
+def_HttpEntry(SQL_Test,req);
+def_HttpEntry(SQL_Test2,req);
 
 
 #endif
