@@ -1,16 +1,25 @@
-#include<process.h>
-#include<data.h>
-#include<implement.h>
-#include<storage.h>
+#include<Basic/process.h>
+#include<Basic/data.h>
+#include<Utils/implement.h>
+#include<Basic/storage.h>
+using namespace std;
 
-
-Executor::Executor(Parser *parser, NEDB *db){
+Executor::Executor(Parser *parser, DataBase *db){
     db_ = db;
     parser_ = parser;
 }
 
 void Executor::execute_operation(){
     try{
+        if(parser_->operation_ == DROP_TABLE){
+            execute_drop_table();
+            return;
+        }
+        db_->__ActionLock__ = SIG_LOCK;
+        if(__LockCheck__(db_->__DeleteLock__,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+            db_->__ActionLock__ = SIG_UNLOCK;
+            throw ACTION_BUSY;
+        }
         switch(parser_->operation_){
             case CREATE_TABLE:
                 execute_create_table();
@@ -30,26 +39,23 @@ void Executor::execute_operation(){
             case DESCRIBE_TABLE:
                 execute_describe_table();
                 break;
-            case CREATE_INDEX:
-                execute_create_index();
-                break;
-            case DROP_INDEX:
-                execute_drop_index();
-                break;
-            case DROP_TABLE:
-                execute_drop_table();
-                break;
             case SELECT_TABLES:
                 execute_select_tables();
                 break;
             default:
+                db_->__ActionLock__ = SIG_UNLOCK;
                 throw SQL_UNDEFINED;
         }
+        db_->__ActionLock__ = SIG_UNLOCK;
     }
     catch(NEexception &e){
+        db_->__ActionLock__ = SIG_UNLOCK;
+        db_->__DeleteLock__ = SIG_UNLOCK;
         throw e;
     }
     catch(exception &e){
+        db_->__ActionLock__ = SIG_UNLOCK;
+        db_->__DeleteLock__ = SIG_UNLOCK;
         throw SYSTEM_ERROR;
     }
 }
@@ -61,7 +67,7 @@ void Executor::execute_command(){
                 __HELP__();
                 break;
             case __LOADALL:
-                db_->scan();
+                db_->openall();
                 break;
             case __LOAD:
                 db_->open(parser_->statement_);
@@ -95,16 +101,17 @@ void Executor::execute_command(){
                         throw SIZE_NOT_ALLOWED;
                     }
                 }
-
                 break;
             default:
                 throw COMMAND_UNDEFINED;
         }
     }
     catch(NEexception &e){
+        db_->setErrCode(e);
         throw e;
     }
     catch(exception &e){
+        db_->setErrCode(SYSTEM_ERROR);
         throw SYSTEM_ERROR;
     }
 }
@@ -200,7 +207,7 @@ void Executor::execute_describe_table(){
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             string str = table->getStructure();
-            db_->setData(str);
+            db_->setReturnVal(str);
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -257,7 +264,7 @@ void Executor::execute_select_values(){
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             string str = table->SelectValues(parser_->value_, parser_->condition_);
-            db_->setData(str);
+            db_->setReturnVal(str);
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -295,10 +302,13 @@ void Executor::execute_update_values(){
 void Executor::execute_select_tables(){
     try{
         string str = "";
-        for(int i = 0; i < db_->getCursor(); i++){
-            str = str + db_->getTable(i)->getName() + (i == db_->getCursor() - 1 ? "" : ",");
+        int num = db_->getCursor();
+        for(int i = 0; i < num; i++){
+            Table* table_ptr = db_->getTable(i);
+            if(table_ptr == NULL) continue;
+            str = str + table_ptr->getName() + (i == num- 1 ? "" : ",");
         }
-        db_->setData(str);
+        db_->setReturnVal(str);
         db_->setCount(db_->getCursor());
     }
     catch(NEexception &e){

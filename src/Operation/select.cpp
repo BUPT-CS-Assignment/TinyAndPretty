@@ -1,5 +1,7 @@
-#include<data.h>
-#include<implement.h>
+#include<Basic/data.h>
+#include<Utils/implement.h>
+#include<Basic/process.h>
+using namespace std;
 
 string Table::SelectValues(string param, string condition){
     try{
@@ -7,6 +9,12 @@ string Table::SelectValues(string param, string condition){
         ANZ.Locate(param);
         ANZ.Extract(condition, " and ");
         string res = "";
+        /*
+        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+            throw ACTION_BUSY;
+        }
+        table_lock_ = SIG_LOCK;
+        */
         if(ANZ.KeySupport()){
             res = select_by_key(ANZ);
         }
@@ -24,12 +32,15 @@ string Table::SelectValues(string param, string condition){
         else{
             head = param + ";";
         }
+        //table_lock_ = SIG_UNLOCK;
         return head+res;
     }
     catch(NEexception &e){
+        //table_lock_ = SIG_UNLOCK;
         throw e;
     }
     catch(exception &e){
+        //table_lock_ = SIG_UNLOCK;
         throw SYSTEM_ERROR;
     }
 

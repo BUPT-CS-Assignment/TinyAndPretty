@@ -1,9 +1,10 @@
-#include<basic.h>
-#include<process.h>
-#include<implement.h>
-#include<data.h>
+#include<main.h>
+#include<Basic/process.h>
+#include<Utils/implement.h>
+#include<Basic/data.h>
+using namespace std;
 
-NEDB::NEDB(string dir){
+DataBase::DataBase(string dir){
     if(dir.length() == 0 || dir[dir.length() - 1] != '/'){
         dir = dir + "/";
     }
@@ -11,93 +12,101 @@ NEDB::NEDB(string dir){
     __Tables__ = new Table * [MAX_TABLES];
     __PageSize__ = DEFAULT_PAGE_SIZE;
     __Cursor__ = 0;
-    __Msg__ = "";
-    __Data__ = "";
+    __ErrCode__ = NO_ERROR;
+    __ReturnVal__ = "";
     __OperateCount__ = 0;
+    __DeleteLock__ = SIG_UNLOCK;
+    __ActionLock__ = SIG_UNLOCK;
 }
 
-int NEDB::setDir(string dir){
+int DataBase::setDir(string dir){
     if(dir.length() == 0){
-        __Msg__ = "dir error";
-        return 0;
+        __ErrCode__ = DIR_ERROR;
+        return DIR_ERROR;
     }
     if(dir[dir.length() - 1] != '/'){
         dir = dir + "/";
     }
     __SrcDir__ = dir;
-    __Msg__ = "complete";
-    return 1;
+    __ErrCode__ = NO_ERROR;
+    return NO_ERROR;
 }
 
-string NEDB::getDir(){
+string DataBase::getDir(){
     return __SrcDir__;
 }
 
-string NEDB::getData(){
-    return __Data__;
+string DataBase::getReturnVal(){
+    return __ReturnVal__;
 }
 
-string NEDB::getMsg(){
-    return __Msg__;
+int DataBase::getErrCode(){
+    return __ErrCode__;
 }
 
-int NEDB::getDefaultPageSize(){
+int DataBase::getDefaultPageSize(){
     return __PageSize__;
 }
 
-void NEDB::setMsg(string msg){
-    __Msg__ = msg;
+void DataBase::setErrCode(int code){
+    __ErrCode__ = code;
 }
-void NEDB::setCount(int count){
+void DataBase::setCount(int count){
     __OperateCount__ = count;
 }
 
-int NEDB::getCount(){
+int DataBase::getCount(){
     return __OperateCount__;
 }
 
-void NEDB::AddCount(){
+void DataBase::AddCount(){
     __OperateCount__ ++;
 }
 
-void NEDB::SubCount(){
+void DataBase::SubCount(){
     __OperateCount__ --;
 }
 
-Table *NEDB::getTable(int i){
+Table* DataBase::getTable(int i){
     if(i >= __Cursor__) return NULL;
     return __Tables__[i];
 }
 
-int NEDB::getCursor(){
+int DataBase::getCursor(){
     return __Cursor__;
 }
 
-void NEDB::setData(string data){
-    __Data__ = data;
+void DataBase::setReturnVal(string val){
+    __ReturnVal__ = val;
 }
 
 
 
-int NEDB::setDefaultPageSize(int size){
+int DataBase::setDefaultPageSize(int size){
     if(size < 100 || size > 4000){
-        __Msg__ = "size not allowed";
-        return 0;
+        __ErrCode__ = SIZE_NOT_ALLOWED;
+        return SIZE_NOT_ALLOWED;
     }
     __PageSize__ = size;
-    __Msg__ = "complete";
-    return 1;
+    __ErrCode__ = NO_ERROR;
+    return NO_ERROR;
 }
 
-void NEDB::addTable(Table *table){
+void DataBase::addTable(Table* table){
     __Tables__[__Cursor__] = table;
     __Cursor__ ++;
 }
 
-void NEDB::dropTable(string name){
+void DataBase::dropTable(string name){
     try{
+        __DeleteLock__ = SIG_LOCK;
+        if(__LockCheck__(__ActionLock__, SIG_CHECK_TIMES * 2) != SIG_UNLOCK){
+            __DeleteLock__ = SIG_UNLOCK;
+            throw ACTION_BUSY;
+        }
         for(int i = 0; i < __Cursor__; i++){
             if(__Tables__[i] == NULL){
+                __DeleteLock__ = SIG_UNLOCK;
                 throw SYSTEM_ERROR;
             }
             string temp = __Tables__[i]->getName();
@@ -111,20 +120,23 @@ void NEDB::dropTable(string name){
                 }
                 __Tables__[__Cursor__ - 1] = NULL;
                 -- __Cursor__;
+                __DeleteLock__ = SIG_UNLOCK;
                 return;
             }
         }
+        __DeleteLock__ = SIG_UNLOCK;
         throw TABLE_NOT_FOUND;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
+        __DeleteLock__ = SIG_UNLOCK;
         throw e;
     }
 }
 
-int NEDB::dirInit(){
+int DataBase::dirInit(){
     try{
         int dir_num = 0;
-        string *dirs = Split(__SrcDir__, '/', dir_num);
+        string* dirs = Split(__SrcDir__, '/', dir_num);
         string dir = "";
         for(int i = 1; i < dir_num - 1; i++){
             dir = dir + "/" + dirs[i];
@@ -134,24 +146,24 @@ int NEDB::dirInit(){
                 }
             }
         }
-        __Msg__ = "complete";
-        return 1;
+        __ErrCode__ = NO_ERROR;
+        return __ErrCode__;
     }
-    catch(NEexception &e){
-        __Msg__ = NEexceptionName[e];
-        return 0;
+    catch(NEexception& e){
+        __ErrCode__ = e;
+        return __ErrCode__;
     }
 }
 
-int NEDB::scan(){
+int DataBase::openall(){
     try{
-        DIR *dp = opendir(__SrcDir__.c_str());
+        DIR* dp = opendir(__SrcDir__.c_str());
         __OperateCount__ = 0;
         if(dp == NULL){
             throw DIR_ERROR;
         }
         regex layout(".+\\.nef");
-        struct dirent *dirfiles;
+        struct dirent* dirfiles;
         while((dirfiles = readdir(dp)) != NULL){
             if(__Cursor__ >= MAX_TABLES){
                 throw TABLE_NUM_REACH_LIMIT;
@@ -159,65 +171,70 @@ int NEDB::scan(){
             string file_name = dirfiles->d_name;
             if(regex_match(file_name, layout)){
                 file_name = file_name.substr(0, file_name.find("."));
-                if(!open(file_name)){
-                    return 0;
+                if(open(file_name) != NO_ERROR){
+                    __ErrCode__ = FILE_DAMAGED;
+                    return __ErrCode__;
                 }
                 __OperateCount__ ++;
             }
         }
         closedir(dp);
-        __Msg__ = "complete";
-        __Data__ = "";
-        return 1;
+        __ErrCode__ = NO_ERROR;
+        __ReturnVal__ = "";
+        return __ErrCode__;
     }
-    catch(NEexception &e){
-        __Msg__ = NEexceptionName[e];
-        __Data__ = "";
-        return 0;
+    catch(NEexception& e){
+        __ErrCode__ = e;
+        __ReturnVal__ = "";
+        return __ErrCode__;
     }
 }
 
-int NEDB::open(string name){
+int DataBase::open(string name){
     try{
+        if(SIG_DEBUG == 1){
+            cout << "(NEDB)Loading '" << name << "'" << endl;
+        }
         Memorizer RAM(NULL);
-        Table *table = NULL;
+        Table* table = NULL;
         if(__Cursor__ >= MAX_TABLES){
             throw TABLE_NUM_REACH_LIMIT;
         }
         table = RAM.TableLoad(this, name);
-        if(getTable(name)==NULL){
+        if(getTable(name) == NULL){
             __Tables__[__Cursor__] = table;
             ++__Cursor__;
         }
-        __Msg__ = "complete";
-        return 1;
+        __ErrCode__ = NO_ERROR;
+        return __ErrCode__;
     }
-    catch(NEexception &e){
-        __Msg__ = NEexceptionName[e];
-        return 0;
+    catch(NEexception& e){
+        __ErrCode__ = e;
+        return __ErrCode__;
     }
 }
 
-int NEDB::exec(string sql){
-    __Data__ = __Msg__ = "";
+int DataBase::exec(string sql){
+    __ReturnVal__ = "";
+    __ErrCode__ = NO_ERROR;
     __OperateCount__ = 0;
-    if(sql.length() == 0 || sql[sql.length()-1]!=';'){
-        __Msg__ = NEexceptionName[SQL_FORM_ERROR];
+    if(sql.length() == 0 || sql[sql.length() - 1] != ';'){
+        __ErrCode__ = SQL_FORM_ERROR;
         return 0;
     }
     /////
     Parser p;
     Executor e(&p, this);
     int sql_num;
-    setData("");
+    setReturnVal("");
     string res = "";
-    string *sqls = Split(sql, ';', sql_num);
+    string* sqls = Split(sql, ';', sql_num);
     int t = 0;
     try{
         for(int i = 0; i < sql_num - 1; i++){
             p.i_analyse(sqls[i]);
             e.execute_operation();
-            string temp = getData();
+            string temp = getReturnVal();
             if(temp.length() != 0){
                 if(t == 0){
                     res = temp;
@@ -225,38 +242,47 @@ int NEDB::exec(string sql){
                 }
                 else res = res + "\n" + temp;
             }
-            setData("");
+            setReturnVal("");
             p.flush();
         }
-        __Data__ = res;
-        __Msg__ = "complete";
-        return 1;
+        __ReturnVal__ = res;
+        __ErrCode__ = NO_ERROR;
+        return __ErrCode__;
     }
-    catch(NEexception &E){
-        __Data__ = res;
-        __Msg__ = NEexceptionName[E];
-        return 0;
+    catch(NEexception& E){
+        __ReturnVal__ = res;
+        __ErrCode__ = E;
+        return __ErrCode__;
     }
 }
 
-int NEDB::close(){
+int DataBase::close(){
     try{
+        if(SIG_DEBUG == 1){
+            cout << "(NEDB)Closing..." << endl;
+        }
+        __DeleteLock__ = SIG_LOCK;
+        __ActionLock__ = SIG_LOCK;
         for(int i = 0; i < __Cursor__; i++){
             __Tables__[i]->Erase();
         }
         delete[] __Tables__;
         __Cursor__ = -1;
         __Tables__ = NULL;
-        __Msg__ = "complete";
-        return 1;
+        __ErrCode__ = NO_ERROR;
+        __DeleteLock__ = SIG_UNLOCK;
+        __ActionLock__ = SIG_UNLOCK;
+        return __ErrCode__;
     }
-    catch(exception &e){
-        __Msg__ = "system error";
-        return 0;
+    catch(exception& e){
+        __DeleteLock__ = SIG_UNLOCK;
+        __ActionLock__ = SIG_UNLOCK;
+        __ErrCode__ = SYSTEM_ERROR;
+        return __ErrCode__;
     }
 }
 
-Table *NEDB::getTable(string name){
+Table* DataBase::getTable(string name){
     try{
         for(int i = 0; i < __Cursor__; i++){
             if(__Tables__[i] == NULL){
@@ -267,197 +293,7 @@ Table *NEDB::getTable(string name){
         }
         return NULL;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-}
-
-////////////////////////////////////////////////////////////////
-
-void __START__(){
-    __MESSAGE__();
-    NEDB db(__DefaultDir__);
-    InputStream i;
-    Parser p;
-    Executor e(&p, &db);
-    while(true){
-        printf("NEDB > ");
-        try{
-            p.analyse(i.read());
-            if(p.getCommand() == __OPERATION){
-                e.execute_operation();
-                if(p.getOperate() == SELECT_VALUES || p.getOperate() == DESCRIBE_TABLE
-                    || p.getOperate() == SELECT_TABLES){
-                    cout << db.getData() << endl;
-                }
-            }
-            else if(p.getCommand() == __EXIT){
-                db.close();
-                printf("~\n");
-                return;
-            }
-            else{
-                e.execute_command();
-            }
-            cout << "[complete]" << endl;
-        }
-        catch(NEexception &e){
-            cout << "[error] " << NEexceptionName[e] << endl;
-        }
-        i.clear_input();
-        p.flush();
-    }
-}
-
-////////////////////////////////////////////////////////////////
-void __MESSAGE__(){
-    cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.22 <Stable>" << endl;
-    cout << "Default resource-dir: " << __DefaultDir__ << endl;
-    cout << "Enter '.help' for viewing help infomation.\n" << endl;
-}
-
-////////////////////////////////////////////////////////////////
-void __HELP__(){
-    cout << "NEDB version: 22.4.22 <Stable>" << endl;
-    cout << " " << endl;
-    cout << "Data Type Support >" << endl;
-    cout << " " << endl;
-    cout << "\t[  int     ]  ->  int" << endl;
-    cout << "\t[  int64   ]  ->  long int" << endl;
-    cout << "\t[  real    ]  ->  double" << endl;
-    cout << "\t[  text    ]  ->  char[32]" << endl;
-    cout << "\t[ longtext ]  ->  char[255]" << endl;
-    cout << " " << endl;
-    cout << "Command Insturction >" << endl;
-    cout << " " << endl;
-    cout << "\t[EXIT] .exit" << endl;
-    cout << "   " << endl;
-    cout << "\t[HELP] .help" << endl;
-    cout << "   " << endl;
-    cout << "\t[GET DIR] .dir" << endl;
-    cout << "\t * Default dir : '/home/jianxf/.nesrc/'." << endl;
-    cout << "   " << endl;
-    cout << "\t[SET DIR] .setdir 'full_dir'" << endl;
-    cout << "\t * Use '-d' replacing 'full_dif' to return to default." << endl;
-    cout << "   " << endl;
-    cout << "\t[DIR INIT] .dirinit" << endl;
-    cout << "\t * Automatically check and create current dir." << endl;
-    cout << "   " << endl;
-    cout << "\t[OPEN FILE] .open 'table_name'" << endl;
-    cout << "\t * Enter table name without suffix." << endl;
-    cout << "   " << endl;
-    cout << "\t[OPEN ALL] .openall" << endl;
-    cout << "\t * Open all table from current dir." << endl;
-    cout << "   " << endl;
-    cout << "\t[GET SIZE] .size" << endl;
-    cout << "\t * Default size : 400 with unit 'Byte'." << endl;
-    cout << "   " << endl;
-    cout << "\t[SET PAGE SIZE] .setsize 'size'." << endl;
-    cout << "\t * Size range : 100 - 4000 with unit 'Byte'." << endl;
-    cout << "\t * Use '-d' replacing 'size' to return to default." << endl;
-    cout << "   " << endl;
-    cout << "\t[TABLE CREATE] create table 'table_name' ('data_title' 'data_type', ... );" << endl;
-    cout << "\t * The first parm will be set as PRIMARY KEY by default." << endl;
-    cout << "\t * Add 'key' after a parm to designate." << endl;
-    cout << "\t * Parm typed 'longtext' is not allowed to be set as the PRIMARY KEY." << endl;
-    cout << "   " << endl;
-    cout << "\t[TABLE REMOVE] drop table 'table_name';" << endl;
-    cout << "   " << endl;
-    cout << "\t[DATA INSERT] insert into 'table_name' ('parm_name', ...) values ('parm_value', ...);" << endl;
-    cout << "   " << endl;
-    cout << "\t[DATA SELECT] select 'parm_name' from 'table_name' where 'conditions';" << endl;
-    cout << "   " << endl;
-    cout << "\t[DATA DELETE] delete from 'table_name' where 'conditions';" << endl;
-    cout << "   " << endl;
-    cout << "\t[DATA UPDATE] update 'table_name' set 'parm_name' = 'parm_value', ... where 'conditions';" << endl;
-    cout << "   " << endl;
-    cout << "\t[STRUCTURE CHECK] describe table 'table_name';" << endl;
-    cout << "   " << endl;
-}
-
-NEdb::NEdb(const char *dir){
-    nedb = new NEDB(dir);
-}
-
-const string NEdb::getDir(){
-    const string str = nedb->getDir();
-    return str;
-    /*
-    if(nedb == NULL) return NULL;
-    string str = nedb->getDir();
-    char *res = new char[str.length() + 1];
-    strcpy(res, str.c_str());
-    return res;
-    */
-}
-
-int NEdb::getDefaultPageSize(){
-    if(nedb == NULL) return -1;
-    return nedb->getDefaultPageSize();
-}
-
-int NEdb::setDefaultPageSize(int size){
-    if(nedb == NULL) return -1;
-    return nedb->setDefaultPageSize(size);
-}
-
-int NEdb::setDir(const char *dir){
-    if(nedb == NULL) return -1;
-    return nedb->setDir(dir);
-}
-
-const string NEdb::getMsg(){
-    const string str = nedb->getMsg();
-    return str;
-    /*
-    if(nedb == NULL) return NULL;
-    string msg = nedb->getMsg();
-    char *res = new char[msg.length()+1];
-    strcpy(res, msg.c_str());
-    return res;
-    */
-}
-
-const string NEdb::getData(){
-    const string str = nedb->getData();
-    return str;
-    /*
-    if(nedb == NULL) return NULL;
-    string str = nedb->getData();
-    char *res = new char[str.length() + 1];
-    strcpy(res, str.c_str());
-    return res;
-    */
-}
-
-int NEdb::getCount(){
-    return nedb->getCount();
-}
-
-int NEdb::dirInit(){
-    if(nedb == NULL) return -1;
-    return nedb->dirInit();
-}
-
-int NEdb::openall(){
-    if(nedb == NULL) return -1;
-    return nedb->scan();
-}
-
-int NEdb::open(const char *fileName){
-    if(nedb == NULL) return -1;
-    return nedb->open(fileName);
-}
-
-int NEdb::exec(const char *sql){
-    if(nedb == NULL) return -1;
-    return nedb->exec(sql);
-}
-
-int NEdb::close(){
-    if(nedb == NULL) return 1;
-    int res = nedb->close();
-    delete nedb;
-    return res;
 }

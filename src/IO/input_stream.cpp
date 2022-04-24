@@ -1,5 +1,6 @@
-#include<process.h>
-#include<implement.h>
+#include<Basic/process.h>
+#include<Utils/implement.h>
+using namespace std;
 
 InputStream::InputStream(){
     __Input = "";

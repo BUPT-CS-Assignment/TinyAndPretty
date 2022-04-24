@@ -1,15 +1,14 @@
-#include<storage.h>
-#include<basic.h>
-Memorizer::Memorizer(Table *table){
+#include<Basic/storage.h>
+#include<main.h>
+using namespace std;
+
+Memorizer::Memorizer(Table* table){
     table_ = table;
-    //cout<<"<S> I/O"<<endl;
-    //cout<<"RAM INITIALIZE"<<endl;
 }
 
 /**
- * .ldf //表架构文件
- * .ldd //数据文件
- * .ldi //索引文件
+ * .nef //表架构文件
+ * .ned //数据文件
  */
 
 
@@ -20,8 +19,8 @@ void Memorizer::TableStore(){
         }
         //检测空文件/创建文件
         string filePath = table_->db_->getDir() + table_->table_name_ + __FramSuffix__;
-        FILE *fp;
-        if((fp = fopen(filePath.c_str(),"r")) != NULL){
+        FILE* fp;
+        if((fp = fopen(filePath.c_str(), "r")) != NULL){
             throw TABLE_EXIST;
         }
         if((fp = fopen(filePath.c_str(), "w")) == NULL){
@@ -37,25 +36,26 @@ void Memorizer::TableStore(){
         fwrite(&table_->row_take_up_, 2, 1, fp);
         fwrite(&table_->max_rows_per_page_, 2, 1, fp);
         fclose(fp);
-    }catch(NEexception &e){
+    }
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw FILE_DAMAGED;
     }
-    
+
 }
 
-Table *Memorizer::TableLoad(NEDB* db, string name){
+Table* Memorizer::TableLoad(DataBase* db, string name){
     try{
         string filePath = db->getDir() + name + __FramSuffix__;
         string dataPath = db->getDir() + name + __DataSuffix__;
-        FILE *fp;
+        FILE* fp;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
         }
         fseek(fp, 0, SEEK_SET);
-        Table *table = new Table(db," ");
+        Table* table = new Table(db, " ");
         size_t res;
         res = fread(&table->page_size_, 2, 1, fp);
         res = fread(table->table_name_, 32, 1, fp);
@@ -84,7 +84,7 @@ Table *Memorizer::TableLoad(NEDB* db, string name){
                 table->add_empty_page(i);
                 continue;
             }
-            Index *index = new Index();
+            Index* index = new Index();
             index->type_ = table->getKeyType();
             res = fread(&index->index_, index->getSize(), 1, fp);
             table->pages_tree_->InsertData(index, new __uint16_t(i));
@@ -92,22 +92,22 @@ Table *Memorizer::TableLoad(NEDB* db, string name){
         fclose(fp);
         return table;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw FILE_DAMAGED;
     }
 }
 
 
-Page *Memorizer::PageLoad(__uint16_t offset){
+Page* Memorizer::PageLoad(__uint16_t offset){
     try{
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
         string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
-        FILE *fp;
+        FILE* fp;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
         }
@@ -116,13 +116,13 @@ Page *Memorizer::PageLoad(__uint16_t offset){
         bool notEmpty;
         res = fread(&notEmpty, 1, 1, fp);
         if(!notEmpty) return NULL;
-        Page *page = new Page(table_);
+        Page* page = new Page(table_);
         page->not_empty_ = true;
         res = fread(&page->page_index_.index_, page->page_index_.getSize(), 1, fp);
         res = fread(&page->is_full_, 1, 1, fp);
         res = fread(&page->cursor_pos_, 2, 1, fp);
         for(__uint16_t i = 0; i < page->cursor_pos_; i++){
-            Row *row = new Row(table_);
+            Row* row = new Row(table_);
             for(__uint16_t j = 0; j < table_->parm_num_; j++){
                 res = fread(row->content_[j], kTypeSize[table_->parm_types_[j]], 1, fp);
                 row->index_update();
@@ -133,10 +133,10 @@ Page *Memorizer::PageLoad(__uint16_t offset){
         fclose(fp);
         return page;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw FILE_DAMAGED;
     }
 }
@@ -147,34 +147,34 @@ void Memorizer::PageFlush(__uint16_t offset){
             throw TABLE_NOT_FOUND;
         }
         string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
-        FILE *fp;
+        FILE* fp;
         fp = fopen(filePath.c_str(), "ab+");
         fclose(fp);
         fp = fopen(filePath.c_str(), "r+");
         fwrite(&table_->max_offset, 2, 1, fp);
         fseek(fp, DATA_OFFSET + offset * table_->page_size_, SEEK_SET);
-        char ch[table_->page_size_+1]{{0}};
+        char ch[table_->page_size_ + 1]{{0}};
         //memset(ch, 0, sizeof(ch));
         fwrite(ch, table_->page_size_, 1, fp);
         fclose(fp);
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw FILE_DAMAGED;
     }
 }
 
 
-void Memorizer::PageStore(__uint16_t offset, Page *page){
+void Memorizer::PageStore(__uint16_t offset, Page* page){
     if(page == NULL) return;
     try{
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
         string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
-        FILE *fp;
+        FILE* fp;
         fp = fopen(filePath.c_str(), "ab+");
         fclose(fp);
         fp = fopen(filePath.c_str(), "r+");
@@ -185,17 +185,17 @@ void Memorizer::PageStore(__uint16_t offset, Page *page){
         fwrite(&page->is_full_, 1, 1, fp);
         fwrite(&page->cursor_pos_, 2, 1, fp);
         for(__uint16_t i = 0; i < page->cursor_pos_; i++){
-            Row *row = page->rows_[i];
+            Row* row = page->rows_[i];
             for(__uint16_t j = 0; j < page->table_ptr_->parm_num_; j++){
                 fwrite(row->content_[j], kTypeSize[page->table_ptr_->parm_types_[j]], 1, fp);
             }
         }
         fclose(fp);
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw FILE_DAMAGED;
     }
 }
@@ -205,23 +205,19 @@ void Memorizer::TableDrop(){
         string filePath = table_->db_->getDir() + table_->table_name_ + __FramSuffix__;
         string dataPath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
         string indexPath = table_->db_->getDir() + table_->table_name_ + __IndexSuffix__;
-        FILE *fp=NULL;
-        if((fp = fopen(filePath.c_str(),"r"))==NULL){
+        FILE* fp = NULL;
+        if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
         }
         remove(filePath.c_str());
-        if((fp = fopen(dataPath.c_str(),"r"))!=NULL){
+        if((fp = fopen(dataPath.c_str(), "r")) != NULL){
             remove(dataPath.c_str());
         }
-        if((fp = fopen(indexPath.c_str(),"r"))!=NULL){
+        if((fp = fopen(indexPath.c_str(), "r")) != NULL){
             remove(indexPath.c_str());
         }
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-}
-
-void Memorizer::IndexLoad(){
-
 }

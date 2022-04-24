@@ -1,5 +1,6 @@
-#include<process.h>
-#include<implement.h>
+#include<Basic/process.h>
+#include<Utils/implement.h>
+using namespace std;
 
 Parser::Parser(){
     statement_ = "";
@@ -26,7 +27,7 @@ void Parser::i_analyse(string input){
         statement_ = Trim(input);
         deconstruct();
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
 
@@ -79,10 +80,10 @@ void Parser::analyse(string input){
             statement_ = input;
         }
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 
@@ -118,10 +119,10 @@ void Parser::deconstruct(){
                 throw SQL_FORM_ERROR;
         }
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 
@@ -136,13 +137,6 @@ void Parser::parser_create_table(){
         value_ = Trim(*++it);
     }
     else throw SQL_FORM_ERROR;
-
-    /*
-    statement_ = Trim(statement_.substr(13,statement_.length()-13));
-    int index = statement_.find("(");
-    object_ = Trim(statement_.substr(0,index));
-    return take_out(statement_,value_);
-    */
 }
 
 void Parser::parser_insert_values(){
@@ -161,16 +155,6 @@ void Parser::parser_insert_values(){
         value_ = Trim(*++it);
     }
     else throw SQL_FORM_ERROR;
-    /*
-    statement_ = Trim(statement_.substr(12,statement_.length()-12));
-    int index = statement_.find(" ");
-    object_ = statement_.substr(0,index);
-    index = statement_.find("VALUES");
-    if(index == 1) return false;
-    string str1 = statement_.substr(0,index);
-    string str2 = statement_.substr(index,statement_.length()-index);
-    if(!take_out(str1,condition_)) return false;
-    return take_out(str2,value_);*/
 }
 
 void Parser::parser_delete_values(){
@@ -183,19 +167,9 @@ void Parser::parser_delete_values(){
         condition_ = Trim(*++it);
     }
     else{
+        condition_ = "";
         object_ = Trim(statement_.substr(12, statement_.length() - 12));
     }
-    /*
-    statement_ = Trim(statement_.substr(12,statement_.length()-12));
-    int index = statement_.find(" WHERE ");
-    if(index == -1) object_ = statement_;
-    else{
-        object_ = statement_.substr(0,index);
-        condition_ = statement_.substr(index+6,statement_.length()-index-6);
-        return true;
-    }
-    return true;
-    */
 }
 
 void Parser::parser_select_values(){
@@ -214,15 +188,6 @@ void Parser::parser_select_values(){
         object_ = Trim(*++it);
     }
     else throw SQL_FORM_ERROR;
-    /*
-    statement_ = Trim(statement_.substr(7,statement_.length()-7));
-    int index = statement_.find(" FROM ");
-    if(index == -1) return false;
-    value_ = statement_.substr(0,index);
-    statement_ = statement_.substr(index+6,statement_.length()-index-6);
-    index = statement_.find(" WHERE ");
-    if(index == -1) object_ = statement_;
-    */
 
 }
 
@@ -277,16 +242,14 @@ void Parser::parser_drop_index(){
 }
 
 OPERATION  Parser::operate_type(string input){
-    if(input.compare(0, 13, "create table ") == 0) return CREATE_TABLE;
-    if(input.compare(0, 12, "insert into ") == 0) return INSERT_VALUES;
-    if(input.compare(0, 12, "delete from ") == 0) return DELETE_VALUES;
-    if(input.compare("select tables") == 0) return SELECT_TABLES;
-    if(input.compare(0, 7, "select ") == 0) return SELECT_VALUES;
-    if(input.compare(0, 7, "update ") == 0) return UPDATE_VALUES;
-    if(input.compare(0, 11, "drop table ") == 0) return DROP_TABLE;
-    if(input.compare(0, 15, "describe table ") == 0) return DESCRIBE_TABLE;
-    if(input.compare(0, 13, "create index ") == 0) return CREATE_INDEX;
-    if(input.compare(0, 11, "drop index ") == 0) return DROP_INDEX;
+    if(input.compare(0, 13, "create table ") == 0)  return CREATE_TABLE;
+    if(input.compare(0, 12, "insert into ") == 0)   return INSERT_VALUES;
+    if(input.compare(0, 12, "delete from ") == 0)   return DELETE_VALUES;
+    if(input.compare("select tables") == 0)         return SELECT_TABLES;
+    if(input.compare(0, 7, "select ") == 0)         return SELECT_VALUES;
+    if(input.compare(0, 7, "update ") == 0)         return UPDATE_VALUES;
+    if(input.compare(0, 11, "drop table ") == 0)    return DROP_TABLE;
+    if(input.compare(0, 15, "describe table ") == 0)return DESCRIBE_TABLE;
     return UNDEFINED;
 }
 

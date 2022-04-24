@@ -1,9 +1,11 @@
-#include<data.h>
-#include<implement.h>
+#include <Basic/data.h>
+#include <Utils/implement.h>
+using namespace std;
 
 //数据表创建
-Table::Table(NEDB *db, string name){
+Table::Table(DataBase* db, string name){
     db_ = db;
+    table_lock_ = SIG_UNLOCK;
     page_size_ = db_->getDefaultPageSize();
     strcpy(table_name_, name.c_str());
     max_offset = 0;
@@ -13,7 +15,6 @@ Table::Table(NEDB *db, string name){
     max_rows_per_page_ = 0;
     parm_names_ = NULL;
     pages_tree_ = new BalanceTree<__uint16_t, Index>(0);
-    //index_tree_ = NULL;
 }
 
 
@@ -25,7 +26,7 @@ void Table::Init(string parameters){
         if(parameters.length() == 0) throw PARAM_EMPTY;
         //参数分离
         int number;
-        string *params = Split(parameters, ',', number);
+        string* params = Split(parameters, ',', number);
         parm_num_ = number;
         //分配空间
         parm_types_ = new DATA_TYPE[parm_num_];
@@ -34,7 +35,7 @@ void Table::Init(string parameters){
         //参数分析
         for(int i = 0; i < parm_num_; i++){
             //index_tree_[i] = NULL;
-            string *str = Split(params[i], ' ', number);
+            string* str = Split(params[i], ' ', number);
             if(number != 2 && number != 3)  throw PARAM_FORM_ERROR;
             //数据类型解析
             if(str[1] == "int"){
@@ -78,7 +79,7 @@ void Table::Init(string parameters){
         Memorizer RAM(this);
         RAM.TableStore();
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
 }
@@ -164,14 +165,14 @@ __uint16_t Table::get_empty_page_offset(){
     }
     ///////////////////////////////////////////
     __uint16_t offset = empty_pages.next->offset;
-    ePage *temp = empty_pages.next;
+    ePage* temp = empty_pages.next;
     empty_pages.next = empty_pages.next->next;
     delete temp;
     return offset;
 }
 
 void Table::add_empty_page(__uint16_t page_num){
-    ePage *new_epage = new ePage();
+    ePage* new_epage = new ePage();
     new_epage->offset = page_num;
     new_epage->next = empty_pages.next;
     empty_pages.next = new_epage;
@@ -188,6 +189,7 @@ int Table::ParmLocate(string name){
 
 void Table::Erase(){
     try{
+        table_lock_ = SIG_LOCK;
         delete parm_names_;
         parm_names_ = NULL;
         delete parm_types_;
@@ -195,7 +197,7 @@ void Table::Erase(){
         pages_tree_->CutDown();
         pages_tree_ = NULL;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }

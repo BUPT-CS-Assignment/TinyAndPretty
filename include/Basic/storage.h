@@ -1,7 +1,7 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
-#include<basic.h>
-#include<data.h>
+#include<main.h>
+#include<Basic/data.h>
 
 /**
  * FILE 文件存储
@@ -28,19 +28,16 @@ class Memorizer{
     Table* table_;
 public:
     Memorizer(Table* table);
-    Table* TableLoad(NEDB*,string);
-    void TableStore();
-    void TableUpdate();
-    void IndexLoad();
-    void IndexStore();
-    void IndexUpdate();
+    Table*  TableLoad(DataBase*,string);
+    void    TableStore();
+    void    TableUpdate();
     /////////////////////////
-    bool storage();
-    bool update();
-    void PageFlush(__uint16_t);
-    Page* PageLoad(__uint16_t);
-    void PageStore(__uint16_t, Page*);
-    void TableDrop();
+    bool    storage();
+    bool    update();
+    void    PageFlush(__uint16_t);
+    Page*   PageLoad(__uint16_t);
+    void    PageStore(__uint16_t, Page*);
+    void    TableDrop();
     
     
 };

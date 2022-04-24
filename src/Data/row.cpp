@@ -1,10 +1,12 @@
-#include <data.h>
-#include <implement.h>
+#include <Basic/data.h>
+#include <Utils/implement.h>
+using namespace std;
 
-Row::Row(Table *table){
+Row::Row(Table* table){
     table_ptr_ = table;
-    row_index_.setVal(table->getKeyType(),NULL);
-    content_ = new void *[table->parm_num_];
+    row_lock_ = SIG_UNLOCK;
+    row_index_.setVal(table->getKeyType(), NULL);
+    content_ = new void* [table->parm_num_];
     for(int i = 0; i < table->parm_num_; i++){
         //初始化行数据
         DATA_TYPE type = table->parm_types_[i];
@@ -20,11 +22,11 @@ Row::Row(Table *table){
                 break;
             case __TEXT:
                 content_[i] = new char[TEXT_LENGTH];
-                strcpy((char *)content_[i], "NULL");
+                strcpy((char*)content_[i], "NULL");
                 break;
             case __LONGTEXT:
                 content_[i] = new char[LONGTEXT_LENGTH];
-                strcpy((char *)content_[i], "NULL");
+                strcpy((char*)content_[i], "NULL");
                 break;
         }
     }
@@ -43,16 +45,16 @@ string Row::Format(){
     for(int i = 0; i < table_ptr_->parm_num_; i++){
         switch(table_ptr_->parm_types_[i]){
             case __INT:
-                temp = temp + to_string(*((int *)content_[i]));
+                temp = temp + to_string(*((int*)content_[i]));
                 break;
             case __INT64:
-                temp = temp + to_string(*((long long *)content_[i]));
+                temp = temp + to_string(*((long long*)content_[i]));
                 break;
             case __REAL:
-                temp = temp + to_string(*((double *)content_[i]));
+                temp = temp + to_string(*((double*)content_[i]));
                 break;
             default:
-                string str = (char *)content_[i];
+                string str = (char*)content_[i];
                 temp = temp + str;
                 break;
         }
@@ -64,6 +66,7 @@ string Row::Format(){
 
 void Row::Erase(){
     try{
+        row_lock_ = SIG_LOCK;
         for(int i = 0; i < table_ptr_->parm_num_; i++){
             DATA_TYPE type = table_ptr_->parm_types_[i];
             switch(type){
@@ -84,10 +87,12 @@ void Row::Erase(){
         }
         content_ = NULL;
         table_ptr_ = NULL;
-        
-    }catch(NEexception &e){
+
+    }
+    catch(NEexception& e){
         throw e;
-    }catch(exception &e){
+    }
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }
@@ -95,26 +100,26 @@ void Row::Erase(){
 
 void Row::index_update(){
     DATA_TYPE type = table_ptr_->parm_types_[table_ptr_->prim_key_];
-    row_index_.setVal(type,content_[table_ptr_->prim_key_]);
+    row_index_.setVal(type, content_[table_ptr_->prim_key_]);
 }
 
-Index &Row::getIndex(){
+Index& Row::getIndex(){
     return row_index_;
 }
 
-bool Row::operator<(Row &row){
+bool Row::operator<(Row& row){
     return row_index_ < row.row_index_;
 }
-bool Row::operator>(Row &row){
+bool Row::operator>(Row& row){
     return row_index_ > row.row_index_;
 }
-bool Row::operator==(Row &row){
+bool Row::operator==(Row& row){
     return row_index_ == row.row_index_;
 }
-bool Row::operator<=(Row &row){
+bool Row::operator<=(Row& row){
     return row_index_ <= row.row_index_;
 }
-bool Row::operator>=(Row &row){
+bool Row::operator>=(Row& row){
     return row_index_ >= row.row_index_;
 }
 

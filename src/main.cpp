@@ -1,32 +1,28 @@
-#include<basic.h>
+#include<main.h>
+#include<Interface/NEDB.h>
+using namespace std;
+
+
+
 
 int main(/*int argv , char* argc[]*/){
     __START__();
     /*
-    NEdb db("");
-    db.setDir("/home/jianxf/.nesrc/");
-    db.setDefaultPageSize(100);
-    cout<<db.getMsg()<<endl;
-    cout<<db.getCount()<<endl;
-    db.open("test");
-    db.exec("create table test (id int);");
-    cout<<db.getMsg()<<endl;
-    cout<<db.getCount()<<endl;
-    string sql = "";
-    for(int i =1; i <= 100; i++){
-        sql = sql + "insert into test values ("+to_string(i)+");";
+    NEDB DB("/home/jianxf/.nesrc/");
+    DB.Openall();
+    DB.Exec("drop table test2;");
+    DB.Exec("create table test2 (id int);");
+    cout<<DB.ErrCode()<<endl;
+    std::string sql = "";
+    for(int i = 0;i<100;i++){
+        sql += "insert into test2 values ("+to_string(i)+");";
     }
-    db.exec(sql.c_str());
-    cout<<db.getMsg()<<endl;
-    cout<<db.getCount()<<endl;
-    db.exec("describe table test;select * from test where id<10 and id<36;");
-    cout<<db.getMsg()<<endl;
-    cout<<db.getData()<<endl;
-    cout<<db.getCount()<<endl;
-    db.exec("delete from test where id < 101;select * from test;drop table test;");
-    cout<<db.getMsg()<<endl;
-    cout<<db.getData()<<endl;
-    cout<<db.getCount()<<endl;
-    db.close();
+    for(int i = 30;i<60;i++){
+        sql += "delete from test2 where id = "+std::to_string(i)+";";
+    }
+    sql += "select * from test2;";
+    DB.Exec(sql.c_str());
+    cout<<DB.ErrCode()<<endl;
     */
+    
 }

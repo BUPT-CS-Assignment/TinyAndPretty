@@ -1,31 +1,40 @@
-#include<data.h>
-#include<implement.h>
+#include<Basic/data.h>
+#include<Utils/implement.h>
+#include<Basic/process.h>
+using namespace std;
 
 void Table::DeleteValues(string condition){
     try{
         Analyzer ANZ(this);
         ANZ.Extract(condition, " and ");
+        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+            throw ACTION_BUSY;
+        }
+        table_lock_ = SIG_LOCK;
         if(ANZ.KeySupport()){
             delete_by_key(ANZ);
         }
         else{
             delete_by_traverse(ANZ);
         }
+        table_lock_ = SIG_UNLOCK;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
+        table_lock_ = SIG_UNLOCK;
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
+        table_lock_ = SIG_UNLOCK;
         throw SYSTEM_ERROR;
     }
 }
 
-void Table::delete_by_key(Analyzer &ANZ){
+void Table::delete_by_key(Analyzer& ANZ){
     try{
-        Index *index = ANZ.getCondVal(ANZ.getKeyPos());
+        Index* index = ANZ.getCondVal(ANZ.getKeyPos());
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
         Memorizer RAM(this);
-        Page *page;
+        Page* page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         if(data_node.getData() == NULL){
             if(cmp == 1)data_node = pages_tree_->getLink();
@@ -51,7 +60,7 @@ void Table::delete_by_key(Analyzer &ANZ){
                 //考虑节点合并对迭代器影响
                 if(page->cursor_pos_ == 0){
                     //记录当前节点左节点的值
-                    Node<uint16_t, Index> *temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
+                    Node<uint16_t, Index>* temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
                     pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
                     if(temp != NULL && data_node.node->get_cursor() == 0){
                         data_node.node = temp;
@@ -62,48 +71,48 @@ void Table::delete_by_key(Analyzer &ANZ){
             page->Erase();
         }
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }
 
 
-void Table::delete_by_traverse(Analyzer &ANZ){
+void Table::delete_by_traverse(Analyzer& ANZ){
     try{
         Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
-            __uint16_t *page_offset = data_node.getData();
+            __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
-            Page *page = RAM.PageLoad(*page_offset);
+            Page* page = RAM.PageLoad(*page_offset);
             page->DeleteRow(ANZ);
             if(page->cursor_pos_ == 0){
                 page->Clear(*page_offset);
             }
             else{
                 RAM.PageStore(*page_offset, page);
-                if(page->cursor_pos_ != 0)  ++ data_node;
-                if(page->cursor_pos_ == 0){
-                    //记录当前节点左节点的值
-                    Node<uint16_t, Index> *temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
-                    pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
-                    if(temp != NULL && data_node.node->get_cursor() == 0){
-                        data_node.node = temp;
-                        data_node.pos = temp->get_cursor() + data_node.pos;
-                    }
+            }
+            if(page->cursor_pos_ != 0)  ++ data_node;
+            else if(page->cursor_pos_ == 0){
+                //记录当前节点左节点的值
+                Node<uint16_t, Index>* temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
+                pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
+                if(temp != NULL && data_node.node->get_cursor() == 0){
+                    data_node.node = temp;
+                    data_node.pos = temp->get_cursor() + data_node.pos;
                 }
             }
             page->Erase();
         }
 
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }
@@ -120,15 +129,15 @@ void Page::Clear(__uint16_t offset){
         Memorizer RAM(table_ptr_);
         RAM.PageFlush(offset);
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }
 
-void Page::DeleteRow(Analyzer &ANZ){
+void Page::DeleteRow(Analyzer& ANZ){
     try{
         if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
             //递减顺序筛选
@@ -171,10 +180,10 @@ void Page::DeleteRow(Analyzer &ANZ){
         }
         ANZ.stop_flag = 1;
     }
-    catch(NEexception &e){
+    catch(NEexception& e){
         throw e;
     }
-    catch(exception &e){
+    catch(exception& e){
         throw SYSTEM_ERROR;
     }
 }

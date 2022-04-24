@@ -1,5 +1,7 @@
-#include <data.h>
-#include <implement.h>
+#include <Basic/data.h>
+#include <Utils/implement.h>
+#include <Basic/process.h>
+using namespace std;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -13,6 +15,11 @@ void Table::InsertValues(string conditions, string values){
     try{
         Row *new_row = new Row(this); //创建行对象
         new_row->Padding(conditions, values);
+        /* Lock Check */
+        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+            throw ACTION_BUSY;
+        }
+        table_lock_ = SIG_LOCK;
         __uint16_t *page_offset = pages_tree_->LocateData(&(new_row->getIndex())).getData();
         if(page_offset == NULL){
             /////计算偏移量
@@ -24,6 +31,9 @@ void Table::InsertValues(string conditions, string values){
             new_page->page_index_ = new_row->getIndex();
             pages_tree_->InsertData(&new_page->page_index_, new_page_offset);
             RAM.PageStore(*new_page_offset, new_page);
+
+            /* Set Lock */
+            table_lock_ = SIG_UNLOCK;
             new_page->Erase();
             return;
         }
@@ -48,12 +58,16 @@ void Table::InsertValues(string conditions, string values){
             new_page->Erase();
         }
         RAM.PageStore(*page_offset, page);
+        /* Set Lock */
+        table_lock_ = SIG_UNLOCK;
         page->Erase();
     }
     catch(NEexception &e){
+        table_lock_ = SIG_UNLOCK;
         throw e;
     }
     catch(exception &e){
+        table_lock_ = SIG_UNLOCK;
         throw SYSTEM_ERROR;
     }
 }

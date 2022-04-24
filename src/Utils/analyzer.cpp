@@ -1,5 +1,5 @@
-#include<data.h>
-#include<implement.h>
+#include<Basic/data.h>
+#include<Utils/implement.h>
 
 
 Analyzer::Analyzer(Table *table){
@@ -26,7 +26,7 @@ int Analyzer::getCompareType(int pos){
 
 void Analyzer::Extract(string conditions, string pattern){
     if(conditions.length() == 0){
-        cond_num = -1;
+        cond_num = 0;
         return;
     }
     lower_bound = upper_bound = -1;
@@ -113,7 +113,7 @@ void Analyzer::Locate(string params){
 }
 
 bool Analyzer::Match(Row *row){
-    if(cond_num == -1) return true;
+    if(cond_num == 0) return true;
     for(int i = 0; i < cond_num; i++){
         DATA_TYPE type = table_ptr_->parm_types_[cond_pos[i]];
         Index temp;

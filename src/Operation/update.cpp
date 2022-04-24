@@ -1,5 +1,7 @@
-#include<data.h>
-#include<implement.h>
+#include<Basic/data.h>
+#include<Utils/implement.h>
+#include<Basic/process.h>
+using namespace std;
 
 //UPDATE table_name SET 'parm_name_1' = 'value_1', ... WHERE 'condition'
 
@@ -8,6 +10,11 @@ void Table::UpdateValues(string condition, string setting){
         Analyzer CANZ(this), SANZ(this);
         CANZ.Extract(condition, " and ");
         SANZ.Extract(setting, " , ");
+        /* Lock Check */
+        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+            throw ACTION_BUSY;
+        }
+        table_lock_ = SIG_LOCK;
         if(SANZ.KeySupport()){
             throw KEY_VAL_CHANGE_NOT_ALLOWED;
         }
@@ -17,8 +24,10 @@ void Table::UpdateValues(string condition, string setting){
         else{
             update_by_traverse(SANZ, CANZ);
         }
+        table_lock_ = SIG_UNLOCK;
     }
     catch(NEexception &e){
+        table_lock_ = SIG_UNLOCK;
         throw e;
     }
 

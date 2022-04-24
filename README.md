@@ -9,7 +9,7 @@
 
 ## Schedule
 
-### 项目进度 **`2022.4.22`**
+### 项目进度 **`2022.4.25`**
 - [x] 基本表结构
 - [x] 终端控制
 - [x] 命令解析器
@@ -24,7 +24,7 @@
 - [x] 文件存取
 - [x] 异常
 - [x] 外部接口
-- [ ] 事务锁与并发
+- [x] 线程锁
 
 ---
 ## Instruction
@@ -184,12 +184,33 @@
     注意事项 : 
     1. 此操作将返回加载到内存中的所有表名称.
 
+- ### Error Code Table
+  |Code|Description|Code|Description|
+  |:---:|:---:|:---:|:---:|
+  |0|NO_ERROR|-1|NULL_POINTER|
+  |1|SYSTEM_ERROR|2|SIZE_NOT_ALLOWED|
+  |3|DIR_ERROR|4|FILE_OPEN_ERROR|
+  |5|FILE_NOT_FOUND|6|FILE_DAMAGED|
+  |7|SQL_FORM_ERROR|8|SQL_UNDEFINED|
+  |9|ACTION_BUSY|10|TABLE_EXIST|
+  |11|TABLE_NOT_FOUND|12|TABLE_NUM_REACH_LIMIT|
+  |13|PARAM_EMPTY|14|PARAM_FORM_ERROR|
+  |15|PARAM_NOT_FOUND|16|PARAM_NUM_MISMATCH|
+  |17|VALUE_EMPTY|18|TYPE_UNDEFINED|
+  |19|TYPE_INT_MISMATCH|20|TYPE_INT64_MISMATCH|
+  |21|TYPE_REAL_MISMATCH|22|TYPE_INT_OVERFLOW|
+  |23|TYPE_INT64_OVERFLOW|24|TYPE_REAL_OVERFLOW|
+  |25|TYPE_TEXT_OVERFLOW|26|TYPE_LONGTEXT_OVERFLOW|
+  |27|KEY_TYPE_NOT_ALLOWED|28|KEY_VAL_EXIST|
+  |29|KEY_VAL_REQUIRED|30|KEY_VAL_CHANGE_NOT_ALLOWED|
+  |31|DATA_NOT_FOUND|
+
 - ### Interface
   - ##### 简介
     **`NEDB`** 提供简易的对外接口, 以整合入各类项目使用. 接口格式参考 **`SQLite`** 的主要接口格式, 包含数据库创建, 文件读取, 指令执行三大核心功能.
   
   - ##### 使用说明
-    1. **`NEDB`** 外部接口静态库文件为 **`libnedb.a`** , 动态库为 **`libnedb.so`** , 入口头文件为 **`NEdb.h`** , 只需在其他项目中引用该头文件并再编译时连接该静态库/动态库即可. 
+    1. **`NEDB`** 外部接口静态库文件为 **`libnedb.a`** , 动态库为 **`libnedb.so`** , 入口头文件为 **`NEDB.h`** , 只需在其他项目中引用该头文件并再编译时连接该静态库/动态库即可. 
         ```
         /**
         * @ g++ 参考指令
@@ -210,12 +231,12 @@
 
         ```
         /**
-        * @brief NEDB class pointer
-        */ 
-        NEDB* nedb;
+         * @brief DataBase class pointer
+         */
+        DataBase* nedb;
 
         ```
-        i. 类名称定义为 **`NEdb`** , 后续所有操作都基于结构体.  
+        i. 类名称为 **`DataBase`** , 后续所有操作都基于结构体.  
         ii. 结构体初始化时强制要求设定数据文件加载目录, 请确保路径正确且权限足够.
         iii. 接口的调用以 **`结构体名.函数名`** 的方式实现
         
@@ -224,62 +245,62 @@
 
         ```
         /**
-         * @brief   construct NEdb 
+         * @brief   construct NEDB 
          * @param   full-path of resource folder
          */ 
-        NEdb(const char* dir);          //构造函数
+        NEDB(const char* dir);          //构造函数
 
         ```
         ```
         /**
-         * @brief   set full path for NEdb resource folder 
+         * @brief   set full path for NEDB resource folder 
          * @param   full-path of resource folder
-         * @return  1:complete, 0:error, -1:pointer error
+         * @return  error code
          */ 
-        int setDir(const char* dir);    //设置目录
+        int SetDir(const char* dir);    //设置目录
 
         ```
         ```
         /**
-         * @brief   scan specified table at NEdb resource folder 
-         * @return  1:complete, 0:error, -1:pointer error
+         * @brief   scan specified table at NEDB resource folder 
+         * @return  error code
          */ 
-        int scan();                     //打开目录下全表
+        int Openall();                   //打开目录下全表
 
         ```
         ```
         /**
-         * @brief   scan all tables at NEdb resource folder 
+         * @brief   scan all tables at NEDB resource folder 
          * @param   table-name
-         * @return  1:complete, 0:error, -1:pointer error
+         * @return  error code
          */ 
-        int open(const char* fileName); //载入数据表
+        int Open(const char* fileName); //载入数据表
 
         ```
         ```
 
         /**
-         * @brief   execute sql command through NEdb 
+         * @brief   execute sql command through NEDB 
          * @param   sql-command
-         * @return  1:complete, 0:error, -1:pointer error
+         * @return  error code
          */ 
-        int exec(const char* sql);      //执行sql语句
+        int Exec(const char* sql);      //执行sql语句
 
         ```
         ```
         /**
-         * @brief   close and free NEdb 
-         * @return  1:complete, 0:error
-         */ 
-        int close();                    //关闭数据库
+         * @brief   close and free NEDB
+         * @return  error code
+         */
+        int Close();                    //关闭数据库
         
         ```
         ```
         /**
-         * @brief   get sql command state, complete or error-message 
-         * @return  sql-command state message
+         * @brief   get sql execute error code
+         * @return  error code
          */
-        char* getMsg();                 //获取sql语句执行返回信息
+        int ErrCode();                 //获取sql语句执行返回代码
         
         ```
         ```
@@ -287,7 +308,7 @@
          * @brief   get sql command return value, 'select' and 'describe' effective
          * @return  sql-command return value
          */
-        char* getData();                //获取sql语句执行数据信息
+        const std::string ReturnVal();                //获取sql语句执行数据信息
 
         ```
         ```
@@ -295,41 +316,63 @@
          * @brief get operate num of select or delete
          * @return sql-operation num                
          */
-        int getCount();                 //获取sql查询/删除数据个数信息
+        int Count();                 //获取sql查询/删除数据个数信息
         ```
 
     3. 其他功能接口
         ```
         /**
-         * @brief   get NEdb resource folder full path 
-         * @return  NEdb resource folder full path
+         * @brief   get NEDB resource folder full path 
+         * @return  NEDB resource folder full path
          */
-        char* getDir();                 //获取当前目录
+        const std::string GetDir();                 //获取当前目录
 
         ```
         ```
         /**
-         * @brief   get NEdb default page size  
-         * @return  NEdb default page-size, default by 0.4KB, -1:pointer error 
+         * @brief   get NEDB default page size  
+         * @return  NEDB default page-size, default by 0.4KB, -1:pointer error 
          */
-        int getDefaultPageSize();
+        int DefaultPageSize();       //获取数据表单页最大字节数
 
         ```
         ```
         /**
-         * @brief   set NEdb default page size  
-         * @param  NEdb default page-size, range: 100-4000 (Bytes)
-         * @return  1:complete, 0:error, -1:pointer error
+         * @brief   set NEDB default page size  
+         * @param  NEDB default page-size, range: 100-4000 (Bytes)
+         * @return  error code
          */
-        int setDefaultPageSize(int);    //设置数据表单页最大字节数
+        int SetDefaultPageSize(int);    //设置数据表单页最大字节数
 
         ```
         ```
         /**
-         * @brief   initialize NEdb resource folder full path, attempt to create directory automatically
-         * @return  1:complete, 0:error, -1:pointer error
+         * @brief   initialize NEDB resource folder full path, attempt to create directory automatically
+         * @return  error code
          */
-        int dirInit();                  //目录初始化
+        int DirInit();                  //目录初始化
+
+        ```
+    4. 全局设置函数
+       ```
+        /**
+         * @brief   change NEDB default settings 
+         */
+        void NEDB_SETTING(
+              int MAX_TABLES = 256,         /* Max Table Numbers */ 
+              int DEFAULT_PAGE_SIZE = 400,  /* Default Page Size */
+              int SIG_WAIT_MSECS = 100,     /* Time(ms) Wait For Unlock */
+              int SIG_CHECK_TIMES = 5       /* Check Times While Waiting */
+        );                                  
+        //设置单数据库对象最大表数、单页字节数、线程锁等待时间(ms)、线程锁检测次数
+
+        ```
+        ```
+        /**
+         * @brief   set NEDB debug signal 
+         */
+        void NEDB_DEBUG(int SIG_DEBUG = 0 );  /* Debug Signal */
+        //设置调试信号
 
         ```
 

@@ -1,5 +1,6 @@
-#include <data.h>
-#include <implement.h>
+#include <Basic/data.h>
+#include <Utils/implement.h>
+using namespace std;
 
 //构造函数
 Page::Page(Table *table){

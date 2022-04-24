@@ -1,7 +1,6 @@
 #ifndef __IMPLEMENT_H__
 #define __IMPLEMENT_H__
-#include<basic.h>
-using namespace std;
+#include<main.h>
 /*
 
     Split(string str,char c,int& length)  @  字符串拆分函数
@@ -11,9 +10,9 @@ using namespace std;
 
 */ 
 
-string* Split(string str,char c,int &length);
-void parm_check(string str,DATA_TYPE type);
-string Trim(string str);
+std::string* Split(std::string str,char c,int &length);
+void parm_check(std::string str,DATA_TYPE type);
+std::string Trim(std::string str);
 
 template<class T>
 void q_sort(T** array,int l, int r){
