@@ -19,7 +19,7 @@
 using namespace SimpleJson;
 
 ////simplize entry define 
-#define def_HttpEntry(name , request) HttpResponseBase* (name)(HttpRequest &request) 
+#define def_HttpEntry(name , request) extern HttpResponseBase* (name)(HttpRequest &request) 
 
 /*----------------- Data-Base Module ----------------- */
 #include <libs/NEDB.h>
