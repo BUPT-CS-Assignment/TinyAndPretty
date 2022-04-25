@@ -1,7 +1,6 @@
 #include <Network/URLParser.h>
 #include <HttpProtocal/HttpException.h>
 #include <interfaces.h>
-#include <test/define.h>
 
 #define SET_STATIC(_url)
 #define ADD_URL(_url, _func) url_table.emplace(_url, _func);
@@ -15,6 +14,7 @@ URLParser::URLParser(){
 #include <router.conf>
 
 }
+extern std::string getGMTtime();
 
 EntryFunc& URLParser::URLparse( std::string_view _url) {
     std::cerr<<"["<<getGMTtime()<<"] "<<"URL-req:"<<_url<<std::endl;

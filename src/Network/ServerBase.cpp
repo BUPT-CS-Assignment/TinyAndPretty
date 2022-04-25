@@ -75,15 +75,14 @@ size_t Socket::recvData(int _connfd, uint8_t **data)
 	size_t  buff_size = BUFF_INIT_SIZE;
 	ssize_t buff_len  = 0;
 	*data = (uint8_t *)calloc(1 , buff_size);
-
 	//loop recv and dynamically adjust buff size
-	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, MSG_NOSIGNAL)) )
+	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
 	{
 
-	IFDEBUG(
-		std::cerr << "Recv Buff Info : " << buff_size << " " << len  << " " << buff_len << "\n"
-				  << "\terrno : " << errno << " ## " << std::endl;
-	)
+	// IFDEBUG(
+	// 	std::cerr << "Recv Buff Info : FROM - " << _connfd << " " << len  << " " << buff_len << "\n"
+	// 			  << "\terrno : " << errno << " ## " << std::endl;
+	// )
 		//handle errno occurs
 		if (buff_len == -1)
 		{
@@ -123,11 +122,11 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 		if(buff_len == -1) {errno = 0; break;}
 
 		cur += buff_len;
-		IFDEBUG(
-			std::cerr << "Send Buff Info : " << _len << " " 
-					  << cur  << " " << buff_len <<"\n"
-					  << "\terrno : " << errno << " ## " << std::endl
-		);
+		// IFDEBUG(
+		// 	std::cerr << "Send Buff Info : " << _len << " " 
+		// 			  << cur  << " " << buff_len <<"\n"
+		// 			  << "\terrno : " << errno << " ## " << std::endl
+		// );
 	}
 	return ( cur == _len ) ? cur : -1ULL;
 }

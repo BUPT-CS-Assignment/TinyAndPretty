@@ -34,7 +34,7 @@ TAPCenter::TAPCenter()
 	epool  = std::make_unique<EventPool>();
 	thpool = std::make_unique<ThreadPool>(CONFIG_THREADS_MAXIMUM);
 
-	epool->mountFD(sock->getFD(), EPOLLIN | EPOLLET);
+	epool->mountFD(sock->getFD(), EPOLLIN );
 }
 
 TAPManager::TAPManager()
@@ -53,19 +53,16 @@ void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 	
 }
 
-// fd conn bug!
-
 void TAPCenter::distributeTask(Connection* conn)
 {
 	IFDEBUG(std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n");
 	for(auto& ptr : plugins) 
 	{
-		thpool->enqueue([&]{ // sock also =?
+		thpool->enqueue([& , _conn = conn]{ // sock also =? why must = ?
 			if( ptr->protocalConfirm() ){
-				ptr->createTask(conn);
+				ptr->createTask(_conn);
 			}
 			// near future , CURRENTLY long connection is not supported
-			IFDEBUG(std::cerr << "##### Connection offline. #####\n");
 		});
 	}
 }
@@ -84,8 +81,10 @@ void TAPCenter::start()
 				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
 			}
 		}
-		else if (type & EPOLLHUP) {
-			;
+		else if (type & EPOLLHUP || type & EPOLLERR) {
+			Connection* conn = static_cast<Connection *>(data.ptr) ;
+			IFDEBUG( printf("I will try close %d" , conn->getFD()) );
+			conn->closeFD();  // another strage , by time out
 		}
 		else if (type == EPOLLIN) {
 			Connection* conn = static_cast<Connection *>(data.ptr) ;

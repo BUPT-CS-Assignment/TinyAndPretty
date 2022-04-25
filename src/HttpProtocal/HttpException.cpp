@@ -24,7 +24,7 @@ HttpResponse* HttpManager::dispatchException(const HttpException &e)
 	}
 	case HttpException::NON_CONN:
 	{
-		std::cerr << "NON_CONN\n";
+		IFDEBUG( std::cerr << "NON_CONN\n" );
 		return nullptr;
 	}
 	default:
