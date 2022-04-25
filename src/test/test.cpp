@@ -128,15 +128,9 @@ static int id;
 def_HttpEntry(SQL_Test2,req){
     id++;
     std::cerr<<"Query "<<id<<" begin"<<std::endl;
-    std::string sql = "drop table test2;create table test2(id int);";
-    for(int i = 0;i<100;i++){
-        sql += "insert into test2 values ("+std::to_string(i)+");";
-    }
-    for(int i = 30;i<60;i++){
-        sql += "delete from test2 where id = "+std::to_string(i)+";";
-    }
-    sql += "select * from test2;";
-    int errcode = DB.Exec(sql.c_str());
+    DB.Exec("drop table test2;");
+    DB.Exec("create table test2(id int);");
+    int errcode = DB.Exec(__SQL__.c_str());
     std::cerr<<"Query "<<id<<" OK with value "<<errcode<<std::endl;
     return new HttpResponse{std::to_string(errcode)};
 
