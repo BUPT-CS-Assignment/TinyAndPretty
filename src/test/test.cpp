@@ -48,7 +48,7 @@ def_HttpEntry(Link_Start , request){
     stringConcat(t , 
     "<h1>Look up! There are patameters following you!</h1>",
     "<h3> It is : id = " ,request.queryParam("id") , " </h3> " ,// 查询url参数。若没有为""(空串)
-    "<a herf=\"https://github.com/NoUITeam/TinyAndPretty\">Click ME for more info! </a></body>");
+    "<a href=\"https://github.com/NoUITeam/TinyAndPretty\">Click ME for more info! </a></body>");
     return new HttpResponse{t};
 }
 
@@ -112,12 +112,14 @@ def_HttpEntry(SQL_Run , req){
     errCode = DB.ErrCode();
     val = DB.ReturnVal();
     count = DB.Count();
+    std::cerr<<"Query OK with value "<<errCode<<std::endl;
     return new HttpResponse{std::to_string(errCode) + "?" + std::to_string(count) + "&"+ val};
 }
 
 def_HttpEntry(SQL_Test,req){
-    std::string sql = "select * from main;";
+    std::string sql = "select * from userInfo;";
     int errcode = DB.Exec(sql.c_str());
+    std::cerr<<"Query OK"<<std::endl;
     return new HttpResponse{std::to_string(errcode)};
 }
 
@@ -125,7 +127,7 @@ static int id;
 
 def_HttpEntry(SQL_Test2,req){
     id++;
-    std::cerr<<"DataBase "<<id<<" In"<<std::endl;
+    std::cerr<<"Query "<<id<<" begin"<<std::endl;
     std::string sql = "drop table test2;create table test2(id int);";
     for(int i = 0;i<100;i++){
         sql += "insert into test2 values ("+std::to_string(i)+");";
@@ -135,7 +137,7 @@ def_HttpEntry(SQL_Test2,req){
     }
     sql += "select * from test2;";
     int errcode = DB.Exec(sql.c_str());
-    std::cerr<<"DataBase "<<id<<" OK : "<<errcode<<std::endl;
+    std::cerr<<"Query "<<id<<" OK with value "<<errcode<<std::endl;
     return new HttpResponse{std::to_string(errcode)};
 
 }
