@@ -12,9 +12,10 @@ void HttpManager::createTask(Connection* conn)
 	//get full data from socket
 	auto [raw, rlen] = wrapper->recvHttpData(conn);
 	//execute
-	std::unique_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
+	std::shared_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
-	wrapper->sendHttpData( conn , std::move(ret) );
+	wrapper->sendHttpData( conn , ret );
+	std::cerr << "Who am i  : " << conn->getFD() << "\n";
 	conn->closeFD(); // near future
 	delete conn;
 }

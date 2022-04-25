@@ -1,6 +1,7 @@
 #include <Network/ServerBase.h>
 #include <sys/sendfile.h>
 #include <netinet/tcp.h>
+#include <sys/signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -131,6 +132,10 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	return ( cur == _len ) ? cur : -1ULL;
 }
 
+static void handlePipe(int id) {
+	::printf("# Peer Socket Close\n");
+}
+
 ////specially send file base on unix/sendfile() 
 size_t Socket::sendFile(int _connfd , const char* _fpath) 
 {
@@ -142,6 +147,8 @@ size_t Socket::sendFile(int _connfd , const char* _fpath)
 	int     fd  	 = open(_fpath , O_RDONLY);
 	ssize_t cur 	 = 0;
 	ssize_t buff_len = 0;
+
+	signal(SIGPIPE , handlePipe);
 
 	//loop send
 	while( ( buff_len = sendfile(_connfd , fd , (off_t *)&cur , target.st_size - cur) ) ) {
@@ -165,15 +172,15 @@ size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *he
 	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
 	// , "cork error");
 
-	size_t len = 0;
-	len += sendData(_connfd , header , header_len);
-	len += sendFile(_connfd , _fpath);
+	if( sendData(_connfd , header , header_len) < 0 ) 
+											return -1ULL;
+	if( sendFile(_connfd , _fpath) < 0 ) 	return -1ULL;
 
 	//opt = 0;
 	// NETERROR(
 	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
 	// , "cork error");
-	return len;
+	return 1ULL;
 }
  
 
