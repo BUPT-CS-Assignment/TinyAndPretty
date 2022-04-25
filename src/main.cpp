@@ -18,8 +18,8 @@ int main(int argv , char* argc[]) {
     __SQL__ += "select * from test2;";
 
     /* DataBase Init */
-    NEDB_SETTING(256,400,200,5);
-    NEDB_DEBUG(1);
+    NEDB_SETTING(256,400,100,5);
+    NEDB_DEBUG(2);
     DB.DirInit();
     DB.Openall();
     
