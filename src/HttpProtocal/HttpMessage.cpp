@@ -15,7 +15,7 @@ std::string getGMTtime();
 //
 HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : conn(_conn)
 {
-    // IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
+    IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
     size_t cur = 0;
 
     //split url method
@@ -35,7 +35,6 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         cur += params->length() + 1;
     }
     else CUR_MOV(path, 1);
-
     //previously check whether url path exists
     if (URLParser::getInstance().preCheck(path, method))
         throw HttpException::NON_PATH;
@@ -46,7 +45,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
 
     //split http header
     headers = std::make_unique<StringDict>(nsplit(NOW_POS, "\r\n\r\n", 4), ": ", "\r\n");
-    CUR_MOV((*headers), 4);
+    CUR_MOV( (*(headers)) , 4);
 
     length = len - cur; // calculate body length
     if( !RequestLengthChecker(this , length) )
@@ -72,23 +71,23 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         catch (const HttpException &e) { ; }
     }
     std::string_view status = queryHeader("Connection");
-    //IFDEBUG(std::cerr << "Connection Status : " << status << "\n");
+    IFDEBUG(std::cerr << "Connection Status : " << status << "\n");
 
     if (status != "keep-alive")
         conn->setCloseFlag();
-    // IFDEBUG(
-    //     std::cerr << "---------------HttpRequest Finish---------------" << std::endl;
-    // );
+    IFDEBUG(
+        std::cerr << "---------------HttpRequest Finish---------------" << std::endl;
+    );
 }
 
 // check whether length in header is equal to the real
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
 
     std::string_view content_length = re->queryHeader("Content-Length");
-    // IFDEBUG(
-    //     std::cerr << "In Header Length: " << content_length 
-    //               << "\n\tReal Length: "  << real << std::endl;
-    // );
+    IFDEBUG(
+        std::cerr << "In Header Length: " << content_length 
+                  << "\n\tReal Length: "  << real << std::endl;
+    );
     if (content_length != "" && content_length != std::to_string(real))
         return false;
     return true;
@@ -153,7 +152,8 @@ void HttpResponseBase::setDefaultHeaders()
 
     headers->push("Date", getGMTtime());
     headers->push("Server", "TINYandPRETTY/1.1");
-    headers->push("Connection", "close");
+    headers->push("Connection", "keep-alive");
+    headers->push("Keep-Alive", "timeout=120");
 }
 
 HttpResponseBase::HttpResponseBase(const std::string &_status) : status(std::move(_status))
@@ -203,7 +203,7 @@ size_t HttpResponse::length() const
 
 size_t HttpResponse::stringize(uint8_t **buff)
 {
-    size_t buff_size = length() + 1;
+    size_t buff_size = length() + 3; // 3 : sizeof "\r\n" + "0"
     size_t cur = 0;
 
     // Memory allocate
@@ -258,7 +258,7 @@ auto FileResponse::stringizeHeader()
 		-> std::tuple<std::shared_ptr<uint8_t> , size_t>
 {
     size_t cur       = 0;
-    size_t buff_size = length() + 1;
+    size_t buff_size = length() + 3;
     uint8_t *buff    = (uint8_t *)calloc(1 , buff_size) ;
 
     memcpy(buff , status.c_str() , status.length());
@@ -329,7 +329,7 @@ size_t JsonResponse::length() const
 
 size_t JsonResponse::stringize(uint8_t **buff)
 {
-    size_t buff_size = length() + 1;
+    size_t buff_size = length() + 3;
     size_t cur = 0;
 
     //allocate memory
