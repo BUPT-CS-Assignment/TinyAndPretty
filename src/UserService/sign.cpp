@@ -6,6 +6,7 @@ def_HttpEntry(LOG_IN, req){
     std::string val = "";
     int count = 0;
     std::string ans = req.getBody();
+    std::cerr << req.Method();
     if(ans == "__NULL__"){
         std::fstream fs("web/userService/index.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) //std::cerr << "Return HTML\n";

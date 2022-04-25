@@ -21,8 +21,7 @@ bool HttpAdapter::branchFilePathResp(Connection *conn , std::shared_ptr<HttpResp
 	if(target  == "" ) 			return false;
 	
 	auto [buff, slen] = file_resp->stringizeHeader();
-	sock->sendFileWithHeader(conn->getFD() , target.c_str() , buff.get() , slen);
-	return true;
+	return sock->sendFileWithHeader(conn->getFD() , target.c_str() , buff.get() , slen);
 }
 
 void HttpAdapter::sendHttpData(Connection *conn , std::shared_ptr<HttpResponseBase> ret) 

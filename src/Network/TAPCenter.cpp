@@ -74,15 +74,20 @@ void TAPCenter::start()
 {
 	epool->Loop([&](epoll_data_t data, int type)
 				{
+		IFDEBUG(std::cerr << "Type status : " << type << "\n");
 		if(data.fd == sock->getFD()) {
-			while(true) {
+			for(;;) {
 				Connection* con = sock->onConnect();
 				if(con == nullptr) break;
 
 				IFDEBUG(std::cerr << "Connection : " << con->getFD() << " Handshake!\n");	
 				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
 			}
-		}else if (type & EPOLLIN) {
+		}
+		else if (type & EPOLLHUP) {
+			;
+		}
+		else if (type == EPOLLIN) {
 			Connection* conn = static_cast<Connection *>(data.ptr) ;
 			this->distributeTask( conn );
 		} });
