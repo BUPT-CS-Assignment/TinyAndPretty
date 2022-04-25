@@ -8,3 +8,4 @@ include/generated
 nohup.out
 tap.log
 build/main-service
+.vscode-ctags
