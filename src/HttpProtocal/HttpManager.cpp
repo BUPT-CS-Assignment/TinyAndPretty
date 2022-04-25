@@ -15,9 +15,6 @@ void HttpManager::createTask(Connection* conn)
 	std::shared_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
 
 	wrapper->sendHttpData( conn , ret );
-	std::cerr << "Who am i  : " << conn->getFD() << "\n";
-	conn->closeFD(); // near future
-	delete conn;
 }
 
 
@@ -30,7 +27,7 @@ HttpResponseBase *HttpManager::taskExecute(Connection* conn, std::shared_ptr<uin
 		else if (len == 0)
 			throw HttpException::NON_CONN;
 
-		IFDEBUG(std::cerr << "*Data Size :\t" << len << "\n");
+		//IFDEBUG(std::cerr << "*Data Size :\t" << len << "\n");
 
 		HttpRequest request {conn, raw.get(), len};
 		auto &entry = URLParser::getInstance().URLparse(request.Path());
