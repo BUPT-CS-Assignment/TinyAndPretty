@@ -1,4 +1,3 @@
-/build/main-service-obj
 .vscode
 .config
 .config.old
@@ -6,5 +5,5 @@ include/config
 include/generated
 nohup.out
 tap.log
-build/main-service
 .vscode-ctags
+build

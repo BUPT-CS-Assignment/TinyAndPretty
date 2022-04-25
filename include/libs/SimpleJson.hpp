@@ -99,9 +99,7 @@ public :
 		ptr = new JsonItemBoolArray(_key , _val);
 	}	
 	JsonCtor(std::string _key , std::vector<std::string> &_val){
-
 		ptr = new JsonItemStringArray(_key , _val );
-
 	}
 };
 // just for easy use...
@@ -236,8 +234,10 @@ inline void Json::handleItemBaseVector(JsonItemCluster &items , char *buff , siz
                 JsonItemStringArray* p= dynamic_cast<JsonItemStringArray *>(it);
                 BUFF_ADD('[');
                 for(auto &val : p->value) {
+                    BUFF_ADD('"');
                 	strcpy(buff + cur , val.c_str()); cur += val.length();
-                	BUFF_ADD(',');
+                	BUFF_ADD('"');
+                    BUFF_ADD(',');
 				}
                 buff[cur-1] = ']';
                 break;
