@@ -10,7 +10,6 @@
 */
 
 /*----------------- Network Module ----------------- */
-#define def_HttpEntry(name) HttpResponseBase* (name)(HttpRequest &request) 
 #include <HttpProtocal/HttpProtocal.h>
 #include <HttpProtocal/HttpException.h>
 
