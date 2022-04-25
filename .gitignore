@@ -6,4 +6,4 @@ include/generated
 nohup.out
 tap.log
 .vscode-ctags
-/build/
+build
