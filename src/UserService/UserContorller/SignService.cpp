@@ -35,11 +35,11 @@ def_HttpEntry(SIGN_IN, req){
 /* Sign Up */
 def_HttpEntry(SIGN_UP, req){
     int errCode = 0, count = 0;
-    std::string ans = req.getBody();
+    std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        return new FileResponse{"web/UserService/SignUp.html" , "text/html"};
+        return new FileResponse{"web/UserService/SignUP.html" , "text/html"};
     }
-    CONSOLE_LOG(0, "SignUp-Request '%s'\n", ans.c_str());
+    CONSOLE_LOG(0, "SignIn-Request: %s\n", ans.c_str());
     /* Check Insert Info */
     int index = ans.find_first_of("&");
     std::string id = ans.substr(0, index);
