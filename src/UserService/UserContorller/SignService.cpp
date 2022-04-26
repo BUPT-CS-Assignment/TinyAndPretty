@@ -1,29 +1,27 @@
-#include <test/define.h>
+#include <UserService/UserControl.h>
+#include <UserService/Preload.h>
 
-/* Log In */
-def_HttpEntry(LOG_IN, req){
-    int errCode = 0;
-    std::string val = "";
-    int count = 0;
-    std::string ans = req.getBody();
-    std::cerr << req.Method();
+/* Sign In */
+def_HttpEntry(SIGN_IN, req){
+    int errCode = 0, count = 0;
+    std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("web/userService/index.html", std::ios::in | std::ios::binary);
+        std::fstream fs("web/UserService/SignIn.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
             return new FileResponse{fs , "text/html"};
     }
-    std::cerr << "[" << getGMTtime() << "] " << "LOGIN-req: " << ans << std::endl;
+    CONSOLE_LOG(0, "SignIn-Request '%s'\n", ans.c_str());
+    /* Check SignIn Info */
     int index = ans.find_first_of("&");
     std::string id = ans.substr(0, index);
     std::string passwd = ans.substr(index + 1);
-    std::string sql = "select passwd from userInfo where id = " + id + ";";
+    std::string sql = "select Passwd from UserToken where ID = " + id + ";";
     //Query
-    DB.Exec(sql.c_str());
-    errCode = DB.ErrCode();
-    val = DB.ReturnVal();
+    DB_ROOT.Exec(sql.c_str());
+    errCode = DB_ROOT.ErrCode();
+    val = DB_ROOT.ReturnVal();
     val = val.substr(val.find(";") + 1);
-    count = DB.Count();
+    count = DB_ROOT.Count();
     //Check
     if(errCode != 0){
         return new HttpResponse{std::to_string(errCode) + "?0"};
@@ -38,24 +36,23 @@ def_HttpEntry(LOG_IN, req){
 
 /* Sign Up */
 def_HttpEntry(SIGN_UP, req){
-    int errCode = 0;
-    int count = 0;
-    std::string ans = req.getBody();
+    int errCode = 0, count = 0;
+    std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("web/userService/signup.html", std::ios::in | std::ios::binary);
+        std::fstream fs("web/UserService/SignUP.html", std::ios::in | std::ios::binary);
         if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
             return new FileResponse{fs , "text/html"};
     }
-    std::cerr << "[" << getGMTtime() << "] " << "LOGIN-req: " << ans << std::endl;
+    CONSOLE_LOG(0, "SignIn-Request: %s\n", ans.c_str());
+    /* Check Insert Info */
     int index = ans.find_first_of("&");
     std::string id = ans.substr(0, index);
     std::string passwd = ans.substr(index + 1);
-    std::string sql = "insert into userInfo values (" + id + "," + passwd + ",0);";
+    std::string sql = "insert into UserToken values (" + id + "," + passwd + ",0);";
     //Query
-    DB.Exec(sql.c_str());
-    errCode = DB.ErrCode();
-    count = DB.Count();
+    DB_ROOT.Exec(sql.c_str());
+    errCode = DB_ROOT.ErrCode();
+    count = DB_ROOT.Count();
     //Check
     if(errCode != 0){
         return new HttpResponse{std::to_string(errCode) + "?0"};

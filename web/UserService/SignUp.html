@@ -5,7 +5,7 @@
         <title>Tiny And Pretty</title>
     </head>
     <body>
-        <h1>TAP Authentication</h1>
+        <h1>TAP Sign Up</h1>
         <h2>    
             <form>
                 UserID:<br> 
@@ -14,11 +14,18 @@
                 Password:<br> 
                 <input type = "password" id = "passwd" style = "width: 160px; height: 16px;">
                 <br>
-                <button type = "button" onclick="SendVal() ">Login</button>
-                <button type = "button" onclick="window.open('http://'+location.host+'/signup')">Sign Up</button>       
+                Password Confirm:<br> 
+                <input type = "password" id = "passwd_cfm" style = "width: 160px; height: 16px;">
                 <br>
+                <button type = "button" onclick="SendVal() ">Sign Up</button>    
+                <br>
+               
             </form>
         </h2>
+        <h3>
+            Have an account already?
+            <button type = "button" onclick="window.open('http://'+location.host+'/login');">Sign In</button> 
+        </h3>
         <br>
         <hr align=center width="400px" size=2 style = "float:left">
         <br>
@@ -36,21 +43,33 @@
                 var ROOT = "http://" + location.host;
                 /* Get Input Value */
                 var id = document.getElementById("userid").value;
-                var pwd = document.getElementById("passwd").value;
+                var pwd = document.getElementById("passwd").value + "";
+                var cfm = document.getElementById("passwd_cfm").value + "";
+                /* Check Valid */
                 if(id == "" || pwd == ""){
                     alert("Empty Input!");
                     return;
                 }
-                if(id+"" == "admin"){
-                    id = "10001";
+                if(Number(id)<20000 || Number(id)>2000000000){
+                    alert("Invalid UserID! Range From 20000 to 2000000000.");
+                    return;
                 }
+                if(pwd.length>16){
+                    alert("Password Length Overflow!");
+                    return;
+                }
+                if(pwd != cfm){
+                    alert("Passwords Not Match!");
+                    return;
+                }
+                /* Action */
                 xhttp.onreadystatechange = function(){
                     if(this.readyState == 4 && this.status == 200){
                         var value = "",msg = "",count = "";
                         var rec = this.responseText;
                         console.log(rec);
                         /* Get Response Info */                        
-                        var pos1 =rec.indexOf("?")
+                        var pos1 =rec.indexOf("?");
                         /* Response Str Split */
                         msg = rec.substring(0,pos1);
                         count = rec.substring(pos1+1);
@@ -60,14 +79,15 @@
                             return;
                         }
                         if(count == "0"){
-                            alert("Wrong UserID or Password!");
+                            alert("UserID Existed!");
                             return;
                         }else{
-                            window.open(ROOT+"/sql",'_self');
+                            alert("Sign Up Success!");
+                            window.open(ROOT+"/signin",'_self');
                         }
                     }
                 };
-                xhttp.open("POST",ROOT + "/login",true);
+                xhttp.open("POST",ROOT + "/signup",true);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
                 xhttp.send(id+"&"+pwd);
             }

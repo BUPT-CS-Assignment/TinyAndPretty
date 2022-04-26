@@ -7,6 +7,5 @@ std::string getGMTtime();
 #pragma GCC diagnostic ignored "-Wnarrowing"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
-extern std::string __SQL__;
 
 #endif

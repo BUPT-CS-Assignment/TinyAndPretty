@@ -33,16 +33,14 @@ def_HttpEntry(MD5_Test,req);
 
 /*----------------- Data-Base Module -----------------*/
 #include <libs/NEDB.h>
-extern NEDB DB;
+
 /* User Service */
-def_HttpEntry(LOG_IN,req);
+def_HttpEntry(SIGN_IN,req);
 def_HttpEntry(SIGN_UP,req);
 /* DataBase Test */
-def_HttpEntry(SQL_Test,req);
-def_HttpEntry(SQL_Test2,req);
-def_HttpEntry(SQL_Run , req);
+def_HttpEntry(SQL_TEST,req);
+def_HttpEntry(SQL_RUN , req);
 def_HttpEntry(SQL_HELP ,  req);
-
 
 
 #endif

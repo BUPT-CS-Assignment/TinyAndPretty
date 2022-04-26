@@ -58,16 +58,7 @@ def_HttpEntry(Lent_Book , req){
     return new FileResponse{"utils/out" , "application/pdf"};
 }
 
-// EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
-def_HttpEntry(SQL_HELP , req){
-    std::fstream fs("web/sqlService/sql_help.html", std::ios::in | std::ios::binary);
-    if(fs.is_open()){
-        //std::cerr << "SQl HELP\n";
-        return new FileResponse{fs , "text/html"};
-    }else{
-        return new HttpResponse{"404\nNOT FOUND" , HTTP_STATUS_404};
-    }
-}
+
 // EXAMPLE 2.3 FileResponse建议使用c++17的std::filesystem
 def_HttpEntry(ICON , req){
     fs::path p {"utils/favicon.ico"};
@@ -111,44 +102,5 @@ def_HttpEntry(MD5_Test,req){
 }
 
 
-def_HttpEntry(SQL_Run , req){
-    int errCode = 0;
-    std::string val = "";
-    int count = 0;
-    std::string ans = req.getBody();
-    if(ans == "__NULL__"){
-        std::fstream fs("web/sqlService/database.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
-        return new FileResponse{fs , "text/html"};
-    }
-    
-    std::cerr<<"["<<getGMTtime()<<"] "<<"SQL-req: "<<ans<<std::endl;
-    const char *sql = ans.c_str();
-    DB.Exec(sql);
-    errCode = DB.ErrCode();
-    val = DB.ReturnVal();
-    count = DB.Count();
-    std::cerr<<"Query OK with value "<<errCode<<std::endl;
-    return new HttpResponse{std::to_string(errCode) + "?" + std::to_string(count) + "&"+ val};
-}
 
-def_HttpEntry(SQL_Test,req){
-    std::string sql = "select * from userInfo;";
-    int errcode = DB.Exec(sql.c_str());
-    std::cerr<<"Query OK"<<std::endl;
-    return new HttpResponse{std::to_string(errcode)};
-}
 
-static int id;
-
-def_HttpEntry(SQL_Test2,req){
-    id++;
-    std::cerr<<"Query "<<id<<" begin"<<std::endl;
-    DB.Exec("drop table test2;");
-    DB.Exec("create table test2(id int);");
-    int errcode = DB.Exec(__SQL__.c_str());
-    std::cerr<<"Query "<<id<<" OK with value "<<errcode<<std::endl;
-    return new HttpResponse{std::to_string(errcode)};
-
-}
