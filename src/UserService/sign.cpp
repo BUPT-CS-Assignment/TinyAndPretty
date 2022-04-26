@@ -8,10 +8,7 @@ def_HttpEntry(LOG_IN, req){
     std::string ans = req.getBody();
     std::cerr << req.Method();
     if(ans == "__NULL__"){
-        std::fstream fs("web/userService/index.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
-            return new FileResponse{fs , "text/html"};
+        return new FileResponse{"web/userService/index.html" , "text/html"};
     }
     std::cerr << "[" << getGMTtime() << "] " << "LOGIN-req: " << ans << std::endl;
     int index = ans.find_first_of("&");
@@ -42,10 +39,7 @@ def_HttpEntry(SIGN_UP, req){
     int count = 0;
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("web/userService/signup.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
-            return new FileResponse{fs , "text/html"};
+        return new FileResponse{"web/userService/signup.html" , "text/html"};
     }
     std::cerr << "[" << getGMTtime() << "] " << "LOGIN-req: " << ans << std::endl;
     int index = ans.find_first_of("&");
