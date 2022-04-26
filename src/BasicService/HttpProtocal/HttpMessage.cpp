@@ -1,7 +1,7 @@
-#include <HttpProtocal/HttpProtocal.h>
-#include <Network/URLParser.h>
-#include <Network/ServerBase.h>
-#include <HttpProtocal/HttpException.h>
+#include <BasicService/HttpProtocal/HttpProtocal.h>
+#include <BasicService/Network/URLParser.h>
+#include <BasicService/Network/ServerBase.h>
+#include <BasicService/HttpProtocal/HttpException.h>
 
 char *nsplit(char *str, const char *token, int n);
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept;

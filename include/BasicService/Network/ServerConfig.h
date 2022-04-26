@@ -1,7 +1,7 @@
 #ifndef __SERVER_CONF__
 #define __SERVER_CONG__
 
-#include "../generated/autoconf.h"
+#include "../../generated/autoconf.h"
 
 #define SOCK_TYPE       SOCK_STREAM | SOCK_NONBLOCK
 #define PORT            CONFIG_PORT

@@ -2,10 +2,10 @@
 #define __HTTP_MANAGER__
 
 #include <common.h>
-#include <Network/ManagerBase.h>
-#include <HttpProtocal/HttpException.h>
-#include <HttpProtocal/HttpProtocal.h>
-#include <HttpProtocal/HttpAdapter.h>
+#include <BasicService/Network/ManagerBase.h>
+#include <BasicService/HttpProtocal/HttpException.h>
+#include <BasicService/HttpProtocal/HttpProtocal.h>
+#include <BasicService/HttpProtocal/HttpAdapter.h>
 
 ////HttpTask center manager
 class HttpManager : public ManagerBase

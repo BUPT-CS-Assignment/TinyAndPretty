@@ -1,8 +1,8 @@
-#include <Network/TAPManager.h>
-#include <Network/URLParser.h>
-#include <Network/ManagerBase.h>
-#include <Network/ThreadPool.h>
-#include <Network/ServerBase.h>
+#include <BasicService/Network/TAPManager.h>
+#include <BasicService/Network/URLParser.h>
+#include <BasicService/Network/ManagerBase.h>
+#include <BasicService/Network/ThreadPool.h>
+#include <BasicService/Network/ServerBase.h>
 
 class TAPCenter
 {
