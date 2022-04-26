@@ -7,3 +7,4 @@ nohup.out
 tap.log
 .vscode-ctags
 build
+build/main-service

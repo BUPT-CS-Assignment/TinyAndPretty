@@ -151,7 +151,7 @@ void HttpResponseBase::setDefaultHeaders()
     if (headers == nullptr) return;
 
     headers->push("Date", getGMTtime());
-    headers->push("Server", "TINYandPRETTY/1.1");
+    headers->push("Server", "TINYandPRETTY-1.3");
     headers->push("Connection", "keep-alive");
     headers->push("Keep-Alive", "timeout=120");
 }
@@ -228,12 +228,16 @@ size_t HttpResponse::stringize(uint8_t **buff)
 FileResponse::FileResponse(std::fstream &_body , const std::string _type) 
                                                     : HttpResponseBase() , body( std::move(_body) ) 
 {
+    body.seekg(0 , std::ios::end);
+    appendHeader("Content-length" , std::to_string(body.tellg()));
     appendHeader("Content-Type" , _type);
 }
 FileResponse::FileResponse(std::fstream &_body , const std::string _type , const std::string _status) 
                                                     : HttpResponseBase(_status), body(std::move(_body))
 {
-    appendHeader("Content-Type" , _type);
+    body.seekg(0 , std::ios::end);
+    appendHeader("Content-length" , std::to_string(body.tellg()));
+    appendHeader("Content-Type"   , _type);
 }
 
 FileResponse::FileResponse(fs::path _filepath , const std::string _type) : HttpResponseBase()
