@@ -11,7 +11,6 @@ int ServicePreLoad(){
     /////
     string data_dir = PROJECT_DIR + PRELOAD_DIR;
     DB_ROOT.SetDir(data_dir.c_str());
-    printf("PreLoad Dir '%s'\n", DB_ROOT.GetDir().c_str());
     if(DB_ROOT.DirInit() != 0){
         printf("Dir Error\n");
         return 3;
