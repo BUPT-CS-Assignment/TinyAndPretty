@@ -26,7 +26,7 @@ int DataBase::setDir(string dir){
     if(dir[dir.length() - 1] != '/'){
         dir = dir + "/";
     }
-    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir Set to '%s'\n", dir);
+    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir Set to '%s'\n", dir.c_str());
     __SrcDir__ = dir;
     __ErrCode__ = NO_ERROR;
     return NO_ERROR;
