@@ -6,9 +6,7 @@ def_HttpEntry(SIGN_IN, req){
     int errCode = 0, count = 0;
     std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("web/UserService/SignIn.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-            return new FileResponse{fs , "text/html"};
+        return new FileResponse{"web/UserService/SignIn.html" , "text/html"};
     }
     CONSOLE_LOG(0, "SignIn-Request '%s'\n", ans.c_str());
     /* Check SignIn Info */
@@ -39,9 +37,7 @@ def_HttpEntry(SIGN_UP, req){
     int errCode = 0, count = 0;
     std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("web/UserService/SignUP.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-            return new FileResponse{fs , "text/html"};
+        return new FileResponse{"web/UserService/SignUP.html" , "text/html"};
     }
     CONSOLE_LOG(0, "SignIn-Request: %s\n", ans.c_str());
     /* Check Insert Info */

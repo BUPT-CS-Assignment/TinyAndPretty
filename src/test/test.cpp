@@ -89,10 +89,7 @@ def_HttpEntry(MD5_Test,req){
     std::string val = "";
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
-        std::fstream fs("utils/md5test.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-        //std::cerr << "SQL RUN\n";
-        return new FileResponse{fs , "text/html"};
+        return new FileResponse{"utils/md5test.html" , "text/html"};
     }
     
     std::cerr<<"["<<getGMTtime()<<"] "<<"MD5-req: "<<ans<<std::endl;
