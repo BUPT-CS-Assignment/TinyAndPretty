@@ -1,5 +1,7 @@
 NAME = NEDB
 
+ver = d
+
 WORK_DIR 	= $(shell pwd)
 SRC_DIR  	= $(WORK_DIR)/src
 BUILD_DIR 	= $(WORK_DIR)/build
@@ -8,8 +10,7 @@ PACKAGE 	= $(BUILD_DIR)/$(NAME)
 LIBS		= $(BUILD_DIR)/libnedb.so
 LIBA		= $(BUILD_DIR)/libnedb.a
 
-CXXFLAGS += -std=c++11
-CXXFLAGS += $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror 
+CXXFLAGS += -std=c++11 $(addprefix -I , $(INCLUDE_DIR)) -fPIC -O2 -Wall -Werror -pthread 
 
 MODULES = $(filter-out src,$(notdir $(shell find $(SRC_DIR) -type d ) ) )
 
@@ -21,6 +22,9 @@ else
 SOURCES = $(shell find $(addprefix src/,$(MODS)) -name "*.cpp" )
 endif
 
+ifneq ($(ver),r)
+CXXFLAGS += -g
+endif
 
 OBJS = $(subst cpp,o,$(subst src,$(OBJ_DIR),$(SOURCES)))
 
@@ -63,7 +67,13 @@ run : .detect $(PACKAGE)
 	@echo  "$(C_GREEN)[$(shell date +%F%n%T)] SUCCESSFUL RUNNING$(C_END)"
 
 .detect :
-	@echo "$(C_BLUE)Module <$(MODULES)> has been detected...$(C_END)"
+	@echo "$(C_BLUE)MODULE <$(MODULES)> DETECTED...$(C_END)"
+ifneq ($(ver),d)
+	@echo "$(C_GREEN)RELEASE MODE START UP$(C_END)"
+else
+	@echo "$(C_YELLOW)DEBUG MODE START UP$(C_END)"
+endif
+	
 
 clean :
 	-rm -rf $(BUILD_DIR)
