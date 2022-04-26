@@ -17,7 +17,8 @@ URLParser::URLParser(){
 extern std::string getGMTtime();
 
 EntryFunc& URLParser::URLparse( std::string_view _url) {
-    CONSOLE_LOG(0,"Url-Request '%s'\n",_url);
+    std::string str(_url);
+    CONSOLE_LOG(0,"Url-Request '%s'\n",str.c_str());
     if(_url == static_url) return StaticResponse;
     else try {
         return url_table.at( _url );
