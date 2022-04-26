@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+    </head>
+    <body>
+        <h1>TAP MD5 Test</h1>
+        <h2>    
+            <form>
+                String : <br>
+		        <textarea type= "text" id = "md5" style = "width: 300px; height: 60px;"></textarea>
+                <br>
+                <button type = "button" onclick="SendVal() ">Converse</button>    
+                <br><br>
+            </form>
+	        <div>
+		        <div style = "float:left">Result :&nbsp</div>
+                <div id = "res" style = "float:left"></div>
+            </div><br>
+        </h2>
+        <br>
+        <hr align=center width="300px" size=2 style = "float:left">
+        <h3>
+            For More Infomation:
+            <br>
+            <button id="sql" onclick="window.open('http://'+location.host+'/sql')">TAP SQL Test</button>
+	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+            <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        </h3>
+        <script>
+            function SendVal(){
+                var xhttp = new XMLHttpRequest();
+                var ROOT = "http://" + location.host;
+                /* Get Input Value */
+                var str = document.getElementById("md5").value;
+                if(str == "") return;
+                xhttp.onreadystatechange = function(){
+                    if(this.readyState == 4 && this.status == 200){
+                        var rec = this.responseText;
+                        console.log(rec);
+                        document.getElementById("res").innerHTML = rec;
+                    }
+                };
+                xhttp.open("POST",ROOT + "/md5",true);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.send(str);
+            }
+        </script>
+    </body>
+</html>

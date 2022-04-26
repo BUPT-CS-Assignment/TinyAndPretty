@@ -94,6 +94,23 @@ def_HttpEntry(Check_It , req) {
     return new JsonResponse{j};
 }
 
+def_HttpEntry(MD5_Test,req){
+    std::string val = "";
+    std::string ans = req.getBody();
+    if(ans == "__NULL__"){
+        std::fstream fs("utils/md5test.html", std::ios::in | std::ios::binary);
+        if(fs.is_open()) //std::cerr << "Return HTML\n";
+        //std::cerr << "SQL RUN\n";
+        return new FileResponse{fs , "text/html"};
+    }
+    
+    std::cerr<<"["<<getGMTtime()<<"] "<<"MD5-req: "<<ans<<std::endl;
+    std::string str_md5 = md5(ans);
+    std::cerr<<"MD5 Process Result : "<<str_md5<<std::endl;
+    return new HttpResponse{str_md5};
+}
+
+
 def_HttpEntry(SQL_Run , req){
     int errCode = 0;
     std::string val = "";

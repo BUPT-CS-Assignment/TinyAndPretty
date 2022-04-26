@@ -20,23 +20,29 @@ using namespace SimpleJson;
 ////simplize entry define 
 #define def_HttpEntry(name , request) extern HttpResponseBase* (name)(HttpRequest &request) 
 
-/*----------------- Data-Base Module ----------------- */
-#include <libs/NEDB.h>
-extern NEDB DB;
 
-/*---------------- Hello-world Module --------------- */
+/*---------------- Hello-world Module ----------------*/
 def_HttpEntry(Link_Start , request);
 def_HttpEntry(Lent_Book , req);
-def_HttpEntry(SQL_Run , req);
-def_HttpEntry(SQL_HELP ,  req);
 def_HttpEntry(ICON , req);
 def_HttpEntry(Check_It , req);
 
+/*---------------------MD5 Module---------------------*/
+#include <libs/md5.h>
+def_HttpEntry(MD5_Test,req);
+
+/*----------------- Data-Base Module -----------------*/
+#include <libs/NEDB.h>
+extern NEDB DB;
 /* User Service */
 def_HttpEntry(LOG_IN,req);
 def_HttpEntry(SIGN_UP,req);
+/* DataBase Test */
 def_HttpEntry(SQL_Test,req);
 def_HttpEntry(SQL_Test2,req);
+def_HttpEntry(SQL_Run , req);
+def_HttpEntry(SQL_HELP ,  req);
+
 
 
 #endif
