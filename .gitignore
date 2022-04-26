@@ -1,10 +1,11 @@
+.server
 .vscode
 .config
 .config.old
 include/config
 include/generated
 nohup.out
-tap.log
+log
 .vscode-ctags
 build
 build/main-service

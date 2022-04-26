@@ -9,6 +9,7 @@ int main(int argv, char* argc[]){
 
     /* Server Init */
     SQLTestGenerate();
+    printf("test\n");
     ServicePreLoad();
     TAPManager server;
     server.loadSubManager(std::make_unique<HttpManager>());
