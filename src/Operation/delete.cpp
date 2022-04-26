@@ -5,34 +5,38 @@ using namespace std;
 
 void Table::DeleteValues(string condition){
     try{
-        Analyzer ANZ(this);
-        ANZ.Extract(condition, " and ");
-        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+        if(!StatusCheck(table_status_,SIG_FREE,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
-        table_lock_ = SIG_LOCK;
+        table_status_ = SIG_RUN;
+        Analyzer ANZ(this);
+        ANZ.Extract(condition, " and ");
         if(ANZ.KeySupport()){
             delete_by_key(ANZ);
         }
         else{
             delete_by_traverse(ANZ);
         }
-        table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
     }
     catch(NEexception& e){
-        table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         throw e;
     }
     catch(exception& e){
-        table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         throw SYSTEM_ERROR;
     }
 }
 
 void Table::delete_by_key(Analyzer& ANZ){
     try{
-        Index* index = ANZ.getCondVal(ANZ.getKeyPos());
-        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+
+        Index *index = ANZ.getCondVal(ANZ.getKeyPos());
+        if(index == NULL){
+            throw SYSTEM_ERROR;
+        }
+        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(*index);
         Memorizer RAM(this);
         Page* page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
@@ -51,7 +55,7 @@ void Table::delete_by_key(Analyzer& ANZ){
             }
             /////
             if(cmp == 0 || ANZ.stop_flag == 2){
-                if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(&page->page_index_);
+                if(page->cursor_pos_ == 0)  pages_tree_->DeleteData(page->page_index_);
                 break;
             }
             else{
@@ -61,7 +65,7 @@ void Table::delete_by_key(Analyzer& ANZ){
                 if(page->cursor_pos_ == 0){
                     //记录当前节点左节点的值
                     Node<uint16_t, Index>* temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
-                    pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
+                    pages_tree_->DeleteData(page->page_index_);    //从索引树中删除该页索引
                     if(temp != NULL && data_node.node->get_cursor() == 0){
                         data_node.node = temp;
                         data_node.pos = temp->get_cursor() + (cmp == 1 ? data_node.pos : - 1);
@@ -99,7 +103,7 @@ void Table::delete_by_traverse(Analyzer& ANZ){
             else if(page->cursor_pos_ == 0){
                 //记录当前节点左节点的值
                 Node<uint16_t, Index>* temp = (data_node.node == NULL ? NULL : data_node.node->get_side(0));
-                pages_tree_->DeleteData(&page->page_index_);    //从索引树中删除该页索引
+                pages_tree_->DeleteData(page->page_index_);    //从索引树中删除该页索引
                 if(temp != NULL && data_node.node->get_cursor() == 0){
                     data_node.node = temp;
                     data_node.pos = temp->get_cursor() + data_node.pos;
@@ -139,8 +143,12 @@ void Page::Clear(__uint16_t offset){
 
 void Page::DeleteRow(Analyzer& ANZ){
     try{
+        if(rows_ == NULL){
+            throw SYSTEM_ERROR;
+        }
         if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
             //递减顺序筛选
+            
             for(int i = cursor_pos_ - 1; i >= 0; i--){
                 if(ANZ.Match(rows_[i])){
                     table_ptr_->db_->AddCount();

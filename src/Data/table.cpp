@@ -5,7 +5,7 @@ using namespace std;
 //数据表创建
 Table::Table(DataBase* db, string name){
     db_ = db;
-    table_lock_ = SIG_UNLOCK;
+    table_status_ = SIG_FREE;
     page_size_ = db_->getDefaultPageSize();
     strcpy(table_name_, name.c_str());
     max_offset = 0;
@@ -14,6 +14,7 @@ Table::Table(DataBase* db, string name){
     row_take_up_ = 0;
     max_rows_per_page_ = 0;
     parm_names_ = NULL;
+    key_type_ = __INT;
     pages_tree_ = new BalanceTree<__uint16_t, Index>(0);
 }
 
@@ -29,8 +30,8 @@ void Table::Init(string parameters){
         string* params = Split(parameters, ',', number);
         parm_num_ = number;
         //分配空间
-        parm_types_ = new DATA_TYPE[parm_num_];
-        parm_names_ = new char[parm_num_][32]{{0}};
+        parm_types_ = new DATA_TYPE[parm_num_ + 1]{__INT};
+        parm_names_ = new char[parm_num_ + 1][32]{{0}};
         bool key_assigned = 0;
         //参数分析
         for(int i = 0; i < parm_num_; i++){
@@ -74,6 +75,7 @@ void Table::Init(string parameters){
                 }
             }
         }
+        key_type_ = parm_types_[prim_key_];
         //计算单页行数
         max_rows_per_page_ = (page_size_ - PAGE_HEAD_SIZE) / row_take_up_;
         Memorizer RAM(this);
@@ -189,7 +191,7 @@ int Table::ParmLocate(string name){
 
 void Table::Erase(){
     try{
-        table_lock_ = SIG_LOCK;
+        table_status_ = SIG_BLOCK;
         delete parm_names_;
         parm_names_ = NULL;
         delete parm_types_;

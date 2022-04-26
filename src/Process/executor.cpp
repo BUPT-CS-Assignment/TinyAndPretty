@@ -15,15 +15,15 @@ void Executor::execute_operation(){
             execute_drop_table();
             return;
         }
-        db_->__ActionLock__ = SIG_LOCK;
-        if(__LockCheck__(db_->__DeleteLock__,SIG_CHECK_TIMES)!=SIG_UNLOCK){
-            db_->__ActionLock__ = SIG_UNLOCK;
+        if(parser_->operation_ == CREATE_TABLE){
+            execute_create_table();
+            return;
+        }
+        if(!StatusCheck(db_->Status(),SIG_RUN,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
+        db_->SetStatus(SIG_RUN);
         switch(parser_->operation_){
-            case CREATE_TABLE:
-                execute_create_table();
-                break;
             case INSERT_VALUES:
                 execute_insert_values();
                 break;
@@ -43,19 +43,17 @@ void Executor::execute_operation(){
                 execute_select_tables();
                 break;
             default:
-                db_->__ActionLock__ = SIG_UNLOCK;
+                db_->SetStatus(SIG_FREE);
                 throw SQL_UNDEFINED;
         }
-        db_->__ActionLock__ = SIG_UNLOCK;
+        db_->SetStatus(SIG_FREE);
     }
     catch(NEexception &e){
-        db_->__ActionLock__ = SIG_UNLOCK;
-        db_->__DeleteLock__ = SIG_UNLOCK;
+        db_->SetStatus(SIG_FREE);
         throw e;
     }
     catch(exception &e){
-        db_->__ActionLock__ = SIG_UNLOCK;
-        db_->__DeleteLock__ = SIG_UNLOCK;
+        db_->SetStatus(SIG_FREE);
         throw SYSTEM_ERROR;
     }
 }
@@ -71,6 +69,11 @@ void Executor::execute_command(){
                 break;
             case __LOAD:
                 db_->open(parser_->statement_);
+                break;
+            case __DEBUGSET:
+                if(!__DEBUG_SET__(parser_->statement_)){
+                    throw COMMAND_UNDEFINED;
+                }
                 break;
             case __SETDIR:
                 if(parser_->statement_ == "-d"){
@@ -105,6 +108,7 @@ void Executor::execute_command(){
             default:
                 throw COMMAND_UNDEFINED;
         }
+        db_->setErrCode(NO_ERROR);
     }
     catch(NEexception &e){
         db_->setErrCode(e);
@@ -124,6 +128,10 @@ void Executor::execute_create_table(){
         }
         string table_name = parser_->object_;
         string parameters = parser_->value_;
+        if(!StatusCheck(db_->Status(),SIG_FREE,SIG_CHECK_TIMES)){
+            throw ACTION_BUSY;
+        }
+        db_->SetStatus(SIG_BLOCK);
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
             throw TABLE_EXIST;
@@ -131,12 +139,16 @@ void Executor::execute_create_table(){
         ///////////////////////////////////////////////////////////文件操作
         Table *new_table = new Table(db_, table_name);
         new_table->Init(parameters);
+        /* DataBase Lock Check */
         db_->addTable(new_table);
+        db_->SetStatus(SIG_FREE);
     }
     catch(NEexception &e){
+        db_->SetStatus(SIG_FREE);
         throw e;
     }
     catch(exception &e){
+        db_->SetStatus(SIG_FREE);
         throw SYSTEM_ERROR;
     }
 }
@@ -221,43 +233,6 @@ void Executor::execute_describe_table(){
     }
 }
 
-void Executor::execute_create_index(){
-    try{
-        Table *table = db_->getTable(parser_->object_);
-        if(table != NULL){
-            return;
-            //db_->setMsg(table->getStructure());
-        }
-        else{
-            throw TABLE_NOT_FOUND;
-        }
-    }
-    catch(NEexception &e){
-        throw e;
-    }
-    catch(exception &e){
-        throw SYSTEM_ERROR;
-    }
-}
-
-void Executor::execute_drop_index(){
-    try{
-        Table *table = db_->getTable(parser_->object_);
-        if(table != NULL){
-            return;
-            //db_->setMsg(table->getStructure());
-        }
-        else{
-            throw TABLE_NOT_FOUND;
-        }
-    }
-    catch(NEexception &e){
-        throw e;
-    }
-    catch(exception &e){
-        throw SYSTEM_ERROR;
-    }
-}
 
 void Executor::execute_select_values(){
     try{

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <cstdlib>
 #include <cstdio>
+#include <stdarg.h>
+#include <stdio.h>
 #include <regex>
 #include <iomanip>
 #include <unistd.h>
@@ -14,13 +16,22 @@
 #include <dirent.h>
 
 /* Basic Sign */
-
 #define TEXT_LENGTH         32
 #define LONGTEXT_LENGTH     255
 #define PAGE_HEAD_SIZE      40 
 #define DATA_OFFSET         2
-#define SIG_UNLOCK          0
-#define SIG_LOCK            1
+
+/* Lock Status */
+#define SIG_BLOCK           0
+#define SIG_RUN             1
+#define SIG_FREE            2
+
+
+
+/* DeBug Level */
+#define DEBUG_NONE          0
+#define DEBUG_SIMPLE        1
+#define DEBUG_DETAIL        2
 
 extern int SIG_DEBUG;
 extern int SIG_WAIT_MSECS;
@@ -58,7 +69,8 @@ enum COMMAND: __uint16_t{
     __LOAD,
     __LOADALL,
     __SETPAGESIZE,
-    __SHOWPAGESIZE
+    __SHOWPAGESIZE,
+    __DEBUGSET
 };
 
 /* Operation Sign */
@@ -206,9 +218,13 @@ class DataBase{
     ///////////////////////////////////////////////
     void database_init();
     public:
-    int             __DeleteLock__;
-    int             __ActionLock__;
     DataBase(std::string dir);              //构造函数
+
+    /* DataBase Lock */
+    int     __ProcStatus__;         //DataBase Lock
+    int&    Status();
+    void    SetStatus(int state = SIG_BLOCK);
+
     /* Dir Operation */
     std::string getDir();                   //获取当前目录
     int     setDir(std::string dir);        //设置目录 
@@ -250,6 +266,6 @@ class DataBase{
 void __START__();
 void __MESSAGE__();
 void __HELP__();
-
+int __DEBUG_SET__(std::string);
 
 #endif

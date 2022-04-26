@@ -6,7 +6,7 @@ using namespace std;
 
 int MAX_TABLES = 64;          /* Max Table Numbers */
 int DEFAULT_PAGE_SIZE = 400;  /* Default Page Size */
-int SIG_WAIT_MSECS = 100;     /* Time(ms) Wait For Unlock */
+int SIG_WAIT_MSECS = 200;     /* Time(ms) Wait For Unlock */
 int SIG_CHECK_TIMES = 5;      /* Check Times While Waiting */
 int SIG_DEBUG = 0;
 

@@ -11,10 +11,10 @@ void Table::UpdateValues(string condition, string setting){
         CANZ.Extract(condition, " and ");
         SANZ.Extract(setting, " , ");
         /* Lock Check */
-        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
+        if(!StatusCheck(table_status_,SIG_FREE,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
-        table_lock_ = SIG_LOCK;
+        table_status_ = SIG_RUN;
         if(SANZ.KeySupport()){
             throw KEY_VAL_CHANGE_NOT_ALLOWED;
         }
@@ -24,10 +24,10 @@ void Table::UpdateValues(string condition, string setting){
         else{
             update_by_traverse(SANZ, CANZ);
         }
-        table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
     }
     catch(NEexception &e){
-        table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         throw e;
     }
 
@@ -36,8 +36,11 @@ void Table::UpdateValues(string condition, string setting){
 
 void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
     try{
-        Index *index = CANZ.getCondVal(CANZ.getKeyPos());
-        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+        Index* index = CANZ.getCondVal(CANZ.getKeyPos());
+        if(index == NULL){
+            throw SYSTEM_ERROR;
+        }
+        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(*index);
         int cmp = CANZ.getCompareType(CANZ.getKeyPos());
         if(data_node.getData() == NULL){
             if(cmp == 1)data_node = pages_tree_->getLink();
@@ -66,7 +69,7 @@ void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
         Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
-            __uint16_t *page_offset = data_node.getData();
+            __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
             Page *page = RAM.PageLoad(*page_offset);
             page->UpdateRow(SANZ, CANZ);

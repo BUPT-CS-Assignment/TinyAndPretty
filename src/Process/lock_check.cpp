@@ -2,19 +2,16 @@
 #include<main.h>
 using namespace std;
 
-int __LockCheck__(int& lock, int times){
-    if(lock == SIG_UNLOCK)  return SIG_UNLOCK;
-    for(int i = 0; i < times; i++){
-        if(SIG_DEBUG == 1){
-            cout << "(NEDB)Waiting..." << endl;
-        }
+
+int StatusCheck(int& state,int level,int times){
+    if(state == SIG_BLOCK) return 0;
+    if(state >= level) return 1;
+    for(int i = 0; i <times; i++){
+        ConsoleLog(0,DEBUG_SIMPLE,"(NEDB)Waiting...\n");
         usleep(SIG_WAIT_MSECS * 1000);
-        if(lock == SIG_UNLOCK){
-            return SIG_UNLOCK;
+        if(state >= level){
+            return 1;
         }
     }
-    if(SIG_DEBUG == 1){
-        cout << "(NEDB)Task Cancelled" << endl;
-    }
-    return SIG_LOCK;
+    return ConsoleLog(0,DEBUG_SIMPLE,"(NEDB)Task Cancelled\n");
 }

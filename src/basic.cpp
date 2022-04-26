@@ -15,8 +15,7 @@ DataBase::DataBase(string dir){
     __ErrCode__ = NO_ERROR;
     __ReturnVal__ = "";
     __OperateCount__ = 0;
-    __DeleteLock__ = SIG_UNLOCK;
-    __ActionLock__ = SIG_UNLOCK;
+    __ProcStatus__ = SIG_FREE;
 }
 
 int DataBase::setDir(string dir){
@@ -27,6 +26,7 @@ int DataBase::setDir(string dir){
     if(dir[dir.length() - 1] != '/'){
         dir = dir + "/";
     }
+    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir Set to '%s'\n", dir);
     __SrcDir__ = dir;
     __ErrCode__ = NO_ERROR;
     return NO_ERROR;
@@ -81,15 +81,23 @@ void DataBase::setReturnVal(string val){
 }
 
 
-
 int DataBase::setDefaultPageSize(int size){
     if(size < 100 || size > 4000){
         __ErrCode__ = SIZE_NOT_ALLOWED;
         return SIZE_NOT_ALLOWED;
     }
+    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Set Page Size to %d\n", size);
     __PageSize__ = size;
     __ErrCode__ = NO_ERROR;
     return NO_ERROR;
+}
+
+int& DataBase::Status(){
+    return __ProcStatus__;
+}
+
+void DataBase::SetStatus(int state){
+    __ProcStatus__ = state;
 }
 
 void DataBase::addTable(Table* table){
@@ -99,36 +107,45 @@ void DataBase::addTable(Table* table){
 
 void DataBase::dropTable(string name){
     try{
-        __DeleteLock__ = SIG_LOCK;
-        if(__LockCheck__(__ActionLock__, SIG_CHECK_TIMES * 2) != SIG_UNLOCK){
-            __DeleteLock__ = SIG_UNLOCK;
+        /* DataBase Lock Check */
+        if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
+        SetStatus(SIG_BLOCK);
         for(int i = 0; i < __Cursor__; i++){
             if(__Tables__[i] == NULL){
-                __DeleteLock__ = SIG_UNLOCK;
+                SetStatus(SIG_FREE);
                 throw SYSTEM_ERROR;
             }
             string temp = __Tables__[i]->getName();
             if(temp == name){
-                __Tables__[i]->Erase();
-                Memorizer RAM(__Tables__[i]);
-                RAM.TableDrop();
-                delete[] __Tables__[i];
+                Table* temp = __Tables__[i];
+                while(1){
+                    if(StatusCheck(temp->table_status_,SIG_FREE,1)){
+                        temp->table_status_ = SIG_BLOCK;
+                        break;
+                    }
+                }
+                __Tables__[i] = NULL;
                 for(int j = i; j < __Cursor__ - 1; j++){
                     __Tables__[j] = __Tables__[j + 1];
                 }
                 __Tables__[__Cursor__ - 1] = NULL;
                 -- __Cursor__;
-                __DeleteLock__ = SIG_UNLOCK;
+                /* Memory Free */
+                temp->Erase();
+                Memorizer RAM(temp);
+                RAM.TableDrop();
+                delete[] temp;
+                SetStatus(SIG_FREE);
                 return;
             }
         }
-        __DeleteLock__ = SIG_UNLOCK;
+        SetStatus(SIG_FREE);
         throw TABLE_NOT_FOUND;
     }
     catch(NEexception& e){
-        __DeleteLock__ = SIG_UNLOCK;
+        SetStatus(SIG_FREE);
         throw e;
     }
 }
@@ -142,6 +159,7 @@ int DataBase::dirInit(){
             dir = dir + "/" + dirs[i];
             if(NULL == opendir(dir.c_str())){
                 if(mkdir(dir.c_str(), S_IRWXU) == -1){
+                    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir '%s' Error\n", dir.c_str());
                     throw DIR_ERROR;
                 }
             }
@@ -172,6 +190,7 @@ int DataBase::openall(){
             if(regex_match(file_name, layout)){
                 file_name = file_name.substr(0, file_name.find("."));
                 if(open(file_name) != NO_ERROR){
+                    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)File Damaged : '%s'\n", file_name.c_str());
                     __ErrCode__ = FILE_DAMAGED;
                 }
                 __OperateCount__ ++;
@@ -191,25 +210,32 @@ int DataBase::openall(){
 
 int DataBase::open(string name){
     try{
-        if(SIG_DEBUG == 1){
-            cout << "(NEDB)Loading '" << name << "'" << endl;
+        /* Thread Lock Check */
+        if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
+            throw ACTION_BUSY;
         }
+        ConsoleLog(0, DEBUG_SIMPLE, "(NEDB)Loading '%s'\n", name.c_str());
+        /* Read File */
         Memorizer RAM(NULL);
         Table* table = NULL;
         if(__Cursor__ >= MAX_TABLES){
             throw TABLE_NUM_REACH_LIMIT;
         }
+        SetStatus(SIG_BLOCK);
         table = RAM.TableLoad(this, name);
         if(getTable(name) == NULL){
             __Tables__[__Cursor__] = table;
             ++__Cursor__;
+            SetStatus(SIG_FREE);
         }
+        SetStatus(SIG_FREE);
         __ErrCode__ = NO_ERROR;
-        return __ErrCode__;
+        return NO_ERROR;
     }
     catch(NEexception& e){
+        SetStatus(SIG_FREE);
         __ErrCode__ = e;
-        return __ErrCode__;
+        return e;
     }
 }
 
@@ -219,7 +245,7 @@ int DataBase::exec(string sql){
     __OperateCount__ = 0;
     if(sql.length() == 0 || sql[sql.length() - 1] != ';'){
         __ErrCode__ = SQL_FORM_ERROR;
-        return 0;
+        return __ErrCode__;
     }
     /////
     Parser p;
@@ -257,25 +283,26 @@ int DataBase::exec(string sql){
 
 int DataBase::close(){
     try{
-        if(SIG_DEBUG == 1){
-            cout << "(NEDB)Closing..." << endl;
+        ConsoleLog(0, DEBUG_NONE, "(NEDB)Closing...\n");
+        if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
+            throw ACTION_BUSY;
         }
-        __DeleteLock__ = SIG_LOCK;
-        __ActionLock__ = SIG_LOCK;
+        SetStatus(SIG_BLOCK);
+        usleep(SIG_WAIT_MSECS * SIG_CHECK_TIMES * 1000);
+        /////
         for(int i = 0; i < __Cursor__; i++){
-            __Tables__[i]->Erase();
+            if(__Tables__[i] != NULL){
+                __Tables__[i]->Erase();
+            }
         }
         delete[] __Tables__;
         __Cursor__ = -1;
         __Tables__ = NULL;
         __ErrCode__ = NO_ERROR;
-        __DeleteLock__ = SIG_UNLOCK;
-        __ActionLock__ = SIG_UNLOCK;
         return __ErrCode__;
     }
     catch(exception& e){
-        __DeleteLock__ = SIG_UNLOCK;
-        __ActionLock__ = SIG_UNLOCK;
+        SetStatus(SIG_FREE);
         __ErrCode__ = SYSTEM_ERROR;
         return __ErrCode__;
     }
@@ -283,16 +310,23 @@ int DataBase::close(){
 
 Table* DataBase::getTable(string name){
     try{
+        //SetStatus(SIG_RUN);
         for(int i = 0; i < __Cursor__; i++){
             if(__Tables__[i] == NULL){
+                //SetStatus(SIG_FREE);
                 throw SYSTEM_ERROR;
             }
             string temp = __Tables__[i]->getName();
-            if(temp == name) return __Tables__[i];
+            if(temp == name){
+                //SetStatus(SIG_FREE);
+                return __Tables__[i];
+            }
         }
+        //SetStatus(SIG_FREE);
         return NULL;
     }
     catch(NEexception& e){
+        //SetStatus(SIG_FREE);
         throw e;
     }
 }

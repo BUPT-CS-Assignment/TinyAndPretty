@@ -170,9 +170,9 @@ bool Analyzer::Match(Row *row){
 
 Analyzer::~Analyzer(){
     table_ptr_ = NULL;
-    delete cond_pos;
-    delete cond_cmp;
-    delete cond_val;
+    delete[] cond_pos;
+    delete[] cond_cmp;
+    delete[] cond_val;
     delete[] cond_origin;
-    delete parm_pos;
+    delete[] parm_pos;
 }

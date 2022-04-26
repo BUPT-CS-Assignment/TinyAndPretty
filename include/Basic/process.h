@@ -3,7 +3,8 @@
 #include <main.h>
 #include <Interface/NEDB.h>
 
-int __LockCheck__(int& lock,int times);
+int StatusCheck(int& state,int level,int times);
+int ConsoleLog(int returnVal,int level,std::string content,...);
 
 class InputStream{
 private:
@@ -33,8 +34,6 @@ private:
     void        parser_select_values();
     void        parser_update_values();
     void        parser_describe_table();
-    void        parser_create_index();
-    void        parser_drop_index();
     void        parser_drop_table();
 public:
     Parser();
@@ -58,8 +57,6 @@ private:
     void        execute_update_values();
     void        execute_describe_table();
     void        execute_drop_table();
-    void        execute_create_index();
-    void        execute_drop_index();
     void        execute_select_tables();
     ////////////////////////////////
 public:

@@ -5,16 +5,15 @@ using namespace std;
 
 string Table::SelectValues(string param, string condition){
     try{
+        if(!StatusCheck(table_status_,SIG_RUN,SIG_CHECK_TIMES)){
+            throw ACTION_BUSY;
+        }
+        table_status_ = SIG_RUN;
+        /////
         Analyzer ANZ(this);
         ANZ.Locate(param);
         ANZ.Extract(condition, " and ");
         string res = "";
-        /*
-        if(__LockCheck__(table_lock_,SIG_CHECK_TIMES)!=SIG_UNLOCK){
-            throw ACTION_BUSY;
-        }
-        table_lock_ = SIG_LOCK;
-        */
         if(ANZ.KeySupport()){
             res = select_by_key(ANZ);
         }
@@ -32,15 +31,15 @@ string Table::SelectValues(string param, string condition){
         else{
             head = param + ";";
         }
-        //table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         return head+res;
     }
     catch(NEexception &e){
-        //table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         throw e;
     }
     catch(exception &e){
-        //table_lock_ = SIG_UNLOCK;
+        table_status_ = SIG_FREE;
         throw SYSTEM_ERROR;
     }
 
@@ -48,7 +47,10 @@ string Table::SelectValues(string param, string condition){
 string Table::select_by_key(Analyzer &ANZ){
     try{
         Index *index = ANZ.getCondVal(ANZ.getKeyPos());
-        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(index);
+        if(index == NULL){
+            throw SYSTEM_ERROR;
+        }
+        DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(*index);
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         if(data_node.getData() == NULL){
             if(cmp == 1)data_node = pages_tree_->getLink();
@@ -88,7 +90,7 @@ string Table::select_by_traverse(Analyzer &ANZ){
         Memorizer RAM(this);
         DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
         while(data_node.getData() != NULL){
-            __uint16_t *page_offset = data_node.getData();
+            __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
             Page *page = RAM.PageLoad(*page_offset);
             res = res + page->SelectRow(ANZ);

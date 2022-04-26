@@ -56,21 +56,25 @@ void Parser::analyse(string input){
         else if(input == ".openall"){
             command_ = __LOADALL;
         }
+        else if(input.substr(0, input.find(" ")).compare(".debug") == 0){
+            command_ = __DEBUGSET;
+            int index = input.find(" ");
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
+        }
         else if(input.substr(0, input.find(" ")).compare(".setdir") == 0){
             command_ = __SETDIR;
             int index = input.find(" ");
-            statement_ = input.substr(index + 1, input.length() - index - 1);
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
         }
-
         else if(input.substr(0, input.find(" ")).compare(".open") == 0){
             command_ = __LOAD;
             int index = input.find(" ");
-            statement_ = input.substr(index + 1, input.length() - index - 1);
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
         }
         else if(input.substr(0, input.find(" ")).compare(".setsize") == 0){
             command_ = __SETPAGESIZE;
             int index = input.find(" ");
-            statement_ = input.substr(index + 1, input.length() - index - 1);
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
         }
         else if(input == ".size"){
             command_ = __SHOWPAGESIZE;
@@ -219,27 +223,6 @@ void Parser::parser_drop_table(){
     if(object_.length() == 0) throw SQL_FORM_ERROR;
 }
 
-void Parser::parser_create_index(){
-    regex layout("create index (.+) on (.+)");
-    smatch result;
-    if(regex_match(statement_, result, layout)){
-        auto it = result.begin();
-        condition_ = Trim(*++it);
-        object_ = Trim(*++it);
-    }
-    else throw SQL_FORM_ERROR;
-}
-
-void Parser::parser_drop_index(){
-    regex layout("drop index (.+) on (.+)");
-    smatch result;
-    if(regex_match(statement_, result, layout)){
-        auto it = result.begin();
-        condition_ = Trim(*++it);
-        object_ = Trim(*++it);
-    }
-    else throw SQL_FORM_ERROR;
-}
 
 OPERATION  Parser::operate_type(string input){
     if(input.compare(0, 13, "create table ") == 0)  return CREATE_TABLE;

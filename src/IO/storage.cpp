@@ -84,10 +84,10 @@ Table* Memorizer::TableLoad(DataBase* db, string name){
                 table->add_empty_page(i);
                 continue;
             }
-            Index* index = new Index();
-            index->type_ = table->getKeyType();
-            res = fread(&index->index_, index->getSize(), 1, fp);
-            table->pages_tree_->InsertData(index, new __uint16_t(i));
+            Index index;
+            index.type_ = table->key_type_;
+            res = fread(&index.index_, index.getSize(), 1, fp);
+            table->pages_tree_->InsertData(index, i);
         }
         fclose(fp);
         return table;
@@ -204,7 +204,6 @@ void Memorizer::TableDrop(){
     try{
         string filePath = table_->db_->getDir() + table_->table_name_ + __FramSuffix__;
         string dataPath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
-        string indexPath = table_->db_->getDir() + table_->table_name_ + __IndexSuffix__;
         FILE* fp = NULL;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
@@ -212,9 +211,6 @@ void Memorizer::TableDrop(){
         remove(filePath.c_str());
         if((fp = fopen(dataPath.c_str(), "r")) != NULL){
             remove(dataPath.c_str());
-        }
-        if((fp = fopen(indexPath.c_str(), "r")) != NULL){
-            remove(indexPath.c_str());
         }
     }
     catch(NEexception& e){

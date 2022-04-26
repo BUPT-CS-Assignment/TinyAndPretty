@@ -17,7 +17,8 @@ class Index{
     Index(double);
     Index(string);
     Index();
-    Index(const Index&);
+    Index(Index&);
+    ~Index();
     Index& operator=(Index&);
     int     getSize();
     void    setVal(DATA_TYPE, void*);
@@ -82,8 +83,8 @@ class Table{
     //////////////////////////////////////////////
     //TableBody
     //In-Memory
+    DATA_TYPE       key_type_;      //主键类型
     BalanceTree<__uint16_t, Index>* pages_tree_;   //索引B+树
-    //BalanceTree<Index, Index> **index_tree_;//非主键索引
     /////////////////////////////////////////////////////
     Page*       page_locate(Index);       //数据页搜索
     //INSERT
@@ -102,7 +103,7 @@ class Table{
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
     public:
-    int         table_lock_;              //表锁
+    int         table_status_;              //表锁
     Table(DataBase*, std::string name);     //构造函数
     void        Init(std::string statement);    //初始化表数据类型
     /**
@@ -202,7 +203,6 @@ class Row{
     //In-Memory
     Table* table_ptr_;          //表指针
     public:
-    int         row_lock_;    //行锁
     Row(Table* table_ptr_);     //构造函数
     void        Padding(std::string conditions, std::string values); //内容填充
     std::string Format();                                   //格式化转化

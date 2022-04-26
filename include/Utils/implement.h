@@ -10,6 +10,7 @@
 
 */ 
 
+
 std::string* Split(std::string str,char c,int &length);
 void parm_check(std::string str,DATA_TYPE type);
 std::string Trim(std::string str);

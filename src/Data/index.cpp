@@ -7,6 +7,10 @@ Index::Index(){
     memset(&index_, 0, sizeof(INDEX));
 }
 
+Index::~Index(){
+    memset(&index_, 0, sizeof(INDEX));
+}
+
 int Index::getSize(){
     switch(type_){
         case __INT: return 4;
@@ -20,18 +24,21 @@ int Index::getSize(){
 void Index::setVal(DATA_TYPE type, void* src){
     try{
         type_ = type;
-        if(src == NULL) return;
         memset(&index_, 0, sizeof(INDEX));
+        if(src == NULL) return;
         if(type == __INT){
-            index_.i_index = *(int*)src;
+            index_.i_index = (int)(*(int*)src);
         }
         else if(type == __INT64){
-            index_.l_index = *(long long*)src;
+            index_.l_index = (long long)(*(long long*)src);
         }
         else if(type == __REAL){
-            index_.d_index = *(double*)src;
+            index_.d_index = (double)(*(double*)src);
         }
         else if(type == __TEXT){
+            if(strlen((char*)src) > 31){
+                throw TYPE_TEXT_OVERFLOW;
+            }
             strcpy(index_.t_index, (char*)src);
         }
     }
@@ -92,7 +99,7 @@ Index::Index(string s){
     strcpy(index_.t_index, s.c_str());
 }
 
-Index::Index(const Index& src){
+Index::Index(Index& src){
     memset(&index_, 0, sizeof(INDEX));
     memcpy(&index_, &src.index_, sizeof(INDEX));
     type_ = src.type_;
