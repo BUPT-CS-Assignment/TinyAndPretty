@@ -352,3 +352,20 @@ size_t JsonResponse::stringize(uint8_t **buff)
 
     return cur;
 }
+
+std::string estimateFileType(std::filesystem::path& p);
+
+EntryFunc StaticResponse = [](HttpRequest &req) 
+    -> HttpResponseBase*
+{
+    //static file only needed in GET
+    if (req.Method() != "GET")
+        return new HttpResponse {"Bad Method , GET Only!"};
+
+    //calculate absolute file-path and give back response
+    fs::path p = fs::absolute( req.Path().substr(1) );
+    if (fs::exists(p)) 
+        return new FileResponse {p , estimateFileType(p)};
+    else 
+        return new HttpResponse {"404 not found" , HTTP_STATUS_404};
+};
