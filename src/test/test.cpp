@@ -98,6 +98,8 @@ def_HttpEntry(MD5_Test,req){
     return new HttpResponse{str_md5};
 }
 
-
+def_HttpEntry(WECHAT_TOKEN,req){
+    return new FileResponse{"utils/wechatToken.txt","text"};
+}
 
 

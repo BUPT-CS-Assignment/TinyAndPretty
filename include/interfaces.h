@@ -33,6 +33,7 @@ def_HttpEntry(MD5_Test,req);
 
 /*----------------- Data-Base Module -----------------*/
 #include <BasicService/libs/NEDB.h>
+#include <BasicService/libs/btree.h>
 
 /* User Service */
 def_HttpEntry(SIGN_IN,req);
@@ -41,6 +42,7 @@ def_HttpEntry(SIGN_UP,req);
 def_HttpEntry(SQL_TEST,req);
 def_HttpEntry(SQL_RUN , req);
 def_HttpEntry(SQL_HELP ,  req);
+def_HttpEntry(WECHAT_TOKEN,req);
 
 
 #endif

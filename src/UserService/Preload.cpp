@@ -1,7 +1,9 @@
 #include <UserService/Preload.h>
+#include <UserService/UserControl.h>
 using namespace std;
 
 NEDB DB_ROOT("/");
+BalanceTree<User,int> UserStatus(0);
 std::string PROJECT_DIR = "/";
 
 int ServicePreLoad(){
