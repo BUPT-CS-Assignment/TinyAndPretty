@@ -50,8 +50,8 @@
                     alert("Empty Input!");
                     return;
                 }
-                if(Number(id)<20000 || Number(id)>2000000000){
-                    alert("Invalid UserID! Range From 20000 to 2000000000.");
+                if(id.length!=10 || Number(id)>2147483647){
+                    alert("Invalid UserID! Range From 1000000000 to 2147483647.");
                     return;
                 }
                 if(pwd.length>16){

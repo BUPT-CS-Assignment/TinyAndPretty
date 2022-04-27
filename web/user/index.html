@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+        <meta charset="UTF-8">
+    </head>
+    <body onload="getUserID(),getUserInfo()">
+        <h1>TAP User Panel</h1>
+        <h3>    
+            <form>
+                <div style = "float:left">UserID :&nbsp</div>
+                <div id = "user_id" style = "float:left"></div>
+                <br>
+                <div style = "float:left">Name :&nbsp</div>
+                <div id = "user_name" style = "float:left"></div>
+                <br>
+                <div style = "float:left">Gender :&nbsp</div>
+                <div id = "user_gender" style = "float:left"></div>
+                <br>
+                <div style = "float:left">School :&nbsp</div>
+                <div id = "user_school" style = "float:left"></div>
+                <br>
+                <div style = "float:left">Major :&nbsp</div>
+                <div id = "user_major" style = "float:left"></div>
+                <br>
+                <div style = "float:left">Class :&nbsp</div>
+                <div id = "user_class" style = "float:left"></div>
+            </form>
+            <br>
+        </h3>
+        <button type = "button" onclick="Change() ">Change Info</button>
+        <button type = "button" onclick="SignOut() ">Sign Out</button>
+        <br>
+        <div id="change_info" style="display:none; position:absolute;  
+                                    top:15%; left:10%; width:260px; height:360px;
+                                    background-color:whitesmoke;
+                                    z-index:1002;   border: 10px solid lightsteelblue; 
+                                    padding: 16px;  overflow: auto;">
+			    <h3>Infomation Update</h3>
+                <form>
+                    Name:<br> 
+                    <input type = "text" id = "input_name" style = "width: 160px; height: 16px;"><br>
+                    Gender:<br>
+                    <select id="input_gender">
+                        <option value="1">男</option>
+                        <option value="0">女</option>
+                    </select><br> 
+                    School:<br>
+                    <select id="input_school">
+                        <option value="311">信息与通信工程学院</option>
+                        <option value="312">电子工程学院</option>
+                        <option value="313">计算机学院</option>
+                        <option value="381">体育部</option>
+                        <option value="202">教务处</option>
+                        <option value="0">其他</option>
+                    </select><br> 
+                    Major:<br>
+                    <select id="input_major">
+                        <option value="80901">计算机科学与技术</option>
+                        <option value="80903">网络工程</option>
+                        <option value="80910">数据科学与大数据技术</option>
+                        <option value="80902">软件工程</option>
+                        <option value="0">其他</option>
+                    </select><br> 
+                    Class:<br> 
+                    <input type = "text" id = "input_class" style = "width: 160px; height: 16px;"><br>  
+                    <br><br>
+                    <button type = "button" onclick="SendVal() ">Submit</button>
+                    <button type = "button" onclick="
+                        document.getElementById('change_info').style.display='none';
+                        document.getElementById('cover').style.display='none';
+                    ">Cancel</button>
+                    
+                    
+                </form>
+		</div>
+        <div id="cover" style="display:none;position:absolute;  
+                            top:0%; left:0%; width:100%;height:100%;
+                            background-color: black; 
+                            z-index:1001;   opacity:.36;">
+        </div> 
+        <hr align=center width="400px" size=2 style = "float:left">
+        <br>
+        <h3>
+            For More Infomation:
+            <br>
+            <button id="sql" onclick="window.open('http://'+location.host+'/sql')">TAP SQL Test</button>
+	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+            <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        </h3>
+
+        <script>
+            var userid;
+            var ROOT = "http://" + location.host;
+            function getUserInfo(){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET",ROOT + "/user/",false);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Function", "Fetch");
+                xhttp.send();
+                var rec = xhttp.responseText;
+                var idx = rec.indexOf("?");
+                var code = rec.substr(0,idx);
+                var value = rec.substr(idx+1);
+                if(code != "0"){
+                    if(code == "-1"){
+                        alert("Access Denied");
+                        window.open("http://" + location.host + "/signin",'_self');
+                        return;
+                    }
+                    alter("ErrCode '"+code+"'");
+                    value = "NULL,NULL,NULL,NULL,NULL,NULL"
+                }
+                var arr = value.split(",");
+                document.getElementById("user_id").innerHTML = arr[0];
+                document.getElementById("user_name").innerHTML = arr[1];
+                document.getElementById("user_gender").innerHTML = arr[2];
+                document.getElementById("user_school").innerHTML = arr[3];
+                document.getElementById("user_major").innerHTML = arr[4];
+                document.getElementById("user_class").innerHTML = arr[5];
+            }
+
+            function getUserID(){
+                var str = document.cookie;
+                console.log(str);
+                var arr = str.split(";");
+                for(var i=0; i < arr.length;i++){
+                    var value = arr[i].split("=");
+                    if(value[0]=="userid"){
+                        userid = Number(value[1]);
+                        return;
+                    }
+                }
+                alert("Access Denied");
+                window.open("http://" + location.host + "/signin",'_self');
+            }
+
+            function Change(){
+                document.getElementById("change_info").style.display="block";
+                document.getElementById("cover").style.display="block";
+            }
+
+            function SignOut(){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET",ROOT + "/user/",false);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Function", "SignOut");
+                xhttp.send();
+                var rec = xhttp.responseText;
+                alert("Signed Out");
+                window.open("http://" + location.host + "/signin",'_self')
+            }
+
+            function SendVal(){
+                var xhttp = new XMLHttpRequest();
+                /* Get Input Value */
+                var input_name = document.getElementById("input_name").value;
+                var input_gender = document.getElementById("input_gender").value;
+                var input_school = document.getElementById("input_school").value;
+                var input_major = document.getElementById("input_major").value;
+                var input_class = document.getElementById("input_class").value;
+                if(input_name == "" || input_class == ""){
+                    alert("Empty Input!");
+                    return;
+                }
+                console.log(userid);
+                if(userid == 10001){
+                    if(Number(input_class)<0 || Number(input_class)>2147483647){
+                        alert("Invalid Class Number! Range From 0 to 2147483647.");
+                        return;
+                    }
+                }else if(input_class.length != 10 || Number(input_class)>2147483647){
+                    alert("Invalid Class Number! Range From 1000000000 to 2147483647.");
+                    return;
+                }
+                xhttp.open("POST",ROOT + "/user/",false);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Function", "Update");
+                var str = "Name="+input_name+" , Gender="+input_gender+" , School="+input_school
+                        +" , Major="+input_major+" , Class="+input_class;
+                xhttp.send(str);
+                var rec = xhttp.responseText;
+                var idx = rec.indexOf("?");
+                var code = rec.substr(0,idx);
+                if(code != "0"){
+                    alert("ErrCode '"+code+"'");
+                    return;
+                }
+                getUserInfo();
+                document.getElementById("change_info").style.display="none";
+                document.getElementById("cover").style.display="none";
+            }
+        </script>
+    </body>
+</html>

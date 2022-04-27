@@ -42,7 +42,11 @@ def_HttpEntry(SIGN_UP,req);
 def_HttpEntry(SQL_TEST,req);
 def_HttpEntry(SQL_RUN , req);
 def_HttpEntry(SQL_HELP ,  req);
-def_HttpEntry(WECHAT_TOKEN,req);
+
+def_HttpEntry(UserIndex,req);
+def_HttpEntry(UserTask,req);
+def_HttpEntry(UserInfo,req);
+
 
 
 #endif
