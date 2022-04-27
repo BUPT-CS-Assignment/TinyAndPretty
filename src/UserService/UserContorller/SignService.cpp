@@ -3,15 +3,20 @@
 
 /* Sign In */
 def_HttpEntry(SIGN_IN, req){
-    std::string val = "", ans = req.getBody();
-    if(ans == "__NULL__"){
-        return new FileResponse{"web/UserService/SignIn.html" , "text/html"};
+    /* Request Dispose */
+    std::string cookie(req.queryHeader("Cookie"));
+    std::string body = req.getBody();
+    if(body == "__NULL__" || cookie == ""){
+        return new FileResponse{"web/user/signin.html" , "text/html"};
     }
-    CONSOLE_LOG(0, "SignIn-Request '%s'\n", ans.c_str());
+    CONSOLE_LOG(0, "Signin-Req [cookie='%s', body='%s']\n", cookie.c_str(), body.c_str());
+
     /* Check SignIn Info */
-    int index = ans.find_first_of("&");
-    std::string id = ans.substr(0, index);
-    std::string passwd = ans.substr(index + 1);
+    int idx = cookie.find("userid=");
+    std::string id = cookie.substr(idx + 7, cookie.find_first_of(";") - idx - 8);
+    std::string passwd = body.substr(body.find("passwd=") + 7);
+
+    /* id check */
     int id_i;
     try{
         id_i = std::stoi(id);
@@ -19,25 +24,30 @@ def_HttpEntry(SIGN_IN, req){
     catch(exception& e){
         return new HttpResponse{"19?0"};
     }
-    User* user = UserStatus.AccurateLoacte(id_i);
-    int res = -1;
+
+    /* Cookie Check */
+    User* user = COOKIE.AccurateLoacte(id_i);
+    int res;
     if(user == NULL){
         User newUser(id_i, USER_COMMON);
         res = newUser.SignIn(passwd);
         if(res == 0){
-            CONSOLE_LOG(0, "New User '%d' Signed In\n",id_i);
-            UserStatus.InsertData(id_i, newUser);
+            CONSOLE_LOG(0, "New User '%d' Signed In\n", id_i);
+            COOKIE.InsertData(id_i, newUser);
         }
     }
     else{
         if(user->getStatus() != USER_SIGN_IN){
             res = user->SignIn(passwd);
-        }else{
-            CONSOLE_LOG(0,"User '%d' Signed In Already\n",id_i);
+        }
+        else{
+            CONSOLE_LOG(0, "User '%d' Signed In Already\n", id_i);
             res = 0;
         }
     }
-    return new HttpResponse{std::to_string(res) + "?1"};
+    HttpResponse* resp = new HttpResponse(std::to_string(res) + "?1");
+    resp->appendHeader("Cookie","userid="+id+"; path=/user/");
+    return resp;
 
 }
 
@@ -45,7 +55,7 @@ def_HttpEntry(SIGN_IN, req){
 def_HttpEntry(SIGN_UP, req){
     std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
-        return new FileResponse{"web/UserService/SignUp.html" , "text/html"};
+        return new FileResponse{"web/user/signup.html" , "text/html"};
     }
     CONSOLE_LOG(0, "SignUp-Request '%s'\n", ans.c_str());
     /* Check Insert Info */
@@ -67,46 +77,4 @@ def_HttpEntry(SIGN_UP, req){
     }
     return new HttpResponse{"0?1"};
 
-}
-
-User::User(){
-    id_ = 0;
-    auth_ = 0;
-    status_ = 0;
-}
-
-User::User(int id, int auth){
-    id_ = id;
-    auth_ = auth;
-    status_ = USER_SIGN_OUT;
-}
-
-int User::SignIn(std::string passwdInput){
-    std::string id_s = std::to_string(id_);
-    // Signing In //
-    std::string sql = "select Passwd from UserToken where ID = " + std::to_string(id_) + ";";
-    DB_ROOT.Exec(sql.c_str());
-    int errCode = DB_ROOT.ErrCode();
-    if(errCode != 0){
-        return errCode;
-    }
-    std::string val = DB_ROOT.ReturnVal();
-    val = val.substr(val.find(";") + 1);
-    if(passwdInput != val){
-        return 31;
-    }
-    status_ = USER_SIGN_IN;
-    return CONSOLE_LOG(0, "User '%d' Signed In\n",id_);
-}
-
-int User::SignUp(std::string passwdInput){
-    std::string id_s = std::to_string(id_);
-    std::string sql = "insert into UserToken values (" + id_s + "," + passwdInput + ",0);";
-    DB_ROOT.Exec(sql.c_str());
-    return DB_ROOT.ErrCode();
-}
-
-int User::SignOut(){
-    status_ = USER_SIGN_OUT;
-    return 0;
 }

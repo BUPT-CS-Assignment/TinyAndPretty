@@ -18,6 +18,7 @@ def_HttpEntry(Link_Start , request){
 
     stringConcat( t ,
     "<body><h1>Hello ! Dear Friend ,</h1>" ,
+    "<button type = \"button\" onclick=\"window.open('http://'+location.host+'/signin')\">Click To Sign In To TAP Panel</button><br>",
     "<h3>I know you comes from ...",request.queryClientIP(),"!</h3> " // 查询客户IP
     "<h3>And also you comes by ...",request.HttpVer()," <-With-> ",request.Method(),"!</h3> ", // 查询http版本和请求方法
     "<h3>What's more, you have ...",request.queryHeader("Content-Length"),"bytes !</h3> ");   // 根据key查询http header；
@@ -38,7 +39,7 @@ def_HttpEntry(Link_Start , request){
             t += "OMG , I FAIL!";
             break;
         case HttpException::NON_FORM: // NON_FORM : 没有form
-            t += "<h1>NOTHING!</h1>";
+            t += "<h2>NOTHING!</h2>";
             t += "<h3>no laughing matter... </h3>";
             break;
         default: break;
@@ -98,8 +99,5 @@ def_HttpEntry(MD5_Test,req){
     return new HttpResponse{str_md5};
 }
 
-def_HttpEntry(WECHAT_TOKEN,req){
-    return new FileResponse{"utils/wechatToken.txt","text"};
-}
 
 

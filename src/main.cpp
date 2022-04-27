@@ -5,11 +5,10 @@
 
 int main(int argv, char* argc[]){
     /* Dir Init */
-    PROJECT_DIR = get_current_dir_name();
-
+    DirectoryInit();
     /* Server Init */
+    CONSOLE_LOG(0,"Project Directory '%s'\n",PROJECT_DIR.c_str());
     SQLTestGenerate();
-    printf("test\n");
     ServicePreLoad();
     TAPManager server;
     server.loadSubManager(std::make_unique<HttpManager>());

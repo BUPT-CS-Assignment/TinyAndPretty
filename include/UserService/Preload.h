@@ -3,8 +3,15 @@
 #include <common.h>
 #include <interfaces.h>
 
-extern NEDB DB_ROOT;
+extern NEDB MainDB;
 extern std::string DataBaseTestSQL;
+extern std::string PROJECT_DIR;
+extern std::string PRELOAD_DIR;
+extern std::string USER_DIR;
+extern std::string COURSE_DIR;
+extern std::string CLASS_DIR;
+
+void DirectoryInit();
 int ServicePreLoad();
 void SQLTestGenerate();
 

@@ -13,18 +13,26 @@ private:
     int id_;
     int auth_;
     int status_;
+    NEDB* UserDB;
 public:
     User();
-    User(int id,int auth);
+    User(int id);
+    User(int id, int auth);
     int SignIn(std::string passwdInput);
     int SignUp(std::string passwdInput);
     int SignOut();
     int getStatus(){
         return status_;
     }
-
+    /////
+    std::string GetAllInfo();
+    std::string GetMajor();
+    std::string GetGender();
+    int GetClass();
+    std::string GetName();
+    int SetInfo(std::string);
 };
 
-extern BalanceTree<User,int> UserStatus;
+extern BalanceTree<User, int>COOKIE;
 
 #endif

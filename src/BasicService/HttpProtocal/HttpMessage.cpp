@@ -17,11 +17,10 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
 {
     IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
     size_t cur = 0;
-
+    std::cerr<<NOW_POS<<std::endl;
     //split url method
     method = nsplit((char *)str, " ", 1);
     CUR_MOV(method, 1);
-
     //split url path
     path = nsplit(NOW_POS, " ", 1);
 

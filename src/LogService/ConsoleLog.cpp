@@ -1,4 +1,5 @@
 #include <common.h>
+using namespace std;
 
 int CONSOLE_LOG(int retVal,std::string content,...){
     /* Time Print */
