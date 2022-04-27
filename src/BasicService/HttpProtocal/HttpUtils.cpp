@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string>
+#include <filesystem>
 
 ////split str by token string
 char *nsplit(char *str, const char *token, int n)
@@ -28,6 +29,22 @@ std::string getGMTtime()
 			p.tm_hour		 , p.tm_min	, p.tm_sec );
 	return buff;
 }
+
+
+std::string estimateFileType(std::filesystem::path& p) {
+	if	   (p.extension() == ".html") 	return "text/html";
+	else if(p.extension() == ".txt") 	return "text/plain";
+	else if(p.extension() == ".jpg") 	return "image/jpeg";
+	else if(p.extension() == ".png") 	return "image/png";
+	else if(p.extension() == ".gif") 	return "image/gif";
+	else if(p.extension() == ".json") 	return "application/json";
+	else if(p.extension() == ".js") 	return "application/javascript";
+	else if(p.extension() == ".pdf") 	return "application/pdf";
+	else if(p.extension() == ".mp4") 	return "video/mpeg4";
+	else if(p.extension() == ".mp3") 	return "audio/mp3";
+	else return "application/octet-stream";
+}
+
 
 size_t preFetchLength(const char * str) {
 	char buff[32] = {0};

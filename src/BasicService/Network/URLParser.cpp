@@ -1,29 +1,22 @@
 #include <BasicService/Network/URLParser.h>
-#include <BasicService/HttpProtocal/HttpException.h>
 #include <interfaces.h>
 
-#define SET_STATIC(_url)
 #define ADD_URL(_url, _func) url_table.emplace(_url, _func);
 
-EntryFunc StaticResponse = [](HttpRequest &AS)
-{
-    return new HttpResponse("FILE");
-};
+extern std::string getGMTtime();
+extern EntryFunc StaticResponse;
 
 URLParser::URLParser(){
 #include <router.conf>
 
 }
-extern std::string getGMTtime();
 
 EntryFunc& URLParser::URLparse( std::string_view _url) {
-    std::string str(_url);
-    CONSOLE_LOG(0,"Url-Request '%s'\n",str.c_str());
-    if(_url == static_url) return StaticResponse;
-    else try {
+    CONSOLE_LOG(0,"Url-Request '%s'\n", _url.data());
+    try {
         return url_table.at( _url );
     } catch(const std::out_of_range& e) {
-        throw HttpException::NON_PATH;
+        return StaticResponse;
     }
 }
 
