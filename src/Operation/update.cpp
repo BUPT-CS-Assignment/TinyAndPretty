@@ -9,7 +9,7 @@ void Table::UpdateValues(string condition, string setting,int &count){
     try{
         Analyzer CANZ(this), SANZ(this);
         CANZ.Extract(condition, " and ");
-        SANZ.Extract(setting, " , ");
+        SANZ.Extract(setting, ",");
         /* Lock Check */
         if(!StatusCheck(table_status_,SIG_FREE,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
