@@ -24,12 +24,12 @@ using namespace SimpleJson;
 /*---------------- Hello-world Module ----------------*/
 def_HttpEntry(Link_Start , request);
 def_HttpEntry(Lent_Book , req);
-def_HttpEntry(ICON , req);
+def_HttpEntry(Icon , req);
 def_HttpEntry(Check_It , req);
 
 /*---------------------MD5 Module---------------------*/
 #include <BasicService/libs/md5.h>
-def_HttpEntry(MD5_Test,req);
+def_HttpEntry(MD5Test,req);
 
 /*----------------- Data-Base Module -----------------*/
 #include <BasicService/libs/NEDB.h>
@@ -37,17 +37,18 @@ def_HttpEntry(MD5_Test,req);
 #include <BasicService/libs/BasicUtils.hpp>
 
 /* User Service */
-def_HttpEntry(SIGN_IN,req);
-def_HttpEntry(SIGN_UP,req);
+def_HttpEntry(SignIn,req);
+def_HttpEntry(SignUp,req);
 /* DataBase Test */
-def_HttpEntry(SQL_TEST,req);
-def_HttpEntry(SQL_RUN , req);
-def_HttpEntry(SQL_HELP ,  req);
+def_HttpEntry(SqlTest,req);
+def_HttpEntry(SqlRun , req);
+def_HttpEntry(SqlHelp ,  req);
 
 def_HttpEntry(UserIndex,req);
 def_HttpEntry(UserTask,req);
 def_HttpEntry(UserInfo,req);
 
+def_HttpEntry(LogCheck,req);
 
 
 #endif

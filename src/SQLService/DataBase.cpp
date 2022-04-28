@@ -12,7 +12,7 @@ void SQLTestGenerate(){
     DataBaseTestSQL += "delete from database_test where id>40 and id<160;select * from database_test;";
 }
 
-def_HttpEntry(SQL_RUN, req){
+def_HttpEntry(SqlRun, req){
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
         std::fstream fs("web/sql/DataBase.html", std::ios::in | std::ios::binary);
@@ -30,7 +30,7 @@ def_HttpEntry(SQL_RUN, req){
 }
 
 // EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
-def_HttpEntry(SQL_HELP, req){
+def_HttpEntry(SqlHelp, req){
     std::fstream fs("web/sql/SqlHelp.html", std::ios::in | std::ios::binary);
     if(fs.is_open()){
         return new FileResponse{fs , "text/html"};
@@ -42,7 +42,7 @@ def_HttpEntry(SQL_HELP, req){
 
 
 static int id;
-def_HttpEntry(SQL_TEST, req){
+def_HttpEntry(SqlTest, req){
     id++;
     int count;
     string res;

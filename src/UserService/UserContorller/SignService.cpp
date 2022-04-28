@@ -5,7 +5,7 @@ using namespace UTILSTD;
 using namespace std;
 
 /* Sign In */
-def_HttpEntry(SIGN_IN, req){
+def_HttpEntry(SignIn, req){
     /* Request Dispose */
     std::string cookie(req.queryHeader("Cookie"));
     std::string body = req.getBody();
@@ -40,7 +40,7 @@ def_HttpEntry(SIGN_IN, req){
         }
     }
     else{
-        if(user->getStatus() != USER_SIGN_IN){
+        if(user->getStatus() != USER_SignIn){
             res = user->SignIn(passwd);
         }
         else{
@@ -55,7 +55,7 @@ def_HttpEntry(SIGN_IN, req){
 }
 
 /* Sign Up */
-def_HttpEntry(SIGN_UP, req){
+def_HttpEntry(SignUp, req){
     std::string val = "", ans = req.getBody();
     if(ans == "__NULL__"){
         return new FileResponse{"web/user/signup.html" , "text/html"};

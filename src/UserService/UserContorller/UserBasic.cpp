@@ -31,7 +31,7 @@ int User::SignIn(std::string passwdInput){
     if(passwdInput != retVal){
         return 31;
     }
-    status_ = USER_SIGN_IN;
+    status_ = USER_SignIn;
     std::string userDir = USER_DIR + "/" + id_s;
     if(UserDB == NULL){
         UserDB = new NEDB(userDir.c_str());

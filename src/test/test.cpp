@@ -61,7 +61,7 @@ def_HttpEntry(Lent_Book , req){
 
 
 // EXAMPLE 2.3 FileResponse建议使用c++17的std::filesystem
-def_HttpEntry(ICON , req){
+def_HttpEntry(Icon , req){
     fs::path p {"utils/favicon.ico"};
     if(fs::exists(p))
         return new FileResponse{p , "image/png"};
@@ -86,7 +86,7 @@ def_HttpEntry(Check_It , req) {
     return new JsonResponse{j};
 }
 
-def_HttpEntry(MD5_Test,req){
+def_HttpEntry(MD5Test,req){
     std::string val = "";
     std::string ans = req.getBody();
     if(ans == "__NULL__"){
@@ -99,5 +99,7 @@ def_HttpEntry(MD5_Test,req){
     return new HttpResponse{str_md5};
 }
 
-
+def_HttpEntry(LogCheck,req){
+    return new FileResponse{".server/log","text/html"};
+}
 

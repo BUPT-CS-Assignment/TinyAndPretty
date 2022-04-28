@@ -6,7 +6,7 @@
 #define USER_ADMIN 1
 #define USER_COMMON 0
 #define USER_SIGN_OUT 0
-#define USER_SIGN_IN 1
+#define USER_SignIn 1
 
 class User;
 extern BTREESTD::BalanceTree<User, int>COOKIE;
