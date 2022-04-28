@@ -1,5 +1,8 @@
 #include <UserService/UserControl.h>
 #include <UserService/Preload.h>
+using namespace NEDBSTD;
+using namespace UTILSTD;
+using namespace std;
 
 def_HttpEntry(UserIndex, req){
     std::string cookie(req.queryHeader("Cookie"));
@@ -11,7 +14,7 @@ def_HttpEntry(UserIndex, req){
     if(function == ""){
         return new FileResponse{"web/user/index.html","text/html"};
     }
-    CONSOLE_LOG(0, "UserPanel-Req [cookie='%s', function='%s', body='%s']\n", cookie.c_str(),function.c_str(),body.c_str());
+    CONSOLE_LOG(0,1,1,"UserPanel-Req [cookie='%s', function='%s', body='%s']\n", cookie.c_str(),function.c_str(),body.c_str());
     /* Check SignIn Info */
     int idx = cookie.find("userid=");
     std::string id = cookie.substr(idx + 7, cookie.find(";",idx) - idx - 7);
@@ -28,7 +31,7 @@ def_HttpEntry(UserIndex, req){
     User* user = COOKIE.AccurateLoacte(id_i);
     if(user == NULL) return new HttpResponse{"-1?0"};
     if(function == "Fetch"){
-        std::string val = user->GetAllInfo();
+        std::string val = user->Format();
         return new HttpResponse{"0?"+val};
     }else if(function == "Update" && body != "__NULL__"){
         int res = user->SetInfo(body);

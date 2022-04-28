@@ -1,5 +1,8 @@
 #include <UserService/UserControl.h>
 #include <UserService/Preload.h>
+using namespace NEDBSTD;
+using namespace UTILSTD;
+using namespace std;
 
 User::User(){
     id_ = 0;
@@ -18,15 +21,14 @@ User::User(int id, int auth){
 int User::SignIn(std::string passwdInput){
     std::string id_s = std::to_string(id_);
     // Signing In //
-    std::string sql = "select Passwd from UserToken where ID = " + std::to_string(id_) + ";";
-    MainDB.Exec(sql.c_str());
-    int errCode = MainDB.ErrCode();
-    if(errCode != 0){
+    int count;
+    string retVal;
+    int errCode = PRELOAD_DB.Select("UserToken", "Passwd", "ID=" + to_string(id_), count, retVal);
+    if(errCode != NO_ERROR){
         return errCode;
     }
-    std::string val = MainDB.ReturnVal();
-    val = val.substr(val.find(";") + 1);
-    if(passwdInput != val){
+    retVal = retVal.substr(retVal.find(";") + 1);
+    if(passwdInput != retVal){
         return 31;
     }
     status_ = USER_SIGN_IN;
@@ -35,20 +37,22 @@ int User::SignIn(std::string passwdInput){
         UserDB = new NEDB(userDir.c_str());
         UserDB->DirInit();
     }
-    return CONSOLE_LOG(0, "User '%d' Signed In\n", id_);
+    return CONSOLE_LOG(0, 1, 1, "User '%d' Signed In\n", id_);
 }
 
 int User::SignUp(std::string passwdInput){
     std::string id_s = std::to_string(id_);
-    std::string sql = "insert into UserToken values (" + id_s + "," + passwdInput + ",0);";
-    sql += "insert into UserInfo (ID) values (" + id_s + ");";
-    MainDB.Exec(sql.c_str());
-    if(MainDB.ErrCode() == 0){
+    int errCode1 = PRELOAD_DB.Insert("UserToken", "", id_s + "," + passwdInput + ",0");
+    if(errCode1 != NO_ERROR){
+        return errCode1;
+    }
+    int errCode2 =  PRELOAD_DB.Insert("UserInfo", "ID", id_s);
+    if(errCode2 == NO_ERROR){
         std::string userDir = USER_DIR + "/" + id_s;
         mkdir(userDir.c_str(), S_IRWXU);
-        CONSOLE_LOG(0, "User Dir '%s' Created\n", userDir.c_str());
+        return CONSOLE_LOG(0,1,1,"User Dir '%s' Created\n", userDir.c_str());
     }
-    return MainDB.ErrCode();
+    return errCode2;
 }
 
 int User::SignOut(){
@@ -59,90 +63,45 @@ int User::SignOut(){
     return 0;
 }
 
-std::string User::GetAllInfo(){
-    std::string sql = "select * from UserInfo where ID = " + std::to_string(id_) + ";";
-    /*
-    NEDB TempDB(PRELOAD_DIR.c_str());
-    TempDB.Open("UserInfo");
-    TempDB.Exec(sql.c_str());
-    std::string res = TempDB.ReturnVal();
-    empDB.Close();
-    return res;
-    */
-    MainDB.Exec(sql.c_str());
-    std::string res = MainDB.ReturnVal();
-    res = res.substr(res.find(";") + 1);
+std::string User::Format(){
+    int count;
+    string retVal;
+    int errCode = PRELOAD_DB.Select("UserInfo","*","ID="+ std::to_string(id_),count,retVal);
+    if(errCode != NO_ERROR) return "";
+    retVal = retVal.substr(retVal.find(";") + 1);
     int length;
-    string* str = Split(res, ',', length);
+    string* str = Split(retVal, ',', length);
 
     /* Return ID and Name */
-    string resp = str[0] + "," + str[1] + ",";
-
-    /* Return Gender */
-    if(str[2] == "0") resp += "女,";
-    else resp += "男,";
+    string resp = str[0] + "," + str[1] + "," +str[2] + ",";
 
     /* Return School */
-    sql = "select Name from SchoolInfo where ID = " + str[3] + ";";
-    MainDB.Exec(sql.c_str());
-    res = MainDB.ReturnVal();
-    resp += res.substr(res.find(";") + 1) + ",";
+    errCode = PRELOAD_DB.Select("SchoolInfo","Name","ID="+str[3],count,retVal);
+    if(errCode != NO_ERROR) return "";
+    resp += retVal.substr(retVal.find(";") + 1) + ",";
 
     /* Return Major */
-    sql = "select Name from MajorInfo where ID = " + str[4] + ";";
-    MainDB.Exec(sql.c_str());
-    res = MainDB.ReturnVal();
-    resp += res.substr(res.find(";") + 1) + ",";
+    errCode = PRELOAD_DB.Select("MajorInfo","Name","ID="+str[4],count,retVal);
+    if(errCode != NO_ERROR) return "";
+    resp += retVal.substr(retVal.find(";") + 1) + ",";
 
     /* Return Class */
     resp += str[5];
-
+    delete[] str;
     return resp;
 }
 
 int User::SetInfo(std::string value){
-    std::string sql = "update UserInfo set " + value + " where ID = " + std::to_string(id_) + ";";
-    return MainDB.Exec(sql.c_str());
+    int count;
+    int errCode = PRELOAD_DB.Update("UserInfo",value,"ID="+to_string(id_),count);
+    return errCode;
 }
 
-std::string User::GetMajor(){
-    std::string sql = "select Major from UserInfo where ID = " + std::to_string(id_) + ";";
-    if(MainDB.Exec(sql.c_str()) != 0){
-        return "ERROR";
-    }
-    std::string val = MainDB.ReturnVal();
-    val = val.substr(val.find(";") + 1);
-    return val;
-}
-
-std::string User::GetGender(){
-    std::string sql = "select Gender from UserInfo where ID = " + std::to_string(id_) + ";";
-    if(MainDB.Exec(sql.c_str()) != 0){
-        return "ERROR";
-    }
-    std::string val = MainDB.ReturnVal();
-    if(val[val.length() - 1] == '1'){
-        return "Female";
-    }
-    return "Male";
-}
-
-int User::GetClass(){
-    std::string sql = "select Class from UserInfo where ID = " + std::to_string(id_) + ";";
-    if(MainDB.Exec(sql.c_str()) != 0){
-        return 0;
-    }
-    std::string val = MainDB.ReturnVal();
-    val = val.substr(val.find(";") + 1);
-    return stoi(val);
-}
-
-std::string User::GetName(){
-    std::string sql = "select Name from UserInfo where ID = " + std::to_string(id_) + ";";
-    if(MainDB.Exec(sql.c_str()) != 0){
-        return "ERROR";
-    }
-    std::string val = MainDB.ReturnVal();
-    val = val.substr(val.find(";") + 1);
-    return val;
+string User::GetInfo(string value){
+    int count;
+    string res;
+    int errCode = PRELOAD_DB.Select("UserInfo",value,"ID="+to_string(id_),count,res);
+    if(errCode != NO_ERROR) return "";
+    res = res.substr(res.find(";") + 1);
+    return res;
 }

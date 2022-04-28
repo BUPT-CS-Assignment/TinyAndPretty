@@ -177,8 +177,8 @@
                 xhttp.open("POST",ROOT + "/user/",false);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
                 xhttp.setRequestHeader("Function", "Update");
-                var str = "Name="+input_name+" , Gender="+input_gender+" , School="+input_school
-                        +" , Major="+input_major+" , Class="+input_class;
+                var str = "Name="+input_name+",Gender="+input_gender+",School="+input_school
+                        +",Major="+input_major+",Class="+input_class;
                 xhttp.send(str);
                 var rec = xhttp.responseText;
                 var idx = rec.indexOf("?");

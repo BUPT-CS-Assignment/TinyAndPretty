@@ -3,7 +3,7 @@
 #include <common.h>
 #include <interfaces.h>
 
-extern NEDB MainDB;
+extern NEDBSTD::NEDB PRELOAD_DB;
 extern std::string DataBaseTestSQL;
 extern std::string PROJECT_DIR;
 extern std::string PRELOAD_DIR;

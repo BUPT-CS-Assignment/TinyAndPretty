@@ -1,5 +1,8 @@
 #include <UserService/UserControl.h>
 #include <UserService/Preload.h>
+using namespace NEDBSTD;
+using namespace UTILSTD;
+using namespace std;
 
 /* Sign In */
 def_HttpEntry(SIGN_IN, req){
@@ -9,7 +12,7 @@ def_HttpEntry(SIGN_IN, req){
     if(body == "__NULL__" || cookie == ""){
         return new FileResponse{"web/user/signin.html" , "text/html"};
     }
-    CONSOLE_LOG(0, "Signin-Req [cookie='%s', body='%s']\n", cookie.c_str(), body.c_str());
+    CONSOLE_LOG(0,1,1,"Signin-Req [cookie='%s', body='%s']\n", cookie.c_str(), body.c_str());
 
     /* Check SignIn Info */
     int idx = cookie.find("userid=");
@@ -32,7 +35,7 @@ def_HttpEntry(SIGN_IN, req){
         User newUser(id_i, USER_COMMON);
         res = newUser.SignIn(passwd);
         if(res == 0){
-            CONSOLE_LOG(0, "New User '%d' Signed In\n", id_i);
+            CONSOLE_LOG(0,1,1,"New User '%d' Signed In\n", id_i);
             COOKIE.InsertData(id_i, newUser);
         }
     }
@@ -41,7 +44,7 @@ def_HttpEntry(SIGN_IN, req){
             res = user->SignIn(passwd);
         }
         else{
-            CONSOLE_LOG(0, "User '%d' Signed In Already\n", id_i);
+            CONSOLE_LOG(0,1,1,"User '%d' Signed In Already\n", id_i);
             res = 0;
         }
     }
@@ -57,7 +60,7 @@ def_HttpEntry(SIGN_UP, req){
     if(ans == "__NULL__"){
         return new FileResponse{"web/user/signup.html" , "text/html"};
     }
-    CONSOLE_LOG(0, "SignUp-Request '%s'\n", ans.c_str());
+    CONSOLE_LOG(0,1,1,"SignUp-Request '%s'\n", ans.c_str());
     /* Check Insert Info */
     int index = ans.find_first_of("&");
     std::string id = ans.substr(0, index);

@@ -2,6 +2,7 @@
 #include <UserService/ScheduleControl.h>
 #include <UserService/UserControl.h>
 using namespace std;
+using namespace NEDBSTD;
 
 Course::Course(){
     id_ = 0;
@@ -17,18 +18,18 @@ Course::Course(int id, string name, int prof_id){
 
 Course::Course(int id){
     id_ = id;
-    string sql = "select Name,Prof from CourseInfo where ID = " + to_string(id_) + ";";
-    int res = MainDB.Exec(sql.c_str());
-    if(res != 0){
+    int count = 0;
+    string retVal;
+    int errCode = PRELOAD_DB.Select("CourseInfo", "Name,Prof", "ID=" + to_string(id_), count, retVal);
+    if(errCode != NO_ERROR){
         name_ = "NULL";
         prof_id_ = 0;
     }
     else{
-        string val = MainDB.ReturnVal();
-        int index1 = val.find(";");
-        int index2 = val.find_last_of(",");
-        name_ = val.substr(index1 + 1, index2 - index1 - 1);
-        prof_id_ = stoi(val.substr(index2));
+        int index1 = retVal.find(";");
+        int index2 = retVal.find_last_of(",");
+        name_ = retVal.substr(index1 + 1, index2 - index1 - 1);
+        prof_id_ = stoi(retVal.substr(index2));
     }
 
 }
@@ -39,21 +40,18 @@ string Course::GetName(){
 
 std::string Course::GetProf(){
     User temp(prof_id_, USER_COMMON);
-    return temp.GetName();
+    return temp.GetInfo("Name");
 }
 
 int Course::AddCourse(){
     string sql = "insert into CourseInfo values (";
-    sql += (to_string(id_) + ",");
-    sql += (name_ + ",");
-    sql += (to_string(prof_id_) + ");");
-    MainDB.Exec(sql.c_str());
-    return MainDB.ErrCode();
+    int errCode = PRELOAD_DB.Insert("CourseInfo", "", to_string(id_) + "," + name_ + "," + to_string(prof_id_));
+    return errCode;
 }
 
 int Course::DeleteCourse(){
     string sql = "delete from CourseInfo where ID = ";
-    sql += (to_string(id_) + ";");
-    MainDB.Exec(sql.c_str());
-    return MainDB.ErrCode();
+    int count;
+    int errCode = PRELOAD_DB.Delete("CourseInfo","ID="+to_string(id_),count);
+    return errCode;
 }

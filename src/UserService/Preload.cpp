@@ -1,8 +1,10 @@
 #include <UserService/Preload.h>
 #include <UserService/UserControl.h>
 using namespace std;
+using namespace NEDBSTD;
+using namespace BTREESTD;
 
-NEDB MainDB("/");
+NEDB PRELOAD_DB("/");
 BalanceTree<User, int> COOKIE(0);
 std::string PROJECT_DIR = "/";
 std::string PRELOAD_DIR = "/";
@@ -14,14 +16,15 @@ int ServicePreLoad(){
     /* Set DataBase Basic Info */
     NEDB_SETTING(256, 400, 50, 5);
     NEDB_DEBUG(2);
+    NEDB_TIME_FLAG(true);
     /////
-    MainDB.SetDir(PRELOAD_DIR.c_str());
-    if(MainDB.DirInit() != 0){
-        printf("Dir Error\n");
-        return 3;
+    PRELOAD_DB.SetDir(PRELOAD_DIR.c_str());
+    if(PRELOAD_DB.DirInit() != 0){
+        return UTILSTD::CONSOLE_LOG(3,1,1,"Dir Error\n");
     }
-    MainDB.Openall();
-    return 0;
+    int num;
+    PRELOAD_DB.MountAll(num);
+    return UTILSTD::CONSOLE_LOG(0,1,1," %d Table Mounted\n",num);
 }
 
 void DirectoryInit(){
