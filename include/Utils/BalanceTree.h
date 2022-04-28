@@ -459,16 +459,16 @@ namespace BTREESTD{
 
 
     template<class DAT, class Idx>
-    Idx* BalanceTree<DAT, Idx>::common_index_locate(Node<DAT, Idx>* A, Node<DAT, Idx>* B, Node<DAT, Idx>* start){
+    Idx* BalanceTree<DAT, Idx>::common_index_locate(Node<DAT, Idx>* NodeA, Node<DAT, Idx>* NodeB, Node<DAT, Idx>* start){
         if(start->__type == __LEAF__) return NULL;
         int A_pos = -1, B_pos = -1;
         for(int i = 0; i <= start->__cursor; i++){
-            if(start->__child[i]->find_node(A)) A_pos = i;
-            if(start->__child[i]->find_node(B)) B_pos = i;
+            if(start->__child[i]->find_node(NodeA)) A_pos = i;
+            if(start->__child[i]->find_node(NodeB)) B_pos = i;
         }
         if(A_pos == -1 || B_pos == -1) return NULL;
         if(B_pos - A_pos == 1) return &start->__index[A_pos];
-        if(A_pos == B_pos) return common_index_locate(A, B, start->__child[B_pos]);
+        if(A_pos == B_pos) return common_index_locate(NodeA, NodeB, start->__child[B_pos]);
         return NULL;
     }
 
