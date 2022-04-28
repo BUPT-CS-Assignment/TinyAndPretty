@@ -234,11 +234,9 @@ int DataBase::exec(string sql, int& num, string& res){
             e.returnValue_ = "";
         }
         num = e.count_;
-        res = e.returnValue_;
         return NO_ERROR;
     }
     catch(NEexception& E){
-        res = e.returnValue_;
         return E;
     }
 }
