@@ -2,6 +2,7 @@
 #include<Interface/NEDB.h>
 #include<pthread.h>
 using namespace std;
+using namespace NEDBnamespace;
 
  
 int main(){
@@ -17,7 +18,6 @@ static int num = 0;
 
 // Thread And Lock Test
 int main(){
-    //__START__();
     NEDB_DEBUG(2);
     NEDB_SETTING(64, 400, 50, 5);
     pthread_t thread[64];

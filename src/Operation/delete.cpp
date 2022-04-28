@@ -1,9 +1,9 @@
 #include<Basic/data.h>
-#include<Utils/implement.h>
 #include<Basic/process.h>
 using namespace std;
+using namespace NEDBnamespace;
 
-void Table::DeleteValues(string condition){
+void Table::DeleteValues(string condition,int &count){
     try{
         if(!StatusCheck(table_status_,SIG_FREE,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
@@ -12,10 +12,10 @@ void Table::DeleteValues(string condition){
         Analyzer ANZ(this);
         ANZ.Extract(condition, " and ");
         if(ANZ.KeySupport()){
-            delete_by_key(ANZ);
+            delete_by_key(ANZ,count);
         }
         else{
-            delete_by_traverse(ANZ);
+            delete_by_traverse(ANZ,count);
         }
         table_status_ = SIG_FREE;
     }
@@ -29,7 +29,7 @@ void Table::DeleteValues(string condition){
     }
 }
 
-void Table::delete_by_key(Analyzer& ANZ){
+void Table::delete_by_key(Analyzer& ANZ,int &count){
     try{
 
         Index *index = ANZ.getCondVal(ANZ.getKeyPos());
@@ -41,12 +41,12 @@ void Table::delete_by_key(Analyzer& ANZ){
         Page* page;
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         if(data_node.getData() == NULL){
-            if(cmp == 1)data_node = pages_tree_->getLink();
+            if(cmp == 1)data_node = pages_tree_->GetLink();
             else throw DATA_NOT_FOUND;
         }
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
-            page->DeleteRow(ANZ);
+            page->DeleteRow(ANZ,count);
             if(page->cursor_pos_ == 0){
                 page->Clear(*data_node.getData());
             }
@@ -84,15 +84,15 @@ void Table::delete_by_key(Analyzer& ANZ){
 }
 
 
-void Table::delete_by_traverse(Analyzer& ANZ){
+void Table::delete_by_traverse(Analyzer& ANZ,int &count){
     try{
         Memorizer RAM(this);
-        DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+        DataNode<__uint16_t, Index> data_node = pages_tree_->GetLink();
         while(data_node.getData() != NULL){
             __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
             Page* page = RAM.PageLoad(*page_offset);
-            page->DeleteRow(ANZ);
+            page->DeleteRow(ANZ,count);
             if(page->cursor_pos_ == 0){
                 page->Clear(*page_offset);
             }
@@ -141,7 +141,7 @@ void Page::Clear(__uint16_t offset){
     }
 }
 
-void Page::DeleteRow(Analyzer& ANZ){
+void Page::DeleteRow(Analyzer& ANZ,int &count){
     try{
         if(rows_ == NULL){
             throw SYSTEM_ERROR;
@@ -151,7 +151,7 @@ void Page::DeleteRow(Analyzer& ANZ){
             
             for(int i = cursor_pos_ - 1; i >= 0; i--){
                 if(ANZ.Match(rows_[i])){
-                    table_ptr_->db_->AddCount();
+                    count ++;
                     rows_[i]->Erase();
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];
@@ -170,7 +170,7 @@ void Page::DeleteRow(Analyzer& ANZ){
             //递增顺序筛选
             for(int i = 0; i < cursor_pos_; i++){
                 if(ANZ.Match(rows_[i])){
-                    table_ptr_->db_->AddCount();
+                    count++;
                     rows_[i]->Erase();
                     for(int j = i; j < cursor_pos_ - 1; j++){
                         rows_[j] = rows_[j + 1];

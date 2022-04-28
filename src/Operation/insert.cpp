@@ -1,7 +1,7 @@
 #include <Basic/data.h>
-#include <Utils/implement.h>
 #include <Basic/process.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -80,8 +80,6 @@ void Page::InsertRow(Row* Node){
         if(Node == NULL){
             throw SYSTEM_ERROR;
         }
-        //cout<<"Row Check "<<Node<<endl;
-        //cout<<"Index Check "<<&(Node->getIndex())<<endl;
         Index origin(Node->getIndex());
         for(__uint16_t i = 0; i < cursor_pos_; i++){
             if(rows_[i]->getIndex() == origin){

@@ -1,9 +1,9 @@
 #include<Basic/data.h>
-#include<Utils/implement.h>
 #include<Basic/process.h>
 using namespace std;
+using namespace NEDBnamespace;
 
-string Table::SelectValues(string param, string condition){
+string Table::SelectValues(string param, string condition,int &count){
     try{
         if(!StatusCheck(table_status_,SIG_RUN,SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
@@ -15,10 +15,10 @@ string Table::SelectValues(string param, string condition){
         ANZ.Extract(condition, " and ");
         string res = "";
         if(ANZ.KeySupport()){
-            res = select_by_key(ANZ);
+            res = select_by_key(ANZ,count);
         }
         else{
-            res = select_by_traverse(ANZ);
+            res = select_by_traverse(ANZ,count);
         }
         /* set header */
         string head;
@@ -44,7 +44,7 @@ string Table::SelectValues(string param, string condition){
     }
 
 }
-string Table::select_by_key(Analyzer &ANZ){
+string Table::select_by_key(Analyzer &ANZ,int &count){
     try{
         Index *index = ANZ.getCondVal(ANZ.getKeyPos());
         if(index == NULL){
@@ -53,7 +53,7 @@ string Table::select_by_key(Analyzer &ANZ){
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(*index);
         int cmp = ANZ.getCompareType(ANZ.getKeyPos());
         if(data_node.getData() == NULL){
-            if(cmp == 1)data_node = pages_tree_->getLink();
+            if(cmp == 1)data_node = pages_tree_->GetLink();
             else return "";
         }
         Memorizer RAM(this);
@@ -61,7 +61,7 @@ string Table::select_by_key(Analyzer &ANZ){
         Page *page;
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
-            string temp = page->SelectRow(ANZ);
+            string temp = page->SelectRow(ANZ,count);
             if(cmp == -1) res = temp + res;
             else res = res + temp;
             if(cmp == 0 || ANZ.stop_flag == 2) break;
@@ -83,17 +83,17 @@ string Table::select_by_key(Analyzer &ANZ){
 }
 
 
-string Table::select_by_traverse(Analyzer &ANZ){
+string Table::select_by_traverse(Analyzer &ANZ,int &count){
     //遍历搜索
     try{
         string res = "";
         Memorizer RAM(this);
-        DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+        DataNode<__uint16_t, Index> data_node = pages_tree_->GetLink();
         while(data_node.getData() != NULL){
             __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
             Page *page = RAM.PageLoad(*page_offset);
-            res = res + page->SelectRow(ANZ);
+            res = res + page->SelectRow(ANZ,count);
             ++ data_node;
             page->Erase();
         }
@@ -148,13 +148,13 @@ string Row::get_value(int i){
 }
 
 
-string Page::SelectRow(Analyzer &ANZ){
+string Page::SelectRow(Analyzer &ANZ,int &count){
     string str = "";
     if(ANZ.KeySupport() && ANZ.getCompareType(ANZ.getKeyPos()) == -1){
         //递减顺序筛选
         for(int i = cursor_pos_ - 1; i >= 0; i--){
             if(ANZ.Match(rows_[i])){
-                table_ptr_->db_->AddCount();
+                count ++;
                 str = rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ";" + str;
             }
             else{
@@ -168,7 +168,7 @@ string Page::SelectRow(Analyzer &ANZ){
         //递增顺序筛选
         for(int i = 0; i < cursor_pos_; i++){
             if(ANZ.Match(rows_[i])){
-                table_ptr_->db_->AddCount();
+                count ++;
                 str = str + rows_[i]->get_values(ANZ.getParmPos(), ANZ.getParmNum()) + ";";
             }
             else{

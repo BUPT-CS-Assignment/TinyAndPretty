@@ -1,6 +1,7 @@
 #include<Basic/process.h>
-#include<Utils/implement.h>
+#include<main.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 Parser::Parser(){
     statement_ = "";
@@ -53,21 +54,35 @@ void Parser::analyse(string input){
         else if(input == ".dirinit"){
             command_ = __DIRINIT;
         }
-        else if(input == ".openall"){
-            command_ = __LOADALL;
+        else if(input == ".mountall"){
+            command_ = __MOUNTALL;
         }
         else if(input.substr(0, input.find(" ")).compare(".debug") == 0){
             command_ = __DEBUGSET;
             int index = input.find(" ");
-            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
+            if(Trim(input)==".debug"){
+                statement_ ="";
+            }else{
+                statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
+            }
         }
         else if(input.substr(0, input.find(" ")).compare(".setdir") == 0){
             command_ = __SETDIR;
             int index = input.find(" ");
             statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
         }
+        else if(input.substr(0, input.find(" ")).compare(".mount") == 0){
+            command_ = __MOUNT;
+            int index = input.find(" ");
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
+        }
+        else if(input.substr(0, input.find(" ")).compare(".unmount") == 0){
+            command_ = __UNMOUNT;
+            int index = input.find(" ");
+            statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
+        }
         else if(input.substr(0, input.find(" ")).compare(".open") == 0){
-            command_ = __LOAD;
+            command_ = __OPEN;
             int index = input.find(" ");
             statement_ = Trim(input.substr(index + 1, input.length() - index - 1));
         }
@@ -248,3 +263,23 @@ OPERATION Parser::getOperate(){
     return operation_;
 }
 
+void Parser::setCondition(string input){
+    condition_ = Trim(input);
+}
+
+void Parser::setValue(string input){
+    value_ = Trim(input);
+}
+
+void Parser::setObject(string input){
+    object_ = Trim(input);
+}
+
+void Parser::setStatement(string input){
+    statement_ = Trim(input);
+}
+
+void Parser::setOperation(OPERATION input){
+    command_ = __OPERATION;
+    operation_ = input;
+}

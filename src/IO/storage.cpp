@@ -1,6 +1,7 @@
 #include<Basic/storage.h>
 #include<main.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 Memorizer::Memorizer(Table* table){
     table_ = table;
@@ -11,14 +12,13 @@ Memorizer::Memorizer(Table* table){
  * .ned //数据文件
  */
 
-
 void Memorizer::TableStore(){
     try{
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
         //检测空文件/创建文件
-        string filePath = table_->db_->getDir() + table_->table_name_ + __FramSuffix__;
+        string filePath = table_->filePath_+ FRAM_SUFFIX;
         FILE* fp;
         if((fp = fopen(filePath.c_str(), "r")) != NULL){
             throw TABLE_EXIST;
@@ -46,12 +46,15 @@ void Memorizer::TableStore(){
 
 }
 
-Table* Memorizer::TableLoad(DataBase* db, string name){
+Table* Memorizer::TableLoad(DataBase* db, string name,int mode){
     try{
-        string filePath = db->getDir() + name + __FramSuffix__;
-        string dataPath = db->getDir() + name + __DataSuffix__;
+        string filePath = name,dataPath = name;
+        if(mode == RELATIVE_PATH){
+            filePath = db->getDir() + filePath;
+            dataPath = db->getDir() + dataPath;
+        }
         FILE* fp;
-        if((fp = fopen(filePath.c_str(), "r")) == NULL){
+        if((fp = fopen((filePath+FRAM_SUFFIX).c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
         }
         fseek(fp, 0, SEEK_SET);
@@ -71,7 +74,7 @@ Table* Memorizer::TableLoad(DataBase* db, string name){
         fclose(fp);
         //主键索引树重构
         //if(table->max_offset == 0) return table;
-        if((fp = fopen(dataPath.c_str(), "r")) == NULL){
+        if((fp = fopen((dataPath+DATA_SUFFIX).c_str(), "r")) == NULL){
             //cout << "<W> DATA SOURCE FILE NOT FOUND : " << table_name << endl;
             return table;
         }
@@ -90,6 +93,7 @@ Table* Memorizer::TableLoad(DataBase* db, string name){
             table->pages_tree_->InsertData(index, i);
         }
         fclose(fp);
+        table->filePath_ = filePath;
         return table;
     }
     catch(NEexception& e){
@@ -106,7 +110,7 @@ Page* Memorizer::PageLoad(__uint16_t offset){
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
-        string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
+        string filePath = table_->filePath_ + DATA_SUFFIX;
         FILE* fp;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;
@@ -146,7 +150,7 @@ void Memorizer::PageFlush(__uint16_t offset){
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
-        string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
+        string filePath = table_->filePath_ + DATA_SUFFIX;
         FILE* fp;
         fp = fopen(filePath.c_str(), "ab+");
         fclose(fp);
@@ -173,7 +177,7 @@ void Memorizer::PageStore(__uint16_t offset, Page* page){
         if(table_ == NULL){
             throw TABLE_NOT_FOUND;
         }
-        string filePath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
+        string filePath = table_->filePath_ + DATA_SUFFIX;
         FILE* fp;
         fp = fopen(filePath.c_str(), "ab+");
         fclose(fp);
@@ -202,8 +206,8 @@ void Memorizer::PageStore(__uint16_t offset, Page* page){
 
 void Memorizer::TableDrop(){
     try{
-        string filePath = table_->db_->getDir() + table_->table_name_ + __FramSuffix__;
-        string dataPath = table_->db_->getDir() + table_->table_name_ + __DataSuffix__;
+        string filePath = table_->filePath_ + FRAM_SUFFIX;
+        string dataPath = table_->filePath_ + DATA_SUFFIX;
         FILE* fp = NULL;
         if((fp = fopen(filePath.c_str(), "r")) == NULL){
             throw FILE_NOT_FOUND;

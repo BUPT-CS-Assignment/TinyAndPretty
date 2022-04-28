@@ -1,8 +1,9 @@
 #include<main.h>
 #include<Basic/process.h>
-#include<Utils/implement.h>
 #include<Basic/data.h>
 using namespace std;
+using namespace NEDBnamespace;
+
 
 DataBase::DataBase(string dir){
     if(dir.length() == 0 || dir[dir.length() - 1] != '/'){
@@ -12,23 +13,19 @@ DataBase::DataBase(string dir){
     __Tables__ = new Table * [MAX_TABLES];
     __PageSize__ = DEFAULT_PAGE_SIZE;
     __Cursor__ = 0;
-    __ErrCode__ = NO_ERROR;
-    __ReturnVal__ = "";
-    __OperateCount__ = 0;
     __ProcStatus__ = SIG_FREE;
 }
 
 int DataBase::setDir(string dir){
     if(dir.length() == 0){
-        __ErrCode__ = DIR_ERROR;
         return DIR_ERROR;
     }
     if(dir[dir.length() - 1] != '/'){
         dir = dir + "/";
     }
-    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir Set to '%s'\n", dir.c_str());
+    int flag = SIG_DEBUG >= DEBUG_DETAIL;
+    CONSOLE_LOG(0,TIME_FLAG,flag, "(NEDB)Dir Set '%s'\n", dir.c_str());
     __SrcDir__ = dir;
-    __ErrCode__ = NO_ERROR;
     return NO_ERROR;
 }
 
@@ -36,36 +33,10 @@ string DataBase::getDir(){
     return __SrcDir__;
 }
 
-string DataBase::getReturnVal(){
-    return __ReturnVal__;
-}
-
-int DataBase::getErrCode(){
-    return __ErrCode__;
-}
-
 int DataBase::getDefaultPageSize(){
     return __PageSize__;
 }
 
-void DataBase::setErrCode(int code){
-    __ErrCode__ = code;
-}
-void DataBase::setCount(int count){
-    __OperateCount__ = count;
-}
-
-int DataBase::getCount(){
-    return __OperateCount__;
-}
-
-void DataBase::AddCount(){
-    __OperateCount__ ++;
-}
-
-void DataBase::SubCount(){
-    __OperateCount__ --;
-}
 
 Table* DataBase::getTable(int i){
     if(i >= __Cursor__) return NULL;
@@ -76,19 +47,15 @@ int DataBase::getCursor(){
     return __Cursor__;
 }
 
-void DataBase::setReturnVal(string val){
-    __ReturnVal__ = val;
-}
 
 
 int DataBase::setDefaultPageSize(int size){
     if(size < 100 || size > 4000){
-        __ErrCode__ = SIZE_NOT_ALLOWED;
         return SIZE_NOT_ALLOWED;
     }
-    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Set Page Size to %d\n", size);
+    bool flag = SIG_DEBUG >=DEBUG_DETAIL;
+    CONSOLE_LOG(0,TIME_FLAG,flag,"(NEDB)PageSize Set '%d' Bytes\n", size);
     __PageSize__ = size;
-    __ErrCode__ = NO_ERROR;
     return NO_ERROR;
 }
 
@@ -105,7 +72,7 @@ void DataBase::addTable(Table* table){
     __Cursor__ ++;
 }
 
-void DataBase::dropTable(string name){
+void DataBase::dropTable(string name,int mode){
     try{
         /* DataBase Lock Check */
         if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
@@ -121,7 +88,7 @@ void DataBase::dropTable(string name){
             if(temp == name){
                 Table* temp = __Tables__[i];
                 while(1){
-                    if(StatusCheck(temp->table_status_,SIG_FREE,1)){
+                    if(StatusCheck(temp->table_status_, SIG_FREE, 1)){
                         temp->table_status_ = SIG_BLOCK;
                         break;
                     }
@@ -132,12 +99,14 @@ void DataBase::dropTable(string name){
                 }
                 __Tables__[__Cursor__ - 1] = NULL;
                 -- __Cursor__;
+                SetStatus(SIG_FREE);
                 /* Memory Free */
                 temp->Erase();
-                Memorizer RAM(temp);
-                RAM.TableDrop();
-                delete[] temp;
-                SetStatus(SIG_FREE);
+                if(mode == FILE_DROP){
+                    Memorizer RAM(temp);
+                    RAM.TableDrop();
+                }
+                delete temp;
                 return;
             }
         }
@@ -159,24 +128,23 @@ int DataBase::dirInit(){
             dir = dir + "/" + dirs[i];
             if(NULL == opendir(dir.c_str())){
                 if(mkdir(dir.c_str(), S_IRWXU) == -1){
-                    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)Dir '%s' Error\n", dir.c_str());
+                    int flag = SIG_DEBUG >= DEBUG_DETAIL;
+                    CONSOLE_LOG(0,TIME_FLAG,flag, "(NEDB)Dir '%s' Error\n", dir.c_str());
                     throw DIR_ERROR;
                 }
             }
         }
-        __ErrCode__ = NO_ERROR;
-        return __ErrCode__;
+        return NO_ERROR;
     }
     catch(NEexception& e){
-        __ErrCode__ = e;
-        return __ErrCode__;
+        return e;
     }
 }
 
-int DataBase::openall(){
+int DataBase::openall(int& num){
     try{
+        num = 0;
         DIR* dp = opendir(__SrcDir__.c_str());
-        __OperateCount__ = 0;
         if(dp == NULL){
             throw DIR_ERROR;
         }
@@ -189,32 +157,33 @@ int DataBase::openall(){
             string file_name = dirfiles->d_name;
             if(regex_match(file_name, layout)){
                 file_name = file_name.substr(0, file_name.find("."));
-                if(open(file_name) != NO_ERROR){
-                    ConsoleLog(0, DEBUG_DETAIL, "(NEDB)File Damaged : '%s'\n", file_name.c_str());
-                    __ErrCode__ = FILE_DAMAGED;
+                if(open(file_name,RELATIVE_PATH) != NO_ERROR){
+                    int flag = SIG_DEBUG >= DEBUG_DETAIL;
+                    CONSOLE_LOG(0,TIME_FLAG,flag, "(NEDB)File Damaged : '%s'\n", file_name.c_str());
                 }
-                __OperateCount__ ++;
+                num ++;
             }
         }
         closedir(dp);
-        __ErrCode__ = NO_ERROR;
-        __ReturnVal__ = "";
-        return __ErrCode__;
+        return NO_ERROR;
     }
     catch(NEexception& e){
-        __ErrCode__ = e;
-        __ReturnVal__ = "";
-        return __ErrCode__;
+        return e;
     }
 }
 
-int DataBase::open(string name){
+int DataBase::open(string name,int mode){
     try{
         /* Thread Lock Check */
         if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
-        ConsoleLog(0, DEBUG_SIMPLE, "(NEDB)Loading '%s'\n", name.c_str());
+        int flag = SIG_DEBUG >= DEBUG_SIMPLE;
+        if(mode == RELATIVE_PATH){
+            CONSOLE_LOG(0,TIME_FLAG,flag, "(NEDB)Mounting '%s'\n", (__SrcDir__+name).c_str());
+        }else{
+            CONSOLE_LOG(0,TIME_FLAG,flag, "(NEDB)Mounting '%s'\n", name.c_str());
+        }
         /* Read File */
         Memorizer RAM(NULL);
         Table* table = NULL;
@@ -222,44 +191,38 @@ int DataBase::open(string name){
             throw TABLE_NUM_REACH_LIMIT;
         }
         SetStatus(SIG_BLOCK);
-        table = RAM.TableLoad(this, name);
+        table = RAM.TableLoad(this, name,mode);
         if(getTable(name) == NULL){
             __Tables__[__Cursor__] = table;
             ++__Cursor__;
             SetStatus(SIG_FREE);
         }
         SetStatus(SIG_FREE);
-        __ErrCode__ = NO_ERROR;
         return NO_ERROR;
     }
     catch(NEexception& e){
         SetStatus(SIG_FREE);
-        __ErrCode__ = e;
         return e;
     }
 }
 
-int DataBase::exec(string sql){
-    __ReturnVal__ = "";
-    __ErrCode__ = NO_ERROR;
-    __OperateCount__ = 0;
+
+int DataBase::exec(string sql, int& num, string& res){
     if(sql.length() == 0 || sql[sql.length() - 1] != ';'){
-        __ErrCode__ = SQL_FORM_ERROR;
-        return __ErrCode__;
+        return SQL_FORM_ERROR;
     }
     /////
     Parser p;
     Executor e(&p, this);
     int sql_num;
-    setReturnVal("");
-    string res = "";
+    res = "";
     string* sqls = Split(sql, ';', sql_num);
     int t = 0;
     try{
         for(int i = 0; i < sql_num - 1; i++){
             p.i_analyse(sqls[i]);
             e.execute_operation();
-            string temp = getReturnVal();
+            string temp = e.returnValue_;
             if(temp.length() != 0){
                 if(t == 0){
                     res = temp;
@@ -267,23 +230,147 @@ int DataBase::exec(string sql){
                 }
                 else res = res + "\n" + temp;
             }
-            setReturnVal("");
             p.flush();
+            e.returnValue_ = "";
         }
-        __ReturnVal__ = res;
-        __ErrCode__ = NO_ERROR;
-        return __ErrCode__;
+        num = e.count_;
+        res = e.returnValue_;
+        return NO_ERROR;
     }
     catch(NEexception& E){
-        __ReturnVal__ = res;
-        __ErrCode__ = E;
-        return __ErrCode__;
+        res = e.returnValue_;
+        return E;
     }
 }
 
+int DataBase::create_table(string table, string value){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setValue(value);
+    p.setOperation(CREATE_TABLE);
+    try{
+        e.execute_operation();
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        return E;
+    }
+
+
+}
+
+int DataBase::insert_into(string table, string field, string value){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setCondition(field);
+    p.setValue(value);
+    p.setOperation(INSERT_VALUES);
+    try{
+        e.execute_operation();
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        return E;
+    }
+
+}
+
+int DataBase::delete_from(string table, string condition, int& num){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setCondition(condition);
+    p.setOperation(DELETE_VALUES);
+    try{
+        e.execute_operation();
+        num = e.count_;
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        num = e.count_;
+        return E;
+    }
+
+}
+
+int DataBase::update_set(string table, string set_val, string condition, int& num){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setValue(set_val);
+    p.setCondition(condition);
+    p.setOperation(UPDATE_VALUES);
+    try{
+        e.execute_operation();
+        num = e.count_;
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        num = e.count_;
+        return E;
+    }
+
+}
+
+int DataBase::select_from(string table, string field, string condition, int& num, string& res){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setValue(field);
+    p.setCondition(condition);
+    p.setOperation(SELECT_VALUES);
+    try{
+        e.execute_operation();
+        num = e.count_;
+        res = e.returnValue_;
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        num = e.count_;
+        res = e.returnValue_;
+        return E;
+    }
+}
+
+int DataBase::describe_table(string table, string& res){
+    Parser p;
+    Executor e(&p, this);
+    p.setObject(table);
+    p.setOperation(DESCRIBE_TABLE);
+    try{
+        e.execute_operation();
+        res = e.returnValue_;
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        res = e.returnValue_;
+        return E;
+    }
+}
+
+int DataBase::select_tables(int& num, string& res){
+    Parser p;
+    Executor e(&p, this);
+    p.setOperation(SELECT_VALUES);
+    try{
+        e.execute_operation();
+        num = e.count_;
+        res = e.returnValue_;
+        return NO_ERROR;
+    }
+    catch(NEexception& E){
+        num = e.count_;
+        res = e.returnValue_;
+        return E;
+    }
+}
+
+
 int DataBase::close(){
     try{
-        ConsoleLog(0, DEBUG_NONE, "(NEDB)Closing...\n");
+        CONSOLE_LOG(0,TIME_FLAG,1, "(NEDB)Closing...\n");
         if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
             throw ACTION_BUSY;
         }
@@ -298,13 +385,11 @@ int DataBase::close(){
         delete[] __Tables__;
         __Cursor__ = -1;
         __Tables__ = NULL;
-        __ErrCode__ = NO_ERROR;
-        return __ErrCode__;
+        return NO_ERROR;
     }
     catch(exception& e){
         SetStatus(SIG_FREE);
-        __ErrCode__ = SYSTEM_ERROR;
-        return __ErrCode__;
+        return SYSTEM_ERROR;
     }
 }
 
@@ -330,3 +415,5 @@ Table* DataBase::getTable(string name){
         throw e;
     }
 }
+
+

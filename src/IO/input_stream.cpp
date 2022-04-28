@@ -1,6 +1,6 @@
 #include<Basic/process.h>
-#include<Utils/implement.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 InputStream::InputStream(){
     __Input = "";

@@ -1,11 +1,11 @@
 #include<Basic/data.h>
-#include<Utils/implement.h>
 #include<Basic/process.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 //UPDATE table_name SET 'parm_name_1' = 'value_1', ... WHERE 'condition'
 
-void Table::UpdateValues(string condition, string setting){
+void Table::UpdateValues(string condition, string setting,int &count){
     try{
         Analyzer CANZ(this), SANZ(this);
         CANZ.Extract(condition, " and ");
@@ -19,10 +19,10 @@ void Table::UpdateValues(string condition, string setting){
             throw KEY_VAL_CHANGE_NOT_ALLOWED;
         }
         if(CANZ.KeySupport()){
-            update_by_key(SANZ, CANZ);
+            update_by_key(SANZ, CANZ,count);
         }
         else{
-            update_by_traverse(SANZ, CANZ);
+            update_by_traverse(SANZ, CANZ,count);
         }
         table_status_ = SIG_FREE;
     }
@@ -34,7 +34,7 @@ void Table::UpdateValues(string condition, string setting){
 }
 
 
-void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
+void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ,int &count){
     try{
         Index* index = CANZ.getCondVal(CANZ.getKeyPos());
         if(index == NULL){
@@ -43,14 +43,14 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
         DataNode<__uint16_t, Index> data_node = pages_tree_->LocateData(*index);
         int cmp = CANZ.getCompareType(CANZ.getKeyPos());
         if(data_node.getData() == NULL){
-            if(cmp == 1)data_node = pages_tree_->getLink();
+            if(cmp == 1)data_node = pages_tree_->GetLink();
             else throw DATA_NOT_FOUND;
         }
         Memorizer RAM(this);
         Page *page;
         while(data_node.getData() != NULL){
             page = RAM.PageLoad(*data_node.getData());
-            page->UpdateRow(SANZ, CANZ);
+            page->UpdateRow(SANZ, CANZ,count);
             RAM.PageStore(*data_node.getData(), page);
             if(cmp == 0 || CANZ.stop_flag == 2) break;
             else if(cmp == -1) --data_node;
@@ -64,15 +64,15 @@ void Table::update_by_key(Analyzer &SANZ, Analyzer &CANZ){
 }
 
 
-void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
+void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ,int &count){
     try{
         Memorizer RAM(this);
-        DataNode<__uint16_t, Index> data_node = pages_tree_->getLink();
+        DataNode<__uint16_t, Index> data_node = pages_tree_->GetLink();
         while(data_node.getData() != NULL){
             __uint16_t* page_offset = data_node.getData();
             if(page_offset == NULL) break;
             Page *page = RAM.PageLoad(*page_offset);
-            page->UpdateRow(SANZ, CANZ);
+            page->UpdateRow(SANZ, CANZ,count);
             RAM.PageStore(*page_offset, page);
             ++ data_node;
             page->Erase();
@@ -84,13 +84,14 @@ void Table::update_by_traverse(Analyzer &SANZ, Analyzer &CANZ){
 }
 
 
-void Page::UpdateRow(Analyzer &SANZ, Analyzer &CANZ){
+void Page::UpdateRow(Analyzer &SANZ, Analyzer &CANZ,int &count){
     try{
         if(CANZ.KeySupport() && CANZ.getCompareType(CANZ.getKeyPos()) == -1){
             //递减顺序筛选
             for(int i = cursor_pos_ - 1; i >= 0; i--){
                 if(CANZ.Match(rows_[i])){
                     rows_[i]->update_values(SANZ.getCondPos(), SANZ.getCondOrigin(), SANZ.getCondNum());
+                    count ++;
                 }
                 else{
                     if(CANZ.stop_flag == 2){
@@ -104,6 +105,7 @@ void Page::UpdateRow(Analyzer &SANZ, Analyzer &CANZ){
             for(int i = 0; i < cursor_pos_; i++){
                 if(CANZ.Match(rows_[i])){
                     rows_[i]->update_values(SANZ.getCondPos(), SANZ.getCondOrigin(), SANZ.getCondNum());
+                    count ++;
                 }
                 else{
                     if(CANZ.stop_flag == 2){

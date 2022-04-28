@@ -1,6 +1,6 @@
 #include <Basic/data.h>
-#include <Utils/implement.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 //数据表创建
 Table::Table(DataBase* db, string name){
@@ -16,6 +16,7 @@ Table::Table(DataBase* db, string name){
     parm_names_ = NULL;
     key_type_ = __INT;
     pages_tree_ = new BalanceTree<__uint16_t, Index>(0);
+    filePath_ = "/";
 }
 
 

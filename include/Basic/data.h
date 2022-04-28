@@ -1,21 +1,22 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 #include <main.h>
-#include <Utils/btree.h>
 #include <Basic/storage.h>
 
-class Index{
+
+class NEDBnamespace::Index{
+    friend std::ostream& operator << (std::ostream& out, Index& index);
     friend class Table;
     friend class Row;
     friend class Memorizer;
+public:
     INDEX       index_;
     DATA_TYPE    type_;
-    public:
     Index(std::string index, DATA_TYPE);
     Index(int);
     Index(long long);
     Index(double);
-    Index(string);
+    Index(std::string);
     Index();
     Index(Index&);
     ~Index();
@@ -28,7 +29,7 @@ class Index{
     bool    operator!=(Index&);
     bool    operator<=(Index&);
     bool    operator>=(Index&);
-    friend ostream& operator << (ostream& out, Index& index);
+
 };
 
 /**
@@ -52,8 +53,7 @@ class Index{
  *
  */
 
-
-class Table{
+class NEDBnamespace::Table{
     friend class Page;
     friend class Row;
     friend class Index;
@@ -67,15 +67,16 @@ class Table{
             offset = -1; next = NULL;
         }
     }empty_pages;
-    private:
+private:
     //FileHead
     __uint16_t      page_size_;   //单页最大字节数
     char            table_name_[32] = {0};    //表名
-    DataBase*       db_;
+    NEDBSTD::DataBase* db_;
+
     //TableHead
     __uint16_t      max_offset;    //页总数
     __uint16_t      parm_num_;      //参数总数
-    DATA_TYPE*      parm_types_;     //数据类型数组
+    DATA_TYPE* parm_types_;     //数据类型数组
     char(*parm_names_)[32];     //数据元素名称数组 
     __uint16_t      prim_key_;          //索引位置
     __uint16_t      row_take_up_;    //单行字节数
@@ -84,40 +85,41 @@ class Table{
     //TableBody
     //In-Memory
     DATA_TYPE       key_type_;      //主键类型
-    BalanceTree<__uint16_t, Index>* pages_tree_;   //索引B+树
+    BTREESTD::BalanceTree<__uint16_t, Index>* pages_tree_;   //索引B+树
     /////////////////////////////////////////////////////
-    Page*       page_locate(Index);       //数据页搜索
+    NEDBnamespace::Page* page_locate(Index);       //数据页搜索
     //INSERT
     //bool check_empty(int);
     __uint16_t  get_empty_page_offset();
     void        add_empty_page(__uint16_t);
     //SELECT
-    std::string select_by_key(Analyzer&);
-    std::string select_by_traverse(Analyzer&);
+    std::string select_by_key(NEDBnamespace::Analyzer&, int& count);
+    std::string select_by_traverse(NEDBnamespace::Analyzer&, int& count);
     //DELETE
-    void        delete_by_key(Analyzer&);
-    void        delete_by_traverse(Analyzer&);
+    void        delete_by_key(NEDBnamespace::Analyzer&, int& count);
+    void        delete_by_traverse(NEDBnamespace::Analyzer&, int& count);
     //UPDATE
-    void        update_by_key(Analyzer&, Analyzer&);
-    void        update_by_traverse(Analyzer&, Analyzer&);
+    void        update_by_key(NEDBnamespace::Analyzer&, NEDBnamespace::Analyzer&, int& count);
+    void        update_by_traverse(NEDBnamespace::Analyzer&, NEDBnamespace::Analyzer&, int& count);
     //bool remove_table();            //删除表
     ////////////////////////////////////////////////////////////
-    public:
+public:
     int         table_status_;              //表锁
-    Table(DataBase*, std::string name);     //构造函数
+    std::string filePath_;
+    Table(NEDBSTD::DataBase*, std::string name);     //构造函数
     void        Init(std::string statement);    //初始化表数据类型
     /**
      *数据操作相关
      */
-    //INSERT
+     //INSERT
     int         ParmLocate(std::string name);  //Mapping
     void        InsertValues(std::string conditions, std::string values);//条件插入
     //DELETE
-    void        DeleteValues(std::string conditions);  //条件删除
+    void        DeleteValues(std::string conditions, int& count);  //条件删除
     //SELECT
-    std::string SelectValues(std::string conditions, std::string values);
+    std::string SelectValues(std::string conditions, std::string values, int& count);
     //UPDATE
-    void        UpdateValues(std::string condition, std::string values);
+    void        UpdateValues(std::string condition, std::string values, int& count);
     /////////
     std::string getStructure();         //打印表结构
     std::string getName();               //获取表名
@@ -148,7 +150,7 @@ class Table{
  *
  */
 
-class Page{
+class NEDBnamespace::Page{
     friend class Index;
     friend class Table;
     friend class Row;
@@ -160,18 +162,18 @@ class Page{
     //Page Head
     __uint16_t  cursor_pos_; //行光标偏移量
     //In-Memory
-    Row**       rows_;   //行指针数组
-    Table*      table_ptr_;       //表指针
+    Row** rows_;   //行指针数组
+    Table* table_ptr_;       //表指针
     //////////////////////////////////////
     Page(Table* table_ptr_); //构造函数
     //INSERT
     void        InsertRow(Row* new_row); //插入行
     //SELECT
-    std::string SelectRow(Analyzer&);
+    std::string SelectRow(Analyzer&, int& count);
     //UPDATE
-    void        UpdateRow(Analyzer&, Analyzer&);
+    void        UpdateRow(Analyzer&, Analyzer&, int& count);
     //DELETE
-    void        DeleteRow(Analyzer&);
+    void        DeleteRow(Analyzer&, int& count);
     //Clear
     void        Clear(__uint16_t);
     //void print_page();  //打印整页
@@ -190,19 +192,19 @@ class Page{
  *
  */
 
-class Row{
+class NEDBnamespace::Row{
     friend class Index;
     friend class Memorizer;
     friend class Page;
     friend class Analyzer;
-    private:
+private:
     //RowHaed
     Index row_index_;
     //RowBody
     void** content_;            //数据指针数组(未定义类型)
     //In-Memory
     Table* table_ptr_;          //表指针
-    public:
+public:
     Row(Table* table_ptr_);     //构造函数
     void        Padding(std::string conditions, std::string values); //内容填充
     std::string Format();                                   //格式化转化
@@ -212,7 +214,7 @@ class Row{
     void        update_value(int, std::string);             //更改内容
     void        Erase();                                    //内容清空
     //
-    Index&      getIndex();
+    Index& getIndex();
     void        index_update();
     /* Operator */
     bool operator<(Row&);
@@ -222,25 +224,25 @@ class Row{
     bool operator>=(Row&);
 };
 
-class Analyzer{
+class NEDBnamespace::Analyzer{
     friend class Row;
-    private:
+private:
     //condition match
-    Table*          table_ptr_;     //表指针
+    Table* table_ptr_;     //表指针
     int             cond_num;       //记录比较次数
-    int*            cond_pos;       //记录比较元素位置
-    char*           cond_cmp;       //记录比较符号
-    Index*          cond_val;       //搜索值索引
+    int* cond_pos;       //记录比较元素位置
+    char* cond_cmp;       //记录比较符号
+    Index* cond_val;       //搜索值索引
     int             lower_bound;    //比较下界
     int             upper_bound;    //比较上界
-    std::string*    cond_origin;    //记录比较原值
+    std::string* cond_origin;    //记录比较原值
     //value match
     int             parm_num;       //update 专用, 记录更新后的值
-    int*            parm_pos;       //update 专用, 记录更新元素位置
+    int* parm_pos;       //update 专用, 记录更新元素位置
     //prim key support
     int             key_pos;        //记录主键在本数组中的位置
 
-    public:
+public:
     //0：B树定位页搜索, 忽略错误匹配
     //1: 记录错误匹配, 匹配错误时更新为2
     //2: 立即停止

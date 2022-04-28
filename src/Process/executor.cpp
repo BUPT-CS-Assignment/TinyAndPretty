@@ -1,12 +1,16 @@
 #include<Basic/process.h>
 #include<Basic/data.h>
-#include<Utils/implement.h>
 #include<Basic/storage.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 Executor::Executor(Parser *parser, DataBase *db){
-    db_ = db;
+    db_= db;
     parser_ = parser;
+    returnValue_ = "";
+    count_ = 0;
+    errCode_ =0;
+
 }
 
 void Executor::execute_operation(){
@@ -64,11 +68,17 @@ void Executor::execute_command(){
             case __HELP:
                 __HELP__();
                 break;
-            case __LOADALL:
-                db_->openall();
+            case __MOUNTALL:
+                db_->openall(count_);
                 break;
-            case __LOAD:
-                db_->open(parser_->statement_);
+            case __MOUNT:
+                db_->open(parser_->statement_,RELATIVE_PATH);
+                break;
+            case __UNMOUNT:
+                db_->dropTable(parser_->statement_,FILE_UNMOUNT);
+                break;
+            case __OPEN:
+                db_->open(parser_->statement_,FULL_PATH);
                 break;
             case __DEBUGSET:
                 if(!__DEBUG_SET__(parser_->statement_)){
@@ -77,22 +87,22 @@ void Executor::execute_command(){
                 break;
             case __SETDIR:
                 if(parser_->statement_ == "-d"){
-                    db_->setDir(__DefaultDir__);
+                    db_->setDir(DEFAULT_DIR);
                 }
                 else{
-                    if(!db_->setDir(parser_->statement_)){
+                    if(db_->setDir(parser_->statement_)!=NO_ERROR){
                         throw DIR_ERROR;
                     }
                 }
                 break;
             case __SHOWDIR:
-                cout << db_->getDir() << endl;
+                CONSOLE_LOG(0,TIME_FLAG,1,"Current Dir '%s'\n",db_->getDir().c_str());
                 break;
             case __DIRINIT:
                 db_->dirInit();
                 break;
             case __SHOWPAGESIZE:
-                cout << db_->getDefaultPageSize() << endl;
+                CONSOLE_LOG(0,TIME_FLAG,1,"PageSize '%d' Bytes\n",db_->getDefaultPageSize());
                 break;
             case __SETPAGESIZE:
                 if(parser_->statement_ == "-d"){
@@ -108,14 +118,14 @@ void Executor::execute_command(){
             default:
                 throw COMMAND_UNDEFINED;
         }
-        db_->setErrCode(NO_ERROR);
+        errCode_ = NO_ERROR;
     }
     catch(NEexception &e){
-        db_->setErrCode(e);
+        errCode_ = e;
         throw e;
     }
     catch(exception &e){
-        db_->setErrCode(SYSTEM_ERROR);
+        errCode_ = SYSTEM_ERROR;
         throw SYSTEM_ERROR;
     }
 }
@@ -138,6 +148,7 @@ void Executor::execute_create_table(){
         }
         ///////////////////////////////////////////////////////////文件操作
         Table *new_table = new Table(db_, table_name);
+        new_table->filePath_ = db_->getDir()+table_name;
         new_table->Init(parameters);
         /* DataBase Lock Check */
         db_->addTable(new_table);
@@ -186,7 +197,7 @@ void Executor::execute_delete_values(){
         string conditions = parser_->condition_;
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            table->DeleteValues(conditions);
+            table->DeleteValues(conditions,count_);
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -204,7 +215,7 @@ void Executor::execute_delete_values(){
 void Executor::execute_drop_table(){
     try{
         string table_name = parser_->object_;
-        db_->dropTable(table_name);
+        db_->dropTable(table_name,FILE_DROP);
     }
     catch(NEexception &e){
         throw e;
@@ -218,8 +229,7 @@ void Executor::execute_describe_table(){
     try{
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            string str = table->getStructure();
-            db_->setReturnVal(str);
+            returnValue_ = table->getStructure();
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -238,8 +248,7 @@ void Executor::execute_select_values(){
     try{
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            string str = table->SelectValues(parser_->value_, parser_->condition_);
-            db_->setReturnVal(str);
+            returnValue_ = table->SelectValues(parser_->value_, parser_->condition_,count_);
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -260,7 +269,7 @@ void Executor::execute_update_values(){
         string condition = parser_->condition_;
         Table *table = db_->getTable(parser_->object_);
         if(table != NULL){
-            table->UpdateValues(condition, values);
+            table->UpdateValues(condition, values,count_);
         }
         else{
             throw TABLE_NOT_FOUND;
@@ -283,8 +292,8 @@ void Executor::execute_select_tables(){
             if(table_ptr == NULL) continue;
             str = str + table_ptr->getName() + (i == num- 1 ? "" : ",");
         }
-        db_->setReturnVal(str);
-        db_->setCount(db_->getCursor());
+        returnValue_ = str;
+        count_ = db_->getCursor();
     }
     catch(NEexception &e){
         throw e;

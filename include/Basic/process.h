@@ -1,12 +1,9 @@
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 #include <main.h>
-#include <Interface/NEDB.h>
 
-int StatusCheck(int& state,int level,int times);
-int ConsoleLog(int returnVal,int level,std::string content,...);
 
-class InputStream{
+class NEDBnamespace::InputStream{
 private:
     std::string     __Input;
 public:
@@ -16,7 +13,7 @@ public:
     void            clear_input();
 };
 
-class Parser{
+class NEDBnamespace::Parser{
 friend class Executor;
 private:
     std::string statement_;
@@ -39,6 +36,11 @@ public:
     Parser();
     void        i_analyse(std::string input);
     void        analyse(std::string input);
+    void        setStatement(std::string input);
+    void        setObject(std::string input);
+    void        setCondition(std::string input);
+    void        setValue(std::string input);
+    void        setOperation(OPERATION input);
     COMMAND     getCommand();
     OPERATION   getOperate();
     std::string getStatment();
@@ -46,9 +48,9 @@ public:
 
 };
 
-class Executor{
+class NEDBnamespace::Executor{
 private:
-    DataBase*   db_;
+    NEDBSTD::DataBase*   db_;
     Parser*     parser_;
     void        execute_create_table();
     void        execute_insert_values();
@@ -60,7 +62,10 @@ private:
     void        execute_select_tables();
     ////////////////////////////////
 public:
-    Executor(Parser*,DataBase*);
+    Executor(Parser*,NEDBSTD::DataBase*);
+    int         count_;
+    std::string returnValue_;
+    int         errCode_;
     void        execute_command();
     void        execute_operation();
 };

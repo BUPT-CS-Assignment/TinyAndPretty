@@ -1,6 +1,6 @@
 #include <Basic/data.h>
-#include <Utils/implement.h>
 using namespace std;
+using namespace NEDBnamespace;
 
 Row::Row(Table* table){
     try{

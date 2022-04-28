@@ -24,11 +24,11 @@
  * 
  */
 
-class Memorizer{
+class NEDBnamespace::Memorizer{
     Table* table_;
 public:
     Memorizer(Table* table);
-    Table*  TableLoad(DataBase*,string);
+    Table*  TableLoad(DataBase*,std::string,int mode = FULL_PATH);
     void    TableStore();
     void    TableUpdate();
     /////////////////////////
@@ -38,7 +38,6 @@ public:
     Page*   PageLoad(__uint16_t);
     void    PageStore(__uint16_t, Page*);
     void    TableDrop();
-    
     
 };
 
