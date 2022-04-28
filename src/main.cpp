@@ -7,7 +7,7 @@ int main(int argv, char* argc[]){
     /* Dir Init */
     DirectoryInit();
     /* Server Init */
-    CONSOLE_LOG(0,"Project Directory '%s'\n",PROJECT_DIR.c_str());
+    UTILSTD::CONSOLE_LOG(0,1,1,"Project Directory '%s'\n",PROJECT_DIR.c_str());
     SQLTestGenerate();
     ServicePreLoad();
     TAPManager server;

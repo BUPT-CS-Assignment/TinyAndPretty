@@ -8,12 +8,15 @@
 #define USER_SIGN_OUT 0
 #define USER_SIGN_IN 1
 
+class User;
+extern BTREESTD::BalanceTree<User, int>COOKIE;
+
 class User{
 private:
     int id_;
     int auth_;
     int status_;
-    NEDB* UserDB;
+    NEDBSTD::NEDB* UserDB;
 public:
     User();
     User(int id);
@@ -25,14 +28,9 @@ public:
         return status_;
     }
     /////
-    std::string GetAllInfo();
-    std::string GetMajor();
-    std::string GetGender();
-    int GetClass();
-    std::string GetName();
+    std::string Format();
+    std::string GetInfo(std::string);
     int SetInfo(std::string);
 };
-
-extern BalanceTree<User, int>COOKIE;
 
 #endif

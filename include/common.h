@@ -25,12 +25,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-
-
-int CONSOLE_LOG(int retVal,std::string content,...);
-std::string* Split(std::string str,char c,int &length);
-std::string Trim(std::string str);
-
 namespace fs = std::filesystem;
 
 #ifdef DEBUG
