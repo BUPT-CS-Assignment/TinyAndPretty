@@ -29,7 +29,7 @@ int User::SignIn(std::string passwdInput){
     }
     retVal = retVal.substr(retVal.find(";") + 1);
     if(passwdInput != retVal){
-        return 31;
+        return -1;
     }
     status_ = USER_SignIn;
     std::string userDir = USER_DIR + "/" + id_s;

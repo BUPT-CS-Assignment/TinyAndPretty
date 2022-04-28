@@ -115,7 +115,8 @@
                 var arr = value.split(",");
                 document.getElementById("user_id").innerHTML = arr[0];
                 document.getElementById("user_name").innerHTML = arr[1];
-                document.getElementById("user_gender").innerHTML = arr[2];
+                var gender = (arr[2]=="0"?"女":"男");
+                document.getElementById("user_gender").innerHTML = gender;
                 document.getElementById("user_school").innerHTML = arr[3];
                 document.getElementById("user_major").innerHTML = arr[4];
                 document.getElementById("user_class").innerHTML = arr[5];

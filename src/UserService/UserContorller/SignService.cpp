@@ -37,6 +37,8 @@ def_HttpEntry(SignIn, req){
         if(res == 0){
             CONSOLE_LOG(0,1,1,"New User '%d' Signed In\n", id_i);
             COOKIE.InsertData(id_i, newUser);
+        }else if(res == -1){
+            return new HttpResponse{"0?0"};
         }
     }
     else{
