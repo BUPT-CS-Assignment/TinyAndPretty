@@ -38,10 +38,9 @@ int NEDB::Close(){
     return res;
 }
 
-int NEDB::Openall(){
+int NEDB::MountAll(int& count){
     if(nedb == NULL) return -1;
-    int num = 0;
-    return nedb->openall(num);
+    return nedb->openall(count);
 }
 
 int NEDB::Open(const string fileName){

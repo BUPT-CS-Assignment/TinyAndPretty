@@ -264,13 +264,6 @@
         /* <--------------------------- File Function ---------------------------> */
 
             /**
-            * @brief load all tables at current dir
-            *
-            * @return int ErrorCode
-            */
-            int Openall();                     //打开目录下全表
-
-            /**
             * @brief load table with table name at current dir
             *
             * @param fileName table-name
@@ -285,6 +278,14 @@
             * @return int ErrorCode
             */
             int Mount(const std::string filePath); //挂载数据表
+
+            /**
+            * @brief load all tables at current dir
+            *
+            * @param count mount numbers
+            * @return int ErrorCode
+            */
+            int MountAll(int& count);                     //打开目录下全表
 
             /**
             * @brief unmout table from RAM
