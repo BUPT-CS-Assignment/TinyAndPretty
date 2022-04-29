@@ -5,7 +5,7 @@
         <title>Tiny And Pretty</title>
         <meta charset="UTF-8">
     </head>
-    <body onload="getUserID(),getUserInfo()">
+    <body onload="getUserInfo()">
         <h1>TAP User Panel</h1>
         <h3>    
             <form>
@@ -91,50 +91,40 @@
         </h3>
 
         <script>
-            var userid;
+            var userid = localStorage.getItem("Userid");
+            var token = localStorage.getItem("Token");
             var ROOT = "http://" + location.host;
             function getUserInfo(){
                 var xhttp = new XMLHttpRequest();
                 xhttp.open("GET",ROOT + "/user/",false);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Userid", userid);
+                xhttp.setRequestHeader("Token",token);
                 xhttp.setRequestHeader("Function", "Fetch");
                 xhttp.send();
-                var rec = xhttp.responseText;
-                var idx = rec.indexOf("?");
-                var code = rec.substr(0,idx);
-                var value = rec.substr(idx+1);
-                if(code != "0"){
-                    if(code == "-1"){
-                        alert("Access Denied");
-                        window.open("http://" + location.host + "/signin",'_self');
-                        return;
+                if(xhttp.status==200){
+                    var rec = xhttp.responseText;
+                    console.log(rec);
+                    var idx = rec.indexOf("?");
+                    var code = rec.substr(0,idx);
+                    var value = rec.substr(idx+1);
+                    if(code != "0"){
+                        alert("ErrCode '"+code+"'");
+                        value = "NULL,NULL,NULL,NULL,NULL,NULL"
                     }
-                    alter("ErrCode '"+code+"'");
-                    value = "NULL,NULL,NULL,NULL,NULL,NULL"
+                    var arr = value.split(",");
+                    document.getElementById("user_id").innerHTML = arr[0];
+                    document.getElementById("user_name").innerHTML = arr[1];
+                    document.getElementById("user_gender").innerHTML = arr[2];
+                    document.getElementById("user_school").innerHTML = arr[3];
+                    document.getElementById("user_major").innerHTML = arr[4];
+                    document.getElementById("user_class").innerHTML = arr[5];
+                }else if(xhttp.status == 401){
+                    alert("ACCESS_DENIED");
+                    window.open(ROOT+"/signin",'_self');
+                }else if(xhttp.status == 400){
+                    alert("BAD_REQUEST");
                 }
-                var arr = value.split(",");
-                document.getElementById("user_id").innerHTML = arr[0];
-                document.getElementById("user_name").innerHTML = arr[1];
-                var gender = (arr[2]=="0"?"女":"男");
-                document.getElementById("user_gender").innerHTML = gender;
-                document.getElementById("user_school").innerHTML = arr[3];
-                document.getElementById("user_major").innerHTML = arr[4];
-                document.getElementById("user_class").innerHTML = arr[5];
-            }
-
-            function getUserID(){
-                var str = document.cookie;
-                console.log(str);
-                var arr = str.split(";");
-                for(var i=0; i < arr.length;i++){
-                    var value = arr[i].split("=");
-                    if(value[0]=="userid"){
-                        userid = Number(value[1]);
-                        return;
-                    }
-                }
-                alert("Access Denied");
-                window.open("http://" + location.host + "/signin",'_self');
             }
 
             function Change(){
@@ -143,12 +133,8 @@
             }
 
             function SignOut(){
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("GET",ROOT + "/user/",false);
-                xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                xhttp.setRequestHeader("Function", "SignOut");
-                xhttp.send();
-                var rec = xhttp.responseText;
+                localStorage.removeItem("Userid");
+                localStorage.removeItem("Token");
                 alert("Signed Out");
                 window.open("http://" + location.host + "/signin",'_self')
             }
@@ -177,15 +163,18 @@
                 }
                 xhttp.open("POST",ROOT + "/user/",false);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Userid", userid);
+                xhttp.setRequestHeader("Token",token);
                 xhttp.setRequestHeader("Function", "Update");
-                var str = "Name="+input_name+",Gender="+input_gender+",School="+input_school
-                        +",Major="+input_major+",Class="+input_class;
+                var str = "name="+input_name+",gender="+input_gender+",school="+input_school
+                        +",major="+input_major+",class="+input_class;
                 xhttp.send(str);
                 var rec = xhttp.responseText;
                 var idx = rec.indexOf("?");
                 var code = rec.substr(0,idx);
+                var msg = rec.substr(idx+1);
                 if(code != "0"){
-                    alert("ErrCode '"+code+"'");
+                    alert("ErrCode '"+code+"' "+msg);
                     return;
                 }
                 getUserInfo();

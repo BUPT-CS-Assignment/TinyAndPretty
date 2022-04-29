@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+    </head>
+    <body>
+        <h1>TAP SQL Terminal</h1>
+        <button id="help" onclick="window.open('http://'+location.host+'/sql/help')">NEDB SQL Info</button>
+	    <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+        <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        <h3>    
+            <form>
+                SQL Statement : <br>
+		        <textarea type= "text" id = "sql" style = "width: 450px; height: 40px;"></textarea>
+                <br>
+                <button type = "button" onclick="SendVal() ">Send</button>    
+                <br>
+            </form>
+	        <div>
+		        <div style = "float:left">Request :&nbsp</div>
+		        <div id = "req" style = "float:left"></div>
+            </div><br>
+            <div>
+                <div style = "float:left" >ErrorCode :&nbsp</div>
+		        <div id = "msg" style = "float:left"></div>
+            </div><br>
+            <div>
+                <div style = "float:left" >Count :&nbsp</div>
+		        <div id = "count" style = "float:left"></div>
+            </div><br>
+            <div>
+                <div style = "float:left" >ReturnValue :&nbsp</div>
+		        <div id = "val" style = "float:left"></div>
+            </div><br>
+        </h3>
+        <br>
+        <hr align=center width="450px" size=2 style = "float:left">
+        <br>
+        <br>
+        <h6>
+            <table border="0" cellpadding="2" cellspacing="1" frame="box">
+                <caption>Error Code Table</caption>
+                <tr>
+                    <th>Code</th><th>Description</th><th>Code</th><th>Description</th>
+                </tr>
+                <tr><td>0</td><td>NO_ERROR</td><td>-1</td><td>NULL_POINTER</td></tr>
+                <tr><td>1</td><td>SYSTEM_ERROR</td><td>2</td><td>SIZE_NOT_ALLOWED</td></tr>
+                <tr><td>3</td><td>DIR_ERROR</td><td>4</td><td>FILE_OPEN_ERROR</td></tr>
+                <tr><td>5</td><td>FILE_NOT_FOUND</td><td>6</td><td>FILE_DAMAGED</td></tr>
+                <tr><td>7</td><td>SQL_FORM_ERROR</td><td>8</td><td>SQL_UNDEFINED</td></tr>
+                <tr><td>9</td><td>ACTION_BUSY</td><td>10</td><td>TABLE_EXIST</td></tr>
+                <tr><td>11</td><td>TABLE_NOT_FOUND</td><td>12</td><td>TABLE_NUM_REACH_LIMIT</td><td></tr>
+                <tr><td>13</td><td>PARAM_EMPTY</td><td>14</td><td>PARAM_FORM_ERROR</td></tr>
+                <tr><td>15</td><td>PARAM_NOT_FOUND</td><td>16</td><td>PARAM_NUM_MISMATCH</td></tr>
+                <tr><td>17</td><td>VALUE_EMPTY</td><td>18</td><td>TYPE_UNDEFINED</td></tr>
+                <tr><td>19</td><td>TYPE_INT_MISMATCH</td><td>20</td><td>TYPE_INT64_MISMATCH</td></tr>
+                <tr><td>21</td><td>TYPE_REAL_MISMATCH</td><td>22</td><td>TYPE_INT_OVERFLOW</td></tr>
+                <tr><td>23</td><td>TYPE_INT64_OVERFLOW</td><td>24</td><td>TYPE_REAL_OVERFLOW</td></tr>
+                <tr><td>25</td><td>TYPE_TEXT_OVERFLOW</td><td>26</td><td>TYPE_LONGTEXT_OVERFLOW</td></tr>
+                <tr><td>27</td><td>KEY_TYPE_NOT_ALLOWED</td><td>28</td><td>KEY_VAL_EXIST</td></tr>
+                <tr><td>29</td><td>KEY_VAL_REQUIRED</td><td>30</td><td>KEY_VAL_CHANGE_NOT_ALLOWED</td></tr>
+                <tr><td>31</td><td>DATA_NOT_FOUND</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+            </table>
+        </h6>
+        <script>
+            function SendVal(){
+                var xhttp = new XMLHttpRequest();
+                var str = document.getElementById("sql").value;
+                if(str == "") return;
+		        document.getElementById("sql").value = "";
+                document.getElementById("req").innerHTML = str;
+		        document.getElementById("msg").innerHTML = "";
+		        document.getElementById("val").innerHTML = "";
+		        console.log(str);
+                xhttp.onreadystatechange = function(){
+                    if(this.readyState == 4 && this.status == 200){
+                        var value = "",msg = "",count = "";
+                        var rec = this.responseText;
+                        console.log(rec);
+                        var pos1 =rec.indexOf("?")
+                        var pos2 = rec.indexOf("&");
+                        msg = rec.substring(0,pos1);
+                        count = rec.substring(pos1+1,pos2);
+                        value = rec.substring(pos2+1);
+			            if(value == ""){
+			                value = "&lt;null&gt;";
+                        }else if(count > 0){
+                            var pos3 = value.indexOf(";");
+                            if(pos3 > 0){
+                                var str1 = value.substring(0,pos3);
+                                var str2 = value.substring(pos3+1);
+                                value = "[" + str1 + "]<br>"+str2;
+                            }
+                        }
+                        document.getElementById("msg").innerHTML = msg;
+                        document.getElementById("count").innerHTML = count
+                        document.getElementById("val").innerHTML = value;
+                    }
+                };
+                var page = "http://" + location.host + "/sql";
+                xhttp.open("POST",page,true);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.send(str);
+		        status = 1;
+            }
+        </script>
+    </body>
+</html>

@@ -41,48 +41,48 @@
                     alert("Empty Input!");
                     return;
                 }
-                
                 if(id+"" == "admin"){
                     id = "10001";
                 }
                 if(Number(id)!=id){
-                    alert("UserID Number Only");
+                    alert("Invalid UserID!");
                     return;
                 }
                 xhttp.onreadystatechange = function(){
-                    if(this.readyState == 4 && this.status == 200){
-                        var rec = this.responseText;
-                        console.log(this.getAllResponseHeaders());
-                        document.cookie = this.getResponseHeader("Cookie");
-                        console.log(rec);
-                        /* Get Response Info */                        
-                        var pos1 =rec.indexOf("?")
-                        /* Response Str Split */
-                        var code = rec.substring(0,pos1);
-                        var count = rec.substring(pos1+1);
-                        /* Info Check */
-                        if(code != "0"){
-                            if(code == "31"){
-                                alert("User Unregistered");
+                    if(this.readyState == 4){
+                        if(this.status == 200){
+                            var rec = this.responseText;
+                            console.log(this.getAllResponseHeaders());
+                            var token = this.getResponseHeader("Token");
+                            localStorage.setItem("Token",token);
+                            console.log(rec);
+                            /* Get Response Info */                        
+                            var pos1 =rec.indexOf("?")
+                            /* Response Str Split */
+                            var code = rec.substring(0,pos1);
+                            var msg = rec.substring(pos1+1);
+                            /* Info Check */
+                            if(code != "0"){
+                                if(code == "31"){
+                                    alert("User Unregistered");
+                                }else{
+                                    alert(msg);
+                                }
                                 return;
                             }
-                            alert("System Error!");
-                            return;
-                        }
-                        if(count == "0"){
-                            alert("Wrong Password");
-                            return;
-                        }else{
                             window.open(ROOT+"/user/",'_self');
+                        }else if(xhttp.status == 400){
+                            alert("BAD_REQUEST");
                         }
                     }
                 };
-                
-                document.cookie = "userid="+id;
-                console.log(document.cookie);
+                localStorage.setItem("Userid",id);
                 xhttp.open("POST",ROOT + "/signin",true);
                 xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                xhttp.send("passwd="+pwd);
+                xhttp.setRequestHeader("Userid",id);
+                xhttp.setRequestHeader("Passwd",pwd);
+                xhttp.setRequestHeader("Function","signin");
+                xhttp.send();
             }
         </script>
     </body>
