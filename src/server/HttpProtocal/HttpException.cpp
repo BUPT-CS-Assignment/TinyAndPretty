@@ -1,6 +1,6 @@
-#include <BasicService/HttpProtocal/HttpProtocal.h>
-#include <BasicService/HttpProtocal/HttpException.h>
-#include <BasicService/HttpProtocal/HttpManager.h>
+#include <connect/HttpProtocal/HttpProtocal.h>
+#include <connect/HttpProtocal/HttpException.h>
+#include <connect/HttpProtocal/HttpManager.h>
 
 ////handle HTTP Exception
 HttpResponse* HttpManager::dispatchException(const HttpException &e)

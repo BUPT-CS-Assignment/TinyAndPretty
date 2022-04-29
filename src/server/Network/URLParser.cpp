@@ -1,9 +1,9 @@
-#include <BasicService/Network/URLParser.h>
+#include <connect/Network/URLParser.h>
 #include <interfaces.h>
 
 #define ADD_URL(_url, _func) url_table.emplace(_url, _func);
 
-extern std::string getGMTtime();
+extern std::string getGMTtime(uint32_t offset);
 extern EntryFunc StaticResponse;
 
 URLParser::URLParser(){

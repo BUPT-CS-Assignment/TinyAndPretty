@@ -10,11 +10,11 @@
 */
 
 /*----------------- Network Module ----------------- */
-#include <BasicService/HttpProtocal/HttpProtocal.h>
-#include <BasicService/HttpProtocal/HttpException.h>
+#include <connect/HttpProtocal/HttpProtocal.h>
+#include <connect/HttpProtocal/HttpException.h>
 
-#include <BasicService/Network/TAPManager.h>
-#include <BasicService/libs/SimpleJson.hpp>
+#include <connect/Network/TAPManager.h>
+#include <libs/SimpleJson.hpp>
 using namespace SimpleJson;
 
 ////simplize entry define 
@@ -28,13 +28,13 @@ def_HttpEntry(Icon , req);
 def_HttpEntry(Check_It , req);
 
 /*---------------------MD5 Module---------------------*/
-#include <BasicService/libs/md5.h>
+#include <libs/md5.h>
 def_HttpEntry(MD5Test,req);
 
 /*----------------- Data-Base Module -----------------*/
-#include <BasicService/libs/NEDB.h>
-#include <BasicService/libs/BalanceTree.h>
-#include <BasicService/libs/BasicUtils.hpp>
+#include <libs/NEDB.h>
+#include <libs/BalanceTree.h>
+#include <libs/BasicUtils.hpp>
 
 /* User Service */
 def_HttpEntry(SignIn,req);

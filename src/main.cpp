@@ -1,15 +1,19 @@
 #include <common.h>
-#include <BasicService/Network/TAPManager.h>
-#include <BasicService/HttpProtocal/HttpManager.h>
-#include <UserService/Preload.h>
+#include <connect/Network/TAPManager.h>
+#include <connect/HttpProtocal/HttpManager.h>
+#include <service/sys/ServerSys.h>
 
 int main(int argv, char* argc[]){
-    /* Dir Init */
+    //Time Stamp Set
+    TimeStampReset();
+    //Dir Init
     DirectoryInit();
-    /* Server Init */
     UTILSTD::CONSOLE_LOG(0,1,1,"Project Directory '%s'\n",PROJECT_DIR.c_str());
+    //SQL Test Init
     SQLTestGenerate();
-    ServicePreLoad();
+    //Service Resource Init
+    ServicePreload();
+    //Server Init
     TAPManager server;
     server.loadSubManager(std::make_unique<HttpManager>());
     server.start();

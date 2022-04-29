@@ -1,5 +1,5 @@
-#include <BasicService/HttpProtocal/HttpProtocal.h>
-#include <BasicService/HttpProtocal/HttpException.h>
+#include <connect/HttpProtocal/HttpProtocal.h>
+#include <connect/HttpProtocal/HttpException.h>
 
 /*------------------------StringDict------------------------*/
 

@@ -1,4 +1,4 @@
-#include <BasicService/Network/ThreadPool.h>
+#include <connect/Network/ThreadPool.h>
 
 // the constructor just launches some amount of workers
 ThreadPool::ThreadPool(size_t threads)

@@ -7,6 +7,7 @@
 #define HTTP_STATUS_200 "HTTP/1.1 200 OK\r\n"
 #define HTTP_STATUS_300 "HTTP/1.1 300 Multiple Choice\r\n"
 #define HTTP_STATUS_400 "HTTP/1.1 400 Bad Request\r\n"
+#define HTTP_STATUS_401 "HTTP/1.1 401 Unauthorized\r\n"
 #define HTTP_STATUS_403 "HTTP/1.1 403 Forbidden\r\n"
 #define HTTP_STATUS_404 "HTTP/1.1 404 Not Found\r\n"
 #define HTTP_STATUS_502 "HTTP/1.1 502 Bad Gateway\r\n"

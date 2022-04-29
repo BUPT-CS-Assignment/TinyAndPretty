@@ -1,5 +1,5 @@
-#include <BasicService/HttpProtocal/HttpManager.h>
-#include <BasicService/Network/URLParser.h>
+#include <connect/HttpProtocal/HttpManager.h>
+#include <connect/Network/URLParser.h>
 ////Judge by clip 
 bool HttpManager::protocalConfirm() 
 {

@@ -1,11 +1,11 @@
-#include <BasicService/HttpProtocal/HttpProtocal.h>
-#include <BasicService/Network/URLParser.h>
-#include <BasicService/Network/ServerBase.h>
-#include <BasicService/HttpProtocal/HttpException.h>
+#include <connect/HttpProtocal/HttpProtocal.h>
+#include <connect/Network/URLParser.h>
+#include <connect/Network/ServerBase.h>
+#include <connect/HttpProtocal/HttpException.h>
 
 char *nsplit(char *str, const char *token, int n);
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept;
-std::string getGMTtime();
+std::string getGMTtime(uint32_t offset = 0);
 
 #define NOW_POS ((char *)str + cur)
 #define CUR_MOV(obj, offset) (cur += (obj.length() + offset))

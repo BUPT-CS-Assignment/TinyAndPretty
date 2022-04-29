@@ -1,6 +1,6 @@
-#include <BasicService/HttpProtocal/HttpAdapter.h>
-#include <BasicService/HttpProtocal/HttpResponse.h>
-#include <BasicService/Network/ServerBase.h>
+#include <connect/HttpProtocal/HttpAdapter.h>
+#include <connect/HttpProtocal/HttpResponse.h>
+#include <connect/Network/ServerBase.h>
 #include <exception>
 
 ////receive raw byte stream
