@@ -7,5 +7,4 @@ include/generated
 nohup.out
 log
 .vscode-ctags
-build
-build/main-service
+build/main-service-obj

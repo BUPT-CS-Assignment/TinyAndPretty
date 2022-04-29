@@ -6,42 +6,111 @@
 ## 一.目录文件说明 ##
 ```
 .
-├── include             //存放头文件（接口声明）
-│   ├── common.h        //程序共用头
-│   ├── interfaces.h    //模块接口,包含所有模块对外使用的函数定义
-│   ├── Network         //网络服务模块
-│   │   ├── HttpProtocal.h
-│   │   ├── HttpServer.h
-│   │   ├── Network.h
-│   │   ├── ServerBase.h
-│   │   └── URLParser.h
+├── include                     //存放头文件（接口声明）
+│   ├── common.h                //程序共用头
+│   ├── interfaces.h            //模块接口,包含所有模块对外使用的函数定义
+│   ├── connect                 //网络通信模块
+│   │   ├── HttpProtocal 
+│   │   │   ├── HttpAdapter.h
+│   │   │   ├── HttpBase.h
+│   │   │   ├── HttpException.h
+│   │   │   ├── HttpManager.h
+│   │   │   ├── HttpProtocal.h
+│   │   │   ├── HttpRequest.h
+│   │   │   └── HttpResponse.h 
+│   │   │
+│   │   └── Network             //网络服务模块
+│   │       ├── ManagerBase.h
+│   │       ├── ServerBase.h
+│   │       ├── TAPManager.h
+│   │       ├── ThreadPool.h
+│   │       └── URLParser.h
+│   │
 │   ├── libs
-│   │   ├── NEdb.h      //数据库接口头文件
+│   │   ├── BalanceTree.h       //B+树模板
+│   │   ├── BasicUtils.h        //基本小工具
+│   │   ├── md5.h               //MD5加密
+│   │   ├── NEdb.h              //数据库接口头文件
 │   │   └── SimpleJson.hpp
+│   │
+│   ├── service                 //后端服务模块
+│   │   ├── schedule            //活动服务
+│   │   │   └── ScheduleContorl.h  
+│   │   ├── sys                 //系统服务
+│   │   │   └── ServerSys.h     
+│   │   └── user                //用户服务
+│   │       └── UserControl.h  
+│   │
 │   ├── router.conf
+│   ├── TAPapis.h
 │   └── test
 │       └── define.h
+│
 ├── lib
-│   └── libnedb.so      //数据库动态库文件
-├── Kconfig             //参数配置
+│   └── libnedb.a               //数据库静态库文件
+│
+├── Kconfig                     //参数配置
 ├── LICENSE
 ├── Makefile
 ├── README.md
-├── scripts             //存放脚本及文档
+│
+├── scripts                     //存放脚本及文档
 │   ├── build.mk
 │   ├── colors.mk
-│   └── config.mk
-├── src                 //项目源代码
+│   ├── config.mk
+│   ├── database.md             //数据库文档
+│   ├── doc.md
+│   └── intro.md                //项目简介
+│
+├── src                         //项目源代码
 │   ├── main.cpp
-│   ├── Network
-│   │   ├── HttpBase.cpp
-│   │   ├── HttpMessage.cpp
-│   │   ├── HttpServer.cpp
-│   │   ├── HttpUtils.cpp
-│   │   ├── ServerBase.cpp
-│   │   └── URLParser.cpp
-│   └── test
-│       └── test.cpp
+│   ├── server                  
+│   │   ├── HttpProtocal 
+│   │   │   ├── HttpAdapter.cpp
+│   │   │   ├── HttpBase.cpp
+│   │   │   ├── HttpException.cpp
+│   │   │   ├── HttpManager.cpp
+│   │   │   ├── HttpMessage.cpp
+│   │   │   └── HttpUtils.cpp
+│   │   ├── MD5
+│   │   │   └── MD5.cpp
+│   │   └── Network             
+│   │       ├── ServerBase.cpp
+│   │       ├── TAPCenter.cpp
+│   │       ├── ThreadPool.cpp
+│   │       └── URLParser.cpp
+│   │
+│   ├── service                 
+│   │   ├── terminal 
+│   │   │   └── SqlService.cpp
+│   │   ├── user
+│   │   │   ├── IndexService.cpp
+│   │   │   ├── SignService.cpp
+│   │   │   └── UserController.cpp
+│   │   └── ServerSys.cpp   
+│   │
+│   └── test    
+│       └── test.cpp   
+│
+├── web                         //网页文件
+│   ├── sql
+│   │   ├── help.html
+│   │   └── terminal.html
+│   └── user
+│       ├── index.html
+│       ├── signin.html
+│       └── signup.html
+│ 
+├── data                        //数据表文件
+│   ├── src
+│   │   ├── major
+│   │   └── school
+│   ├── sys
+│   │   ├── test
+│   │   └── token
+│   └── user
+│
+│
 └── utils               //存放工具组
 ```
 
