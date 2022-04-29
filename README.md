@@ -9,7 +9,7 @@
 
 ## Schedule
 
-### 项目进度 **`2022.4.28`**
+### 项目进度 **`2022.4.30`**
 - [x] 基本表结构
 - [x] 终端控制
 - [x] 命令解析器
@@ -190,23 +190,24 @@
 - ### Error Code Table
   |Code|Description|Code|Description|
   |:---:|:---:|:---:|:---:|
-  |0|NO_ERROR|-1|NULL_POINTER|
-  |1|SYSTEM_ERROR|2|SIZE_NOT_ALLOWED|
-  |3|DIR_ERROR|4|FILE_OPEN_ERROR|
-  |5|FILE_NOT_FOUND|6|FILE_DAMAGED|
-  |7|SQL_FORM_ERROR|8|SQL_UNDEFINED|
-  |9|ACTION_BUSY|10|TABLE_EXIST|
-  |11|TABLE_NOT_FOUND|12|TABLE_NUM_REACH_LIMIT|
-  |13|PARAM_EMPTY|14|PARAM_FORM_ERROR|
-  |15|PARAM_NOT_FOUND|16|PARAM_NUM_MISMATCH|
-  |17|VALUE_EMPTY|18|TYPE_UNDEFINED|
-  |19|TYPE_INT_MISMATCH|20|TYPE_INT64_MISMATCH|
-  |21|TYPE_REAL_MISMATCH|22|TYPE_INT_OVERFLOW|
-  |23|TYPE_INT64_OVERFLOW|24|TYPE_REAL_OVERFLOW|
-  |25|TYPE_TEXT_OVERFLOW|26|TYPE_LONGTEXT_OVERFLOW|
-  |27|KEY_TYPE_NOT_ALLOWED|28|KEY_VAL_EXIST|
-  |29|KEY_VAL_REQUIRED|30|KEY_VAL_CHANGE_NOT_ALLOWED|
-  |31|DATA_NOT_FOUND|
+  |0|NO_ERROR|1|SYSTEM_ERROR|
+  |2|SIZE_NOT_ALLOWED|3|DIR_ERROR|
+  |4|FILE_OPEN_ERROR|5|FILE_NOT_FOUND|
+  |6|FILE_DAMAGED|7|SQL_FORM_ERROR|
+  |8|SQL_UNDEFINED|9|ACTION_BUSY|
+  |10|TABLE_EXIST|11|TABLE_NOT_FOUND|
+  |12|TABLE_NUM_REACH_LIMIT|13|PARAM_EMPTY|
+  |14|PARAM_FORM_ERROR|15|PARAM_NOT_FOUND|
+  |16|PARAM_NUM_MISMATCH|17|VALUE_EMPTY|
+  |18|TYPE_UNDEFINED|19|TYPE_INT_MISMATCH|
+  |20|TYPE_INT64_MISMATCH|21|TYPE_REAL_MISMATCH|
+  |22|TYPE_INT_OVERFLOW|23|TYPE_INT64_OVERFLOW|
+  |24|TYPE_REAL_OVERFLOW|25|TYPE_TEXT_OVERFLOW|
+  |26|TYPE_LONGTEXT_OVERFLOW|27|KEY_TYPE_NOT_ALLOWED|
+  |28|KEY_VAL_EXIST|29|KEY_VAL_REQUIRED|
+  |30|KEY_VAL_CHANGE_NOT_ALLOWED|31|DATA_NOT_FOUND|
+  |32|COMPARE_NONSUPPORT|33|COMMAND_UNDEFINED|
+  
 
 - ### Interface
   - ##### 简介
@@ -264,20 +265,21 @@
         /* <--------------------------- File Function ---------------------------> */
 
             /**
-            * @brief load table with table name at current dir
-            *
-            * @param fileName table-name
-            * @return int ErrorCode
-            */
-            int Open(const std::string fileName); //载入数据表
-
-            /**
             * @brief mount table with full path without suffix
             *
             * @param filePath full table-path without suffix
             * @return int ErrorCode
             */
-            int Mount(const std::string filePath); //挂载数据表
+            int Open(const std::string filePath); //载入数据表
+
+            /**
+            * @brief load table with table name at current dir
+            *
+            * @param fileName table-name
+            * @return int ErrorCode
+            */
+            int Mount(const std::string fileName); //挂载数据表
+
 
             /**
             * @brief load all tables at current dir
@@ -367,6 +369,15 @@
             * @return int ErrorCode
             */
             int Update(const std::string table, const std::string setVal, const std::string conditions, int& count);
+
+            /**
+            * @brief describe basic table infomation
+            * 
+            * @param table table name
+            * @param retVal return value
+            * @return int ErrorCode
+            */
+            int Describe(const std::string table, std::string& retVal);
 
 
 

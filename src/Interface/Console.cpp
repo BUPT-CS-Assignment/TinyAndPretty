@@ -65,7 +65,7 @@ int NEDBnamespace::__DEBUG_SET__(std::string level){
 ////////////////////////////////////////////////////////////////
 void NEDBnamespace::__MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.26 <Stable>" << endl;
+    cout << "Server version: 22.4.30 <Stable>" << endl;
     cout << "Default resource-dir: " << DEFAULT_DIR << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
@@ -73,7 +73,7 @@ void NEDBnamespace::__MESSAGE__(){
 ////////////////////////////////////////////////////////////////
 
 #define __HELP_MSG__ \
-    "NEDB version: 22.4.26 <Stable>\n\
+    "NEDB version: 22.4.30 <Stable>\n\
      Data Type Support >\n\
     \t[  int     ]  ->  int\n\
     \t[  int     ]  ->  int\n\
@@ -88,6 +88,10 @@ void NEDBnamespace::__MESSAGE__(){
     \n\
     \t[HELP] .help\n\
     \n\
+    \t[DEBUG SET] .debug 'debug_level'\n\
+    \t * Debug Level : 'none', 'simple', 'detail'.\n\
+    \t * Show current debug level if param is empty.\n\
+    \n\
     \t[GET DIR] .dir\n\
     \t * Default dir : '/home/jianxf/.nesrc/'.\n\
     \n\
@@ -97,11 +101,19 @@ void NEDBnamespace::__MESSAGE__(){
     \t[DIR INIT] .dirinit\n\
     \t * Automatically check and create current dir.\n\
     \n\
-    \t[OPEN FILE] .open 'table_name'\n\
+    \t[OPEN FILE] .open 'table_full_path'\n\
+    \t * Enter full path without suffix.\n\
+    \n\
+    \t[MOUNT TABLE] .mount 'table_name'\n\
+    \t * Mount table from current dir.\n\
     \t * Enter table name without suffix.\n\
     \n\
-    \t[OPEN ALL] .openall\n\
-    \t * Open all table from current dir.\n\
+    \t[UNMOUNT TABLE] .unmount 'table_name'\n\
+    \t * Unount table from database instead of delete.\n\
+    \t * Enter table name without suffix.\n\
+    \n\
+    \t[MOUBT ALL] .mountall\n\
+    \t * Mount all table from current dir.\n\
     \n\
     \t[GET SIZE] .size\n\
     \t * Default size : 400 with unit 'Byte'.\n\

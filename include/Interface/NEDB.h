@@ -4,6 +4,7 @@
 
 namespace NEDBSTD{
 
+
     /* <------------------------- Basic NEDB infomation --------------------------> */
 
     /* NEDB debug sign */
@@ -11,14 +12,14 @@ namespace NEDBSTD{
     #define DEBUG_SIMPLE        1
     #define DEBUG_DETAIL        2  
 
-     /**
-      * @brief change NEDB default settings
-      *
-      * @param MAX_TABLES Max Table Numbers
-      * @param DEFAULT_PAGE_SIZE Default Page Size
-      * @param SIG_WAIT_MSECS Time(ms) Wait For Unlock
-      * @param SIG_CHECK_TIMES Check Times While Waiting
-      */
+    /**
+     * @brief change NEDB default settings
+     *
+     * @param MAX_TABLES Max Table Numbers
+     * @param DEFAULT_PAGE_SIZE Default Page Size
+     * @param SIG_WAIT_MSECS Time(ms) Wait For Unlock
+     * @param SIG_CHECK_TIMES Check Times While Waiting
+     */
     void NEDB_SETTING(int MAX_TABLES = 64, int DEFAULT_PAGE_SIZE = 400, int SIG_WAIT_MSECS = 100, int SIG_CHECK_TIMES = 5);
 
     /**
@@ -99,6 +100,7 @@ namespace NEDBSTD{
         /*-- 33--*/  COMMAND_UNDEFINED
     };
 
+
     /* <----------------------------- NEDB Class -------------------------------> */
 
     /**
@@ -120,12 +122,14 @@ namespace NEDBSTD{
         DataBase* nedb;
     public:
 
+
     /* <--------------------------- Basic Function --------------------------> */
-            /**
-             * @brief Construct a new NEDB object
-             *
-             * @param dir default dir
-             */
+        
+        /**
+         * @brief Construct a new NEDB object
+         *
+         * @param dir default dir
+         */
         NEDB(const std::string dir);          //构造函数
 
         /**
@@ -138,20 +142,20 @@ namespace NEDBSTD{
     /* <--------------------------- File Function ---------------------------> */
 
         /**
-         * @brief load table with table name at current dir
-         *
-         * @param fileName table-name
-         * @return int ErrorCode
-         */
-        int Open(const std::string fileName); //载入数据表
-
-        /**
          * @brief mount table with full path without suffix
          *
          * @param filePath full table-path without suffix
          * @return int ErrorCode
          */
-        int Mount(const std::string filePath); //挂载数据表
+        int Open(const std::string filePath); //载入数据表
+
+        /**
+         * @brief load table with table name at current dir
+         *
+         * @param fileName table-name
+         * @return int ErrorCode
+         */
+        int Mount(const std::string fileName); //挂载数据表
 
         /**
          * @brief load all tables at current dir
@@ -242,6 +246,14 @@ namespace NEDBSTD{
          */
         int Update(const std::string table, const std::string setVal, const std::string conditions, int& count);
 
+        /**
+         * @brief describe basic table infomation
+         * 
+         * @param table table name
+         * @param retVal return value
+         * @return int ErrorCode
+         */
+        int Describe(const std::string table, std::string& retVal);
 
 
     /* <------------------------- Directory Function --------------------------> */

@@ -70,10 +70,13 @@ Table* Memorizer::TableLoad(DataBase* db, string name,int mode){
         res = fread(&table->prim_key_, 2, 1, fp);
         res = fread(&table->row_take_up_, 2, 1, fp);
         res = fread(&table->max_rows_per_page_, 2, 1, fp);
-        if(res < 0) return NULL;
+        if(res < 0){
+            delete table;
+            throw FILE_DAMAGED;
+        }
         fclose(fp);
         //主键索引树重构
-        //if(table->max_offset == 0) return table;
+        table->filePath_ = filePath;
         if((fp = fopen((dataPath+DATA_SUFFIX).c_str(), "r")) == NULL){
             //cout << "<W> DATA SOURCE FILE NOT FOUND : " << table_name << endl;
             return table;
@@ -93,7 +96,6 @@ Table* Memorizer::TableLoad(DataBase* db, string name,int mode){
             table->pages_tree_->InsertData(index, i);
         }
         fclose(fp);
-        table->filePath_ = filePath;
         return table;
     }
     catch(NEexception& e){

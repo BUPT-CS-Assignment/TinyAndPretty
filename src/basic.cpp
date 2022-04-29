@@ -176,7 +176,7 @@ int DataBase::open(string name,int mode){
     try{
         /* Thread Lock Check */
         if(!StatusCheck(Status(), SIG_FREE, SIG_CHECK_TIMES)){
-            throw ACTION_BUSY;
+            return ACTION_BUSY;
         }
         int flag = SIG_DEBUG >= DEBUG_SIMPLE;
         if(mode == RELATIVE_PATH){
@@ -188,10 +188,11 @@ int DataBase::open(string name,int mode){
         Memorizer RAM(NULL);
         Table* table = NULL;
         if(__Cursor__ >= MAX_TABLES){
-            throw TABLE_NUM_REACH_LIMIT;
+            return TABLE_NUM_REACH_LIMIT;
         }
         SetStatus(SIG_BLOCK);
         table = RAM.TableLoad(this, name,mode);
+        if(table == NULL) return FILE_DAMAGED;
         if(getTable(name) == NULL){
             __Tables__[__Cursor__] = table;
             ++__Cursor__;
@@ -200,9 +201,9 @@ int DataBase::open(string name,int mode){
         SetStatus(SIG_FREE);
         return NO_ERROR;
     }
-    catch(NEexception& e){
+    catch(NEexception& E){
         SetStatus(SIG_FREE);
-        return e;
+        return E;
     }
 }
 
@@ -220,8 +221,14 @@ int DataBase::exec(string sql, int& num, string& res){
     int t = 0;
     try{
         for(int i = 0; i < sql_num - 1; i++){
-            p.i_analyse(sqls[i]);
-            e.execute_operation();
+            p.analyse(sqls[i]);
+            if(p.getCommand()==__OPERATION){
+                e.execute_operation();
+            }else if(p.getCommand()==__EXIT){
+                e.returnValue_ = "ACCESS_DENIED";
+            }else{
+                e.execute_command();
+            }
             string temp = e.returnValue_;
             if(temp.length() != 0){
                 if(t == 0){
@@ -284,6 +291,7 @@ int DataBase::delete_from(string table, string condition, int& num){
     try{
         e.execute_operation();
         num = e.count_;
+        if(num == 0) return DATA_NOT_FOUND;
         return NO_ERROR;
     }
     catch(NEexception& E){
@@ -303,6 +311,7 @@ int DataBase::update_set(string table, string set_val, string condition, int& nu
     try{
         e.execute_operation();
         num = e.count_;
+        if(num == 0) return DATA_NOT_FOUND;
         return NO_ERROR;
     }
     catch(NEexception& E){
@@ -323,6 +332,7 @@ int DataBase::select_from(string table, string field, string condition, int& num
         e.execute_operation();
         num = e.count_;
         res = e.returnValue_;
+        if(num == 0) return DATA_NOT_FOUND;
         return NO_ERROR;
     }
     catch(NEexception& E){

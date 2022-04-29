@@ -66,6 +66,7 @@ void Executor::execute_command(){
     try{
         switch(parser_->command_){
             case __HELP:
+                returnValue_ = "HELP_INFO";
                 __HELP__();
                 break;
             case __MOUNTALL:
@@ -96,12 +97,14 @@ void Executor::execute_command(){
                 }
                 break;
             case __SHOWDIR:
-                CONSOLE_LOG(0,TIME_FLAG,1,"Current Dir '%s'\n",db_->getDir().c_str());
+                returnValue_ = db_->getDir();
+                CONSOLE_LOG(0,TIME_FLAG,1,"Current Dir '%s'\n",returnValue_.c_str());
                 break;
             case __DIRINIT:
                 db_->dirInit();
                 break;
             case __SHOWPAGESIZE:
+                returnValue_ = to_string(db_->getDefaultPageSize());
                 CONSOLE_LOG(0,TIME_FLAG,1,"PageSize '%d' Bytes\n",db_->getDefaultPageSize());
                 break;
             case __SETPAGESIZE:

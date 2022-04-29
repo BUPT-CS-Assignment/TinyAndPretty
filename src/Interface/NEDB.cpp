@@ -32,29 +32,29 @@ NEDB::NEDB(const string dir){
 }
 
 int NEDB::Close(){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     int res = nedb->close();
     delete nedb;
     return res;
 }
 
 int NEDB::MountAll(int& count){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->openall(count);
 }
 
-int NEDB::Open(const string fileName){
-    if(nedb == NULL) return -1;
-    return nedb->open(fileName,RELATIVE_PATH);
-}
-
-int NEDB::Mount(const string filePath){
-    if(nedb == NULL) return -1;
+int NEDB::Open(const string filePath){
+    if(nedb == NULL) return 1;
     return nedb->open(filePath,FULL_PATH);
 }
 
+int NEDB::Mount(const string fileName){
+    if(nedb == NULL) return 1;
+    return nedb->open(fileName,RELATIVE_PATH);
+}
+
 int NEDB::Unmount(const string tableName){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     try{
         nedb->dropTable(tableName,FILE_UNMOUNT);
         return NO_ERROR;
@@ -64,7 +64,7 @@ int NEDB::Unmount(const string tableName){
 }
 
 int NEDB::Drop(const string tableName){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     try{
         nedb->dropTable(tableName,FILE_DROP);
         return NO_ERROR;
@@ -74,42 +74,48 @@ int NEDB::Drop(const string tableName){
 }
 
 int NEDB::Query(const string sql,int& count,string& retVal ){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->exec(sql,count,retVal);
 }
 
 int NEDB::Create(const string name,const string setField){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->create_table(name,setField);
 }
 
+int NEDB::Describe(const string name,string& res){
+    if(nedb == NULL) return 1;
+    return nedb->describe_table(name,res);
+
+}
+
 int NEDB::Insert(const string table, const string fields, const string values){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->insert_into(table,fields,values);
 }
 
 int NEDB::Delete(const std::string table, const std::string conditions, int& count){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->delete_from(table,conditions,count);
 }
 
 int NEDB::Select(const string table, const string fields, const string conditions, int& count, string& retVal){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->select_from(table,fields,conditions,count,retVal);
 }
 
 int NEDB::Update(const string table, const string setVal, const string conditions, int& count){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->update_set(table,setVal,conditions,count);
 }
 
 int NEDB::DirInit(){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->dirInit();
 }
 
 int NEDB::SetDir(const string dir){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->setDir(dir);
 }
 
@@ -119,12 +125,12 @@ const string NEDB::GetDir(){
 }
 
 int NEDB::SetDefaultPageSize(int size){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->setDefaultPageSize(size);
 }
 
 int NEDB::DefaultPageSize(){
-    if(nedb == NULL) return -1;
+    if(nedb == NULL) return 1;
     return nedb->getDefaultPageSize();
 }
 
