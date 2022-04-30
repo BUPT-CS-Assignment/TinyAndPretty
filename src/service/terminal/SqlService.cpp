@@ -13,11 +13,21 @@ void SQLTestGenerate(){
 }
 
 def_HttpEntry(SqlRun, req){
+    std::string userid(req.queryHeader("Userid"));
+    std::string token(req.queryHeader("Token"));
+    std::string function(req.queryHeader("Function"));
     std::string ans = req.getBody();
-    if(ans == "__NULL__"){
-        std::fstream fs("web/sql/terminal.html", std::ios::in | std::ios::binary);
-        if(fs.is_open()) //std::cerr << "Return HTML\n";
-            return new FileResponse{fs , "text/html"};
+    if(function == ""){
+        return new FileResponse{"web/sql/terminal.html" , "text/html"};
+    }
+    if(TokenCheck("10000",token) != TOKEN_ACCESS){
+        return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
+    }
+    if(function == "Authenticate"){
+        return new HttpResponse{""};
+    }
+    if(function != "SqlRun"){
+        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     CONSOLE_LOG(0, 1, 1, "SQL-Request '%s'\n", ans.c_str());
     const char* sql = ans.c_str();

@@ -66,7 +66,7 @@
                     Class:<br> 
                     <input type = "text" id = "input_class" style = "width: 160px; height: 16px;"><br>  
                     <br><br>
-                    <button type = "button" onclick="SendVal() ">Submit</button>
+                    <button type = "button" onclick="updateUserInfo()">Submit</button>
                     <button type = "button" onclick="
                         document.getElementById('change_info').style.display='none';
                         document.getElementById('cover').style.display='none';
@@ -89,98 +89,7 @@
 	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
             <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
         </h3>
-
-        <script>
-            var userid = localStorage.getItem("Userid");
-            var token = localStorage.getItem("Token");
-            var ROOT = "http://" + location.host;
-            function getUserInfo(){
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("GET",ROOT + "/user/",false);
-                xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                xhttp.setRequestHeader("Userid", userid);
-                xhttp.setRequestHeader("Token",token);
-                xhttp.setRequestHeader("Function", "Fetch");
-                xhttp.send();
-                if(xhttp.status==200){
-                    var rec = xhttp.responseText;
-                    console.log(rec);
-                    var idx = rec.indexOf("?");
-                    var code = rec.substr(0,idx);
-                    var value = rec.substr(idx+1);
-                    if(code != "0"){
-                        alert("ErrCode '"+code+"'");
-                        value = "NULL,NULL,NULL,NULL,NULL,NULL"
-                    }
-                    var arr = value.split(",");
-                    document.getElementById("user_id").innerHTML = arr[0];
-                    document.getElementById("user_name").innerHTML = arr[1];
-                    document.getElementById("user_gender").innerHTML = arr[2];
-                    document.getElementById("user_school").innerHTML = arr[3];
-                    document.getElementById("user_major").innerHTML = arr[4];
-                    document.getElementById("user_class").innerHTML = arr[5];
-                }else if(xhttp.status == 401){
-                    alert("ACCESS_DENIED");
-                    window.open(ROOT+"/signin",'_self');
-                }else if(xhttp.status == 400){
-                    alert("BAD_REQUEST");
-                }
-            }
-
-            function Change(){
-                document.getElementById("change_info").style.display="block";
-                document.getElementById("cover").style.display="block";
-            }
-
-            function SignOut(){
-                localStorage.removeItem("Userid");
-                localStorage.removeItem("Token");
-                alert("Signed Out");
-                window.open("http://" + location.host + "/signin",'_self')
-            }
-
-            function SendVal(){
-                var xhttp = new XMLHttpRequest();
-                /* Get Input Value */
-                var input_name = document.getElementById("input_name").value;
-                var input_gender = document.getElementById("input_gender").value;
-                var input_school = document.getElementById("input_school").value;
-                var input_major = document.getElementById("input_major").value;
-                var input_class = document.getElementById("input_class").value;
-                if(input_name == "" || input_class == ""){
-                    alert("Empty Input!");
-                    return;
-                }
-                console.log(userid);
-                if(userid == 10001){
-                    if(Number(input_class)<0 || Number(input_class)>2147483647){
-                        alert("Invalid Class Number! Range From 0 to 2147483647.");
-                        return;
-                    }
-                }else if(input_class.length != 10 || Number(input_class)>2147483647){
-                    alert("Invalid Class Number! Range From 1000000000 to 2147483647.");
-                    return;
-                }
-                xhttp.open("POST",ROOT + "/user/",false);
-                xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                xhttp.setRequestHeader("Userid", userid);
-                xhttp.setRequestHeader("Token",token);
-                xhttp.setRequestHeader("Function", "Update");
-                var str = "name="+input_name+",gender="+input_gender+",school="+input_school
-                        +",major="+input_major+",class="+input_class;
-                xhttp.send(str);
-                var rec = xhttp.responseText;
-                var idx = rec.indexOf("?");
-                var code = rec.substr(0,idx);
-                var msg = rec.substr(idx+1);
-                if(code != "0"){
-                    alert("ErrCode '"+code+"' "+msg);
-                    return;
-                }
-                getUserInfo();
-                document.getElementById("change_info").style.display="none";
-                document.getElementById("cover").style.display="none";
-            }
-        </script>
+        <script type =  "text/javascript" src = "userservice.js"></script>
+        <script type =  "text/javascript" src = "/sql/terminal.js"></script>
     </body>
 </html>
