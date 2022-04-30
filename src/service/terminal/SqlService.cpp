@@ -13,10 +13,10 @@ void SQLTestGenerate(){
 }
 
 def_HttpEntry(SqlRun, req){
-    std::string userid(req.queryHeader("Userid"));
-    std::string token(req.queryHeader("Token"));
-    std::string function(req.queryHeader("Function"));
-    std::string ans = req.getBody();
+    string userid(req.queryHeader("Userid"));
+    string token(req.queryHeader("Token"));
+    string function(req.queryHeader("Function"));
+    string ans = req.getBody();
     if(function == ""){
         return new FileResponse{"web/sql/terminal.html" , "text/html"};
     }
@@ -26,30 +26,42 @@ def_HttpEntry(SqlRun, req){
     if(function == "Authenticate"){
         return new HttpResponse{""};
     }
-    if(function != "SqlRun"){
-        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
-    }
-    CONSOLE_LOG(0, 1, 1, "SQL-Request '%s'\n", ans.c_str());
-    const char* sql = ans.c_str();
-    /* DataBase Query */
     int count;
     string res;
-    int errCode = __LSR__.Query(sql, count, res);
-    CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
-    return new HttpResponse{std::to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+    //Sql Query
+    if(function == "SqlRun"){
+        CONSOLE_LOG(0, 1, 1, "SQL-Request '%s'\n", ans.c_str());
+        const char* sql = ans.c_str();
+        int errCode = __LSR__.Query(sql, count, res);
+        CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+    }
+    //Get Table List
+    if(function == "List"){
+        CONSOLE_LOG(0, 1, 1, "Table List Req\n");
+        int errCode = __LSR__.Query("select tables;",count,res);
+        CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+    }
+    //Get Table Info
+    if(function == "Fetch"){
+        int errCode = __LSR__.Select(ans,"*","",count,res);
+        CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+    }
+    //Update Table Info
+    if(function == "Update"){
+        string * str = Split(ans,';',count);
+        int errCode = __LSR__.Update(str[0],str[1],str[2],count);
+        CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+    }
+    return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
 }
 
 // EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
 def_HttpEntry(SqlHelp, req){
-    std::fstream fs("web/sql/help.html", std::ios::in | std::ios::binary);
-    if(fs.is_open()){
-        return new FileResponse{fs , "text/html"};
-    }
-    else{
-        return new HttpResponse{"404 NOT FOUND" , HTTP_STATUS_404};
-    }
+    return new FileResponse{"web/sql/help.html" , "text/html"};
 }
-
 
 static int id;
 def_HttpEntry(SqlTest, req){

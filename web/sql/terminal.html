@@ -4,15 +4,43 @@
     <head>
         <title>Tiny And Pretty</title>
     </head>
-    <body body onload="Authenticate()">
+    <body body onload="Authenticate(),getTableList()">
         <h1>TAP SQL Terminal</h1>
         <button id="help" onclick="window.open('http://'+location.host+'/sql/help')">NEDB SQL Info</button>
 	    <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
         <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
-        <h3>    
+        <div id="gui" style="width: 500px; height: 300px;
+                            font-size:medium;font-weight: 700;
+                            border: 1px solid; padding: 10px;
+                            margin-top:20px;margin-bottom:20px;">
+            <div style="width: 20%;height:100%;
+                        border: 1px solid;
+                        float: left;
+                        overflow-y:auto;">
+                <table id="table_list">
+                    <thead>Table List</thead>
+                </table>
+		        <div style = "display: inline-block;height:100%;"></div>
+            </div>
+            <div style="width:77%;height:100%;
+                        margin-left: 2%;
+                        display: inline-block;
+                        border: 1px solid;
+                        overflow-y:auto;">
+                <table id="table_info" border="2" 
+                                        cellpadding="3" cellspacing="2" frame="box"
+                                        style="border-collapse: collapse;
+                                        border-spacing: 0;
+                                        empty-cells: show;
+                                        border: 1px solid #cbcbcb;">
+                </table>
+            </div>
+        </div>
+        <div id="console" style="width: 500px;font-size:medium;font-weight: 700;
+                                border: 1px solid; padding: 10px;" >
             <form>
                 SQL Statement : <br>
-		        <textarea type= "text" id = "sql" style = "width: 450px; height: 40px;"></textarea>
+		        <textarea type= "text" id = "sql" style = "width:98.5%; height: 40px;"></textarea>
                 <br>
                 <button type = "button" onclick="SqlSend()">Send</button>    
                 <br>
@@ -20,27 +48,26 @@
 	        <div>
 		        <div style = "float:left">Request :&nbsp</div>
 		        <div id = "req" style = "float:left"></div>
-            </div><br>
-            <div>
+                <br>
                 <div style = "float:left" >ErrorCode :&nbsp</div>
 		        <div id = "msg" style = "float:left"></div>
-            </div><br>
-            <div>
+                <br>
                 <div style = "float:left" >Count :&nbsp</div>
 		        <div id = "count" style = "float:left"></div>
-            </div><br>
-            <div>
+                <br>
                 <div style = "float:left" >ReturnValue :&nbsp</div>
 		        <div id = "val" style = "float:left"></div>
-            </div><br>
+                <br>
+            </div>
         </h3>
+        </div>
         <br>
-        <hr align=center width="450px" size=2 style = "float:left">
-        <br>
-        <br>
+        <hr align=left width="520px" size=2 >
+        <div>
         <h6>
-            <table border="0" cellpadding="2" cellspacing="1" frame="box">
-                <caption>Error Code Table</caption>
+            <table border="0" cellpadding="3" cellspacing="2" frame="box" 
+                    style="float:inline-start;width: 520px; font-size:small;">
+                <caption style="font-size: large;">Error Code Table</caption>
                 <tr>
                     <th>Code</th><th>Description</th><th>Code</th><th>Description</th>
                 </tr>
@@ -62,8 +89,9 @@
                 <tr><td>30</td><td>KEY_VAL_CHANGE_NOT_ALLOWED</td><td>31</td><td>DATA_NOT_FOUND</td></tr>
             </table>
         </h6>
+        </div>
         <h4>
-            <div id="cover" style="display:block;position:absolute;  
+            <div id="cover" style="display:none;position:absolute;  
                             top:0%; left:0%; width:100%;height:100%;
                             background-color: white; 
                             z-index:1001;">Loading...
