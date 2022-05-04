@@ -70,17 +70,11 @@ def_HttpEntry(SqlTest, req){
     string res;
     CONSOLE_LOG(0, 1, 1, "Warning : DataBase Test %d Start\n", id);
     int errCode = __LSR__.Query("drop table database_test;", count, res);
-    if(errCode != NO_ERROR){
-        CONSOLE_LOG(0, 1, 1, "Warning : Query %d OK return Code %d\n", id, errCode);
-        return new HttpResponse{std::to_string(errCode)};
-    }
+    CONSOLE_LOG(0, 1, 1, "Dropping table... Warning : Query %d OK return Code %d\n", id, errCode);
     errCode = __LSR__.Query("create table database_test(id int,name text);", count, res);
-    if(errCode != NO_ERROR){
-        CONSOLE_LOG(0, 1, 1, "Warning : Query %d OK return Code %d\n", id, errCode);
-        return new HttpResponse{std::to_string(errCode)};
-    }
+    CONSOLE_LOG(0, 1, 1, "Creating table... Warning : Query %d OK return Code %d\n", id, errCode);
     errCode = __LSR__.Query(DataBaseTestSQL.c_str(), count, res);
-    CONSOLE_LOG(0, 1, 1, "Warning : Query %d OK return Code %d\n", id, errCode);
+    CONSOLE_LOG(0, 1, 1, "Testing... Warning : Query %d OK return Code %d\n", id, errCode);
     return new HttpResponse{std::to_string(errCode)};
 
 }
