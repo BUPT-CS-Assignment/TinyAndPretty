@@ -36,6 +36,11 @@ def_HttpEntry(MD5Test,req);
 #include <libs/BalanceTree.h>
 #include <libs/BasicUtils.hpp>
 
+/*----------------- Vue/Axios Module-----------------*/
+def_HttpEntry(Vue2,req);
+def_HttpEntry(Vue3,req);
+def_HttpEntry(Axios,req);
+
 /* User Service */
 def_HttpEntry(SignIn,req);
 def_HttpEntry(SignUp,req);
