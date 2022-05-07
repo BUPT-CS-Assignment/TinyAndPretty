@@ -5,47 +5,48 @@ using namespace NEDBSTD;
 using namespace UTILSTD;
 
 def_HttpEntry(SignIn, req){
-    string userid(req.queryHeader("Userid"));
-    string passwd(req.queryHeader("Passwd"));
     string function(req.queryHeader("Function"));
-    string body = req.getBody();
-    CONSOLE_LOG(0,1,1,"Signin-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
-    if(userid == "" || function == ""){
+    if(function == ""){
         return new FileResponse{"web/user/signin.html" , "text/html"};
     }
+    string userid(req.queryHeader("Userid"));
+    CONSOLE_LOG(0,1,1,"Signin-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
     if(function != "signin"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
+    string passwd = req.getBody();
     User user(userid);
     int res;
     if((res = user.Signin(passwd)) == 0){
-        HttpResponse* resp = new HttpResponse("0?NO_ERROR");
+        HttpResponse* resp = new HttpResponse("NO_ERROR");
         resp->appendHeader("Token",TokenSign(userid));
         return resp;
     }else if(res== -1){
-        return new HttpResponse{"-1?PASSWORD_MISMATCH"};
+        return new HttpResponse{"PASSWORD_MISMATCH"};
+    }else if(res== 31){
+        return new HttpResponse{"USER_UNREGISTERED"};
     }else{
-        return new HttpResponse{to_string(res)+"?"+NEexceptionName[res]};
+        return new HttpResponse{NEexceptionName[res]};
     }
 }
 
 
 def_HttpEntry(SignUp, req){
-    string userid(req.queryHeader("Userid"));
-    string passwd(req.queryHeader("Passwd"));
     string function(req.queryHeader("Function"));
-    CONSOLE_LOG(0,1,1,"SignUp-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
-    if(userid == "" || function == ""){
+    if(function == ""){
         return new FileResponse{"web/user/signup.html" , "text/html"};
     }
+    string userid(req.queryHeader("Userid"));
+    CONSOLE_LOG(0,1,1,"SignUp-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
     if(function != "signup"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
+    string passwd = req.getBody();
     User user(userid);
     int res = user.Signup(passwd);
     if(res == 0){
-        return new HttpResponse("0?NO_ERROR");
+        return new HttpResponse("NO_ERROR");
     }else{
-        return new HttpResponse{to_string(res)+"?"+NEexceptionName[res]};
+        return new HttpResponse{NEexceptionName[res]};
     }
 }

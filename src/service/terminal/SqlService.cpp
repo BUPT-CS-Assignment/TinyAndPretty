@@ -20,37 +20,63 @@ def_HttpEntry(SqlRun, req){
     if(function == ""){
         return new FileResponse{"web/sql/terminal.html" , "text/html"};
     }
+    /*
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
-    }
+    }*/
     if(function == "Authenticate"){
         return new HttpResponse{""};
     }
     int count;
     string res;
     //Sql Query
-    if(function == "SqlRun"){
+    if(function == "run"){
         CONSOLE_LOG(0, 1, 1, "SQL-Request '%s'\n", ans.c_str());
         const char* sql = ans.c_str();
         int errCode = __LSR__.Query(sql, count, res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
-        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+        Json J;
+        J.push_back({"msg",NEexceptionName[errCode].c_str()});
+        J.push_back({"count",count});
+        J.push_back({"retVal",res.c_str()});
+        return new JsonResponse{J};
+        //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Get Table List
-    if(function == "List"){
+    if(function == "list"){
         CONSOLE_LOG(0, 1, 1, "Table List Req\n");
         int errCode = __LSR__.Query("select tables;",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
-        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+        Json J;
+        int length;
+        string* str = Split(res,',',length);
+        vector<string> list;
+        for(int i = 0; i < length; i++){
+            list.push_back(str[i]);
+        }
+        delete[] str;
+        J.push_back({"msg",NEexceptionName[errCode].c_str()});
+        J.push_back({"list",list});
+        return new JsonResponse{J};        
+        //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Get Table Info
-    if(function == "Fetch"){
-        int errCode = __LSR__.Select(ans,"*","",count,res);
+    if(function == "detail"){
+        string tablename(req.queryParam("table"));
+        int errCode = __LSR__.Select(tablename,"*","",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
-        return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
+        Json J;
+        J.push_back({"name",tablename.c_str()});
+        if(errCode!=NO_ERROR) return new JsonResponse{J};
+        string fields = res.substr(0,res.find_first_of(";"));
+        string data = res.substr(res.find_first_of(";")+1);
+        J.push_back({"field",fields.c_str()});
+        J.push_back({"data",data.c_str()});
+        return new JsonResponse{J};
+        //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Update Table Info
-    if(function == "Update"){
+    if(function == "update"){
         string * str = Split(ans,';',count);
         int errCode = __LSR__.Update(str[0],str[1],str[2],count);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);

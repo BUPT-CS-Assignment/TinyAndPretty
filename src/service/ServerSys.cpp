@@ -56,3 +56,15 @@ void DirectoryInit(){
     SRC_DIR = PROJECT_DIR + "/data/src";
     SYS_DIR = PROJECT_DIR + "/data/sys";
 }
+
+def_HttpEntry(Vue2, req){
+    return new FileResponse{"lib/vue2.js" , "application/javascript"};
+}
+
+def_HttpEntry(Vue3, req){
+    return new FileResponse{"lib/vue3.js" , "application/javascript"};
+}
+
+def_HttpEntry(Axios, req){
+    return new FileResponse{"lib/axios.js" , "application/javascript"};
+}
