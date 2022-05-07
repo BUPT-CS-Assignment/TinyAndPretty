@@ -4,34 +4,32 @@
     <head>
         <title>Tiny And Pretty</title>
         <meta charset="UTF-8">
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
     </head>
-    <body onload="getUserInfo()">
+    <body onload="info.fetch()">
         <h1>TAP User Panel</h1>
-        <h3>    
-            <form>
-                <div style = "float:left">UserID :&nbsp</div>
-                <div id = "user_id" style = "float:left"></div>
+        <h3>   
+            <div id="userinfo">
+                <form>
+                    <div style = "float:left" v-cloak>UserID : {{userid}}</div>
+                    <br>
+                    <div style = "float:left" v-cloak>Name : {{username}}</div>
+                    <br>
+                    <div style = "float:left" v-cloak>Gender : {{gender}}</div>
+                    <br>
+                    <div style = "float:left" v-cloak>School : {{school}}</div>
+                    <br>
+                    <div style = "float:left" v-cloak>Major : {{major}}</div>
+                    <br>
+                    <div style = "float:left" v-cloak>Class : {{classid}}</div>
+                </form>
                 <br>
-                <div style = "float:left">Name :&nbsp</div>
-                <div id = "user_name" style = "float:left"></div>
-                <br>
-                <div style = "float:left">Gender :&nbsp</div>
-                <div id = "user_gender" style = "float:left"></div>
-                <br>
-                <div style = "float:left">School :&nbsp</div>
-                <div id = "user_school" style = "float:left"></div>
-                <br>
-                <div style = "float:left">Major :&nbsp</div>
-                <div id = "user_major" style = "float:left"></div>
-                <br>
-                <div style = "float:left">Class :&nbsp</div>
-                <div id = "user_class" style = "float:left"></div>
-            </form>
-            <br>
+                <button type = "button" @click="TimeTable()">Time Table</button>
+                <button type = "button" onclick="DivShow() ">Change Info</button>
+                <button type = "button" onclick="SignOut() ">Sign Out</button>
+            </div>
         </h3>
-        <button type = "button" onclick="TimeTable()">Time Table</button>
-        <button type = "button" onclick="Change() ">Change Info</button>
-        <button type = "button" onclick="SignOut() ">Sign Out</button>
         <br>
         <div id="change_info" style="display:none; position:absolute;  
                                     top:15%; left:10%; width:260px; height:360px;
@@ -41,14 +39,14 @@
 			    <h3>Infomation Update</h3>
                 <form>
                     Name:<br> 
-                    <input type = "text" id = "input_name" style = "width: 160px; height: 16px;"><br>
+                    <input type = "text" v-model="name" style = "width: 160px; height: 16px;"><br>
                     Gender:<br>
-                    <select id="input_gender">
+                    <select v-model="gender">
                         <option value="1">男</option>
                         <option value="0">女</option>
                     </select><br> 
                     School:<br>
-                    <select id="input_school">
+                    <select v-model="school">
                         <option value="311">信息与通信工程学院</option>
                         <option value="312">电子工程学院</option>
                         <option value="313">计算机学院</option>
@@ -57,7 +55,7 @@
                         <option value="0">其他</option>
                     </select><br> 
                     Major:<br>
-                    <select id="input_major">
+                    <select v-model="major">
                         <option value="80901">计算机科学与技术</option>
                         <option value="80903">网络工程</option>
                         <option value="80910">数据科学与大数据技术</option>
@@ -65,15 +63,10 @@
                         <option value="0">其他</option>
                     </select><br> 
                     Class:<br> 
-                    <input type = "text" id = "input_class" style = "width: 160px; height: 16px;"><br>  
+                    <input type = "text" v-model="classid" style = "width: 160px; height: 16px;"><br>  
                     <br><br>
-                    <button type = "button" onclick="updateUserInfo()">Submit</button>
-                    <button type = "button" onclick="
-                        document.getElementById('change_info').style.display='none';
-                        document.getElementById('cover').style.display='none';
-                    ">Cancel</button>
-                    
-                    
+                    <button type = "button" @click="update()">Submit</button>
+                    <button type = "button" onclick="DivHide()">Cancel</button> 
                 </form>
 		</div>
         <div id="cover" style="display:none;position:absolute;  
@@ -90,7 +83,138 @@
 	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
             <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
         </h3>
-        <script type =  "text/javascript" src = "userservice.js"></script>
-        <script type =  "text/javascript" src = "/sql/terminal.js"></script>
+        
+        <script>
+            var ROOT = "http://" + location.host;
+            var info = new Vue({
+                el:'#userinfo',
+                data:{
+                    userid:'',
+                    username:'',
+                    gender:'',
+                    school:'',
+                    major:'',
+                    classid:''
+                },
+                methods: {
+                     fetch:function(){
+                        axios.get('/user/',{
+                            headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'fetch',
+                                'Token':localStorage.getItem('Token'),
+                                'Userid':localStorage.getItem('Userid')
+                            }
+                        })
+                        .then(res => {
+                            console.log(res)
+                            this.userid = res.data.id;
+                            this.username = res.data.name;
+                            this.gender = res.data.gender;
+                            this.school = res.data.school;
+                            this.major = res.data.major;
+                            this.classid = res.data.class;
+                        })
+                        .catch(err =>{
+                            console.log(err);
+                            if(err.response.status == 401){
+                                alert("ACCESS_DENIED");
+                                window.open(ROOT+"/signin",'_self');
+                            }
+                        })
+                     } 
+                },
+            });
+
+            var inputchage = new Vue({
+                el:'#change_info',
+                data:{
+                    name:'',
+                    gender:1,
+                    school:0,
+                    major:0,
+                    classid:''
+                },
+                methods:{
+                    update:function(){
+                        if(this.name == "" || this.classid == ""){
+                            alert("empty input!");
+                            return;
+                        }
+                        if(this.userid == 10001){
+                        if(Number(this.classid)<0 || Number(this.classid)>2147483647){
+                            alert("classid range from 0 to 2147483647!");
+                            return;
+                        }
+                        }else if(this.classid.length != 10 || Number(this.classid)>2147483647){
+                            alert("classid range from 1000000000 to 2147483647!");
+                            return;
+                        }
+                        var str = "name="+this.name+",gender="+this.gender+",school="+this.school
+                                 +",major="+this.major+",class="+this.classid;
+                        axios.post('/user/',
+                            str,
+                            {headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'update',
+                                'Token':localStorage.getItem('Token'),
+                                'Userid':localStorage.getItem('Userid')
+                            }},
+                        )
+                        .then(res => {
+                            console.log(res)
+                            if(res.data!="NO_ERROR"){
+                                alert(res.data);
+                                return;
+                            }
+                            info.fetch();
+                            DivHide();
+                        })
+                        .catch(err =>{
+                            console.log(err);
+                            if(err.response.status == 401){
+                                alert("ACCESS_DENIED");
+                                window.open(ROOT+"/signin",'_self');
+                            }
+                        })
+                    }
+                }
+            });
+
+            function SignOut(){
+                localStorage.removeItem("Userid");
+                localStorage.removeItem("Token");
+                alert("Signed Out");
+                window.open("http://" + location.host + "/signin",'_self')
+            }
+
+            function DivShow(){
+                document.getElementById("change_info").style.display="block";
+                document.getElementById("cover").style.display="block";
+            }
+
+            function DivHide(){
+                document.getElementById("change_info").style.display="none";
+                document.getElementById("cover").style.display="none";
+            }
+
+            function TimeTable(){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET",ROOT + "/user/schedule/",false);
+                xhttp.setRequestHeader("Content-type", "multipart/form-data");
+                xhttp.setRequestHeader("Userid", userid);
+                xhttp.setRequestHeader("Token",token);
+                xhttp.setRequestHeader("Function", "Fetch");
+                xhttp.send();
+                if(xhttp.status==200){
+                    var rec = xhttp.responseText;
+                    console.log(rec);
+                }else if(xhttp.status == 401){
+                    alert("ACCESS_DENIED");
+                }else if(xhttp.status == 400){
+                    alert("BAD_REQUEST");
+                }
+            }
+        </script>
     </body>
 </html>

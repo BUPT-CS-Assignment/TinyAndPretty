@@ -3,21 +3,23 @@
 <html>
     <head>
         <title>Tiny And Pretty</title>
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
     </head>
     <body>
         <h1>TAP Sign Up</h1>
         <h2>    
-            <form>
+            <div id="signup">
                 UserID:<br> 
-                <input type = "text" id = "userid" style = "width: 160px; height: 16px;">
+                <input type = "number" v-model="userid" style = "width: 160px; height: 16px;">
                 <br>
                 Password:<br> 
-                <input type = "password" id = "passwd" style = "width: 160px; height: 16px;">
+                <input type = "password" v-model="passwd" style = "width: 160px; height: 16px;">
                 <br>
                 Password Confirm:<br> 
-                <input type = "password" id = "passwd_cfm" style = "width: 160px; height: 16px;">
+                <input type = "password" v-model="passwd_cfm" style = "width: 160px; height: 16px;">
                 <br>
-                <button type = "button" onclick="SignUp() ">Sign Up</button>    
+                <button type = "button" @click="signup()">Sign Up</button>    
                 <br>
                
             </form>
@@ -36,6 +38,60 @@
 	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
             <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
         </h3>
-        <script type =  "text/javascript" src = "user/userservice.js"></script>
+        <script>
+            var ROOT = "http://" + location.host;
+            var vm = new Vue({
+                el:'#signup',
+                data:{
+                    userid:'',
+                    passwd:'',
+                    passwd_cfm:''
+                },
+                methods:{
+                    signup:function(){
+                        if(this.userid == '' || this.passwd == ''){
+                            alert("empty input!");
+                            return;
+                        }
+                        var id = Number(this.userid);
+                        if(isNaN(id)){
+                            alert("userid must be numeric!");
+                            return;
+                        }else if(this.userid.length!= 10 || id>2147483647){
+                            alert("userid range from 1000000000 to 2147483647!");
+                            return;
+                        }
+                        if(this.passwd.length > 16){
+                            alert("password length beyond 16!");
+                            return;
+                        }
+                        if(this.passwd != this.passwd_cfm){
+                            alert("passwd not match!");
+                            return;
+                        }
+                        axios.post('/signup',
+                            this.passwd,
+                            {headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'signup',
+                                'Userid': this.userid
+                            }}
+                        )
+                        .then(res => {
+                            if(res.data!="NO_ERROR"){
+                                alert(res.data);
+                                return;
+                            }
+                            window.open(ROOT+"/signin",'_self');
+                        })
+                        .catch(err => {
+                            if(err.response.status == 400){
+                                alert("BAD_REQUEST");
+                            }
+                        })
+                    }
+                }
+            });
+        </script>
     </body>
 </html>

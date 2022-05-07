@@ -3,21 +3,23 @@
 <html>
     <head>
         <title>Tiny And Pretty</title>
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
     </head>
     <body>
         <h1>TAP Authentication</h1>
         <h2>    
-            <form>
+            <div id="signin">
                 UserID:<br> 
-                <input type = "text" id = "userid" style = "width: 160px; height: 16px;">
+                <input type="text" v-model="userid" style = "width: 160px; height: 16px;">
                 <br>
                 Password:<br> 
-                <input type = "password" id = "passwd" style = "width: 160px; height: 16px;">
+                <input type = "password" v-model="passwd" style = "width: 160px; height: 16px;">
                 <br>
-                <button type = "button" onclick="SignIn()">Sign In</button>
+                <button type = "button" @click="signin()">Sign In</button>
                 <button type = "button" onclick="window.open('http://'+location.host+'/signup','_self')">Sign Up</button>       
                 <br>
-            </form>
+            </div>
         </h2>
         <br>
         <hr align=center width="400px" size=2 style = "float:left">
@@ -29,6 +31,53 @@
 	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
             <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
         </h3>
-        <script type =  "text/javascript" src = "user/userservice.js"></script>
+        <script>
+            var ROOT = "http://" + location.host;
+            var vm = new Vue({
+                el: '#signin',
+                data:{
+                    userid:'',
+                    passwd:''
+                },
+                methods:{
+                    signin:function(){
+                        if(this.userid == '' || this.passwd == ''){
+                            alert("empty input!");
+                            return;
+                        }
+                        var id = this.userid=="admin"?10000:Number(this.userid);
+                        if(isNaN(id)){
+                            alert("userid must be numeric!");
+                            return;
+                        }
+                        axios.post('/signin',
+                            this.passwd,
+                            {headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'signin',
+                                'Userid':id
+                            }}
+                        )
+                        .then(res => {
+                            if(res.data!="NO_ERROR"){
+                                alert(res.data);
+                                return;
+                            }
+                            var token = res.headers["token"];
+                            localStorage.setItem("Userid",id);
+                            localStorage.setItem("Token",token);
+                            console.log(localStorage);
+                            window.open(ROOT+"/user/",'_self');
+                        })
+                        .catch(err =>{
+                            console.log(err);
+                            if(err.response.status == 401){
+                                alert("ACCESS_DENIED");
+                            }
+                        })
+                    }
+                }
+            });
+        </script>
     </body>
 </html>

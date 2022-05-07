@@ -3,8 +3,10 @@
 <html>
     <head>
         <title>Tiny And Pretty</title>
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
     </head>
-    <body body onload="Authenticate(),getTableList()">
+    <body body onload="Authenticate(),tablegui.getList()">
         <h1>TAP SQL Terminal</h1>
         <button id="help" onclick="window.open('http://'+location.host+'/sql/help')">NEDB SQL Info</button>
 	    <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
@@ -17,11 +19,15 @@
                         border: 1px solid;
                         float: left;
                         overflow-y:auto;">
-                <table id="table_list">
+                <table>
                     <thead>Table List</thead>
+                    <tr v-for="(item) in tablelist">
+                        <td><button @click="getValue(item)">{{item}}</button></td>
+                    </tr>
                 </table>
 		        <div style = "display: inline-block;height:100%;"></div>
             </div>
+
             <div style="width:77%;height:100%;
                         margin-left: 2%;
                         display: inline-block;
@@ -33,33 +39,31 @@
                                         border-spacing: 0;
                                         empty-cells: show;
                                         border: 1px solid #cbcbcb;">
+                    <thead>{{name}}</thead>
+                    <tr>
+                        <th v-for="(fieldname) in field">{{fieldname}}</th>
+                    </tr>
+                    <tr v-for="(value) in detail">
+                        <td v-for="(item) in value">{{item}}</td>
+                    </tr>
                 </table>
             </div>
         </div>
+
         <div id="console" style="width: 500px;font-size:medium;font-weight: 700;
-                                border: 1px solid; padding: 10px;" >
-            <form>
-                SQL Statement : <br>
-		        <textarea type= "text" id = "sql" style = "width:98.5%; height: 40px;"></textarea>
-                <br>
-                <button type = "button" onclick="SqlSend()">Send</button>    
-                <br>
-            </form>
+                                border: 1px solid; padding: 10px;
+                                height: auto;" >
+            SQL Statement : <br>
+            <textarea v-model="inputsql" type= "text" style = "width:98.5%; height: 40px;"></textarea><br>
+            <button type = "button" @click="Send()">Send</button>
+            <br>
 	        <div>
-		        <div style = "float:left">Request :&nbsp</div>
-		        <div id = "req" style = "float:left"></div>
-                <br>
-                <div style = "float:left" >ErrorCode :&nbsp</div>
-		        <div id = "msg" style = "float:left"></div>
-                <br>
-                <div style = "float:left" >Count :&nbsp</div>
-		        <div id = "count" style = "float:left"></div>
-                <br>
-                <div style = "float:left" >ReturnValue :&nbsp</div>
-		        <div id = "val" style = "float:left"></div>
-                <br>
+		        <div style = "float:left" v-cloak>Request : {{req}}</div><br>
+                <div style = "float:left" v-cloak>ErrorCode : {{msg}}</div><br>
+                <div style = "float:left" v-cloak>Count : {{count}}</div><br>
+                <div style = "float:left" v-cloak>ReturnValue : {{val}}</div><br>
             </div>
-        </h3>
+
         </div>
         <br>
         <hr align=left width="520px" size=2 >
@@ -97,6 +101,138 @@
                             z-index:1001;">Loading...
             </div>
         </h4>
+        <script>
+            var userid = localStorage.getItem("Userid");
+            var token = localStorage.getItem("Token");
+            var ROOT = "http://" + location.host;
+
+            var sqlcmd = new Vue({
+                el:'#console',
+                data:{
+                    inputsql:'',
+                    req:'',
+                    msg:'',
+                    count:'',
+                    val:''
+                },
+                methods:{
+                    Clear:function(){
+                        this.inputsql = this.msg = this.count = this.val = '';
+                    },
+                    Send:function(){
+                        if(this.inputsql=='') return;
+                        console.log(this.inputsql);
+                        axios.post('/sql',this.inputsql,{
+                            headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'run',
+                                'Userid':userid,
+                                'Token':token
+                            }
+                        })
+                        .then(res => {
+                            console.log(res);
+                            this.req = this.inputsql;
+                            this.Clear();
+                            this.msg = res.data.msg;
+                            this.count = res.data.count;
+                            this.val = res.data.retVal;
+                        })
+                        .catch(err => {
+                            this.Clear();
+                            this.req = '';
+                            if(err.response.status == 401){
+                                alert("ACCESS_DENIED");
+                                window.open(ROOT+"/signin",'_self');
+                            }else if(err.response.status == 400){
+                                alert("BAD_REQUEST");
+                            }
+                        });
+                    },
+                }
+            });
+
+            var tablegui = new Vue({
+                el:'#gui',
+                data:{
+                    tablelist:[],
+                    name:'',
+                    field:[],
+                    detail:[]
+                },
+                methods:{
+                    getList:function(){
+                        axios.get('/sql',{
+                            headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'list',
+                                'Token':localStorage.getItem('Token'),
+                                'Userid':localStorage.getItem('Userid')
+                            }
+                        })
+                        .then(res => {
+                            console.log(res);
+                            this.tablelist = res.data.list;
+                            console.log()
+                            document.getElementById("cover").style.display="none";
+                        }) 
+                        .catch(err => {
+                            console.error(err); 
+                            document.write(err.response.data);
+                        })
+                    },
+
+                    getValue:function(tablename){
+                        axios.get('/sql',{
+                            params:{
+                                table:tablename
+                            },
+                            headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'detail',
+                                'Token':localStorage.getItem('Token'),
+                                'Userid':localStorage.getItem('Userid')
+                            }
+                        })
+                        .then(res => {
+                            console.log(res);
+                            this.name = res.data.name;
+                            this.field = res.data.field.split(",");
+                            this.detail = [];
+                            var values = res.data.data.split(";");
+                            for(var i=0;i<values.length;i++){
+                                this.detail.push(values[i].split(","));
+                            }
+                            document.getElementById("cover").style.display="none";
+                        }) 
+                        .catch(err => {
+                            console.error(err); 
+                            document.write(err.response.data);
+                        }) 
+                    }
+                }
+            });
+
+
+            function Authenticate(){
+                axios.get('/sql',{
+                    headers:{
+                        'Content-type': 'multipart/form-data',
+                        'Function': 'fetch',
+                        'Token':localStorage.getItem('Token'),
+                        'Userid':localStorage.getItem('Userid')
+                    }
+                })
+                .then(res => {
+                    console.log(res);
+                    document.getElementById("cover").style.display="none";
+                })
+                .catch(err => {
+                    console.error(err); 
+                    document.write(err.response.data);
+                })
+            }
+        </script>
         <script type =  "text/javascript" src = "sql/terminal.js"></script>
     </body>
 </html>
