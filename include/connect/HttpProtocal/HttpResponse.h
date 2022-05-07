@@ -18,7 +18,7 @@ public :
 		->std::tuple<std::shared_ptr<uint8_t>, size_t>;
 	virtual size_t length() const = 0;
 	virtual size_t stringize(uint8_t **buff) = 0;
-	virtual ~HttpResponseBase() {};
+	virtual ~HttpResponseBase() {}
 };
 
 

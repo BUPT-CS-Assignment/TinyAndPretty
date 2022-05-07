@@ -295,10 +295,6 @@ size_t FileResponse::stringize(uint8_t **buff)
             *buff = (uint8_t *)realloc(*buff , (buff_size <<= 1) ) ;
     }
     body.close();
-
-    //low posibility bug;
-    strcpy((char *)*buff + cur , "\0\r\n\r\n");
-    cur += 5;
     body_len = cur - body_len;
     
     IFDEBUG(
@@ -351,6 +347,7 @@ size_t JsonResponse::stringize(uint8_t **buff)
 
     return cur;
 }
+/*---------------------------------StaticResponse---------------------------------*/
 
 std::string estimateFileType(std::filesystem::path& p);
 

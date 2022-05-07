@@ -1,7 +1,9 @@
 #ifndef __SJSON__
 #define __SJSON__
-#include <bits/stdc++.h>
-//
+#include <string>
+#include <vector>
+#include <cstring>
+
 namespace SimpleJson {
 //guess length of the string concated to buff and for realloc()
 const size_t LENGTH_GUESS = 128;
@@ -10,7 +12,9 @@ enum class ItemType {EMPTY , INT , DOUBLE , BOOL , STRING , OBJECT ,
 					INT_ARRAY , DOUBLE_ARRAY , BOOL_ARRAY , STRING_ARRAY , OBJECT_ARRAY};	
 
 //json-item base class definition  for polymorphism
-class JsonItemBase {
+class JsonItemBase 
+{
+protected : 
     ItemType type;
 public :  
     std::string key;
@@ -19,18 +23,19 @@ public :
     //without 'key'
     explicit JsonItemBase(ItemType _type)  : type(_type) ,  key( "" ) {} ;
     //for distinguishing 
-    virtual ItemType get_type() const {return ItemType::EMPTY;}
+    virtual ItemType getType() const {return ItemType::EMPTY;}
     virtual ~JsonItemBase() {};
 };
 //pointer set -- a kind of abstraction  
-using JsonItemCluster = std::vector<JsonItemBase*> ;
+using JsonItemClusterBase = std::vector<JsonItemBase*> ;
 
-#define def_Helper(type , name , keyword) \
-class JsonItem##name: public JsonItemBase {\
-public : \
-    type value;\
-    explicit JsonItem##name(std::string& _key , type &_val)  : JsonItemBase( _key , ItemType::keyword) , value( std::move(_val) ){}\
-    ItemType get_type() const override {return ItemType::keyword;}\
+#define def_Helper(type, name, keyword)                                                                                       \
+class JsonItem##name : public JsonItemBase                                                                                    \
+{                                                                                                                             \
+public:                                                                                                                       \
+    type value;                                                                                                               \
+    explicit JsonItem##name(std::string &_key, type &_val) : JsonItemBase(_key, ItemType::keyword), value(std::move(_val)) {} \
+    ItemType getType() const override { return ItemType::keyword; }                                                           \
 }
 
 //common type definitions
@@ -45,23 +50,25 @@ def_Helper(std::vector<double> 		, DoubleArray 	, DOUBLE_ARRAY);
 def_Helper(std::vector<bool> 		, BoolArray 	, BOOL_ARRAY);
 def_Helper(std::vector<std::string> , StringArray 	, STRING_ARRAY);
 
-//json-object definition
-class JsonItemObject: public JsonItemBase {
+//json-object and its array 's definitions
+class JsonItemCluster: public JsonItemBase 
+{
 public : 
-    JsonItemCluster value;
+    JsonItemClusterBase value;
     //constructor with 'key'
-    explicit JsonItemObject(std::string& _key , JsonItemCluster &_val)  :
-            JsonItemBase( _key , ItemType::OBJECT)  , value( std::move(_val) ) {}
+    explicit JsonItemCluster(std::string& _key , JsonItemClusterBase& _val , ItemType _is_array)  :
+            JsonItemBase( _key , _is_array)  , value( std::move(_val) ) {}
 	//constructor without 'key'
-    explicit JsonItemObject(JsonItemCluster &_val)  : 
+    explicit JsonItemCluster(JsonItemClusterBase& _val)  : 
 			JsonItemBase(ItemType::OBJECT)          , value( std::move(_val) ) {}
 
-    ItemType get_type() const override {return ItemType::OBJECT;}
-    ~JsonItemObject() {for(auto &it :value) delete it;}
+    ItemType getType() const override {return type;}
+     ~JsonItemCluster() { for(auto& it :value) delete it; }
 };
 
 /* ** abstract json-item constructor and memory allocator ** */
-class JsonCtor {
+class JsonCtor 
+{
 public :
 	JsonItemBase *ptr;
 
@@ -73,175 +80,216 @@ public :
 	}	
 	JsonCtor(std::string _key , bool _val){
 		ptr = new JsonItemBool(_key , _val);
-	}	
-	JsonCtor(std::string _key , const char _val[]){
-		std::string tmp(_val);
-		ptr = new JsonItemString(_key , tmp );
 	}
-	JsonCtor(std::string _key, std::vector<JsonCtor> _val) {
-		JsonItemCluster tmp;
-		for(auto& it : _val) tmp.push_back(it.ptr);
-		ptr = new JsonItemObject(_key , tmp);
+	JsonCtor(std::string _key , const char _val[]){
+        std::string tmp {_val};
+		ptr = new JsonItemString(_key , tmp);
+	}
+	JsonCtor(std::string _key , std::string _val){
+		ptr = new JsonItemString(_key , _val);
 	}
 	JsonCtor(std::initializer_list<JsonCtor> _val) {
-		JsonItemCluster tmp;
+		JsonItemClusterBase tmp;
 		for(auto& it : _val) tmp.push_back(it.ptr);
-		ptr = new JsonItemObject(tmp);
+		ptr = new JsonItemCluster(tmp);
 	}
+	JsonCtor(std::string _key, std::vector<JsonCtor>& _val) {
+		JsonItemClusterBase tmp;
+		for(auto& it : _val) tmp.push_back(it.ptr);
+		ptr = new JsonItemCluster(_key , tmp , ItemType::OBJECT_ARRAY);
+	}
+	JsonCtor(std::string _key, std::vector<JsonCtor>&& _val) {
+		JsonItemClusterBase tmp;
+		for(auto& it : _val) tmp.push_back(it.ptr);
+		ptr = new JsonItemCluster(_key , tmp , ItemType::OBJECT);
+	}
+
 	//array constructor below
-	JsonCtor(std::string _key , std::vector<int> &_val){
+	JsonCtor(std::string _key , std::vector<int>& _val){
 		ptr = new JsonItemIntArray(_key , _val);
 	}	
-	JsonCtor(std::string _key , std::vector<double> &_val){
+	JsonCtor(std::string _key , std::vector<double>& _val){
 		ptr = new JsonItemDoubleArray(_key , _val);
 	}	
-	JsonCtor(std::string _key , std::vector<bool> &_val){
+	JsonCtor(std::string _key , std::vector<bool>& _val){
 		ptr = new JsonItemBoolArray(_key , _val);
 	}	
-	JsonCtor(std::string _key , std::vector<std::string> &_val){
+	JsonCtor(std::string _key , std::vector<std::string>& _val){
 		ptr = new JsonItemStringArray(_key , _val );
-	}
+    }
+	
 };
 // just for easy use...
 using Object = JsonCtor;
 
-#define BUFF_ADD(x) {if(cur >= JSON_BUFF-LENGTH_GUESS) buff = (char *)realloc(buff , (JSON_BUFF <<= 1) ); buff[cur++]=(x);}
+#define BUFF_REP(x) {buff[buff_cur-1] = (x);}
+#define BUFF_ADD(x)                                          \
+    {                                                        \
+        if (buff_cur >= JSON_BUFF - LENGTH_GUESS)            \
+            buff = (char *)realloc(buff, (JSON_BUFF <<= 1)); \
+        buff[buff_cur++] = (x);                              \
+    }
 
 class Json {
-    size_t cur = 0;
-    size_t JSON_BUFF = 4096; //set length of json char buff area for stringize()
-    char *buff = nullptr;
-	JsonItemCluster items;
+    size_t buff_cur  = 0;    // buff cur will stay at the end of CLOSED char interval
+	size_t item_cur  = 0;
+    size_t JSON_BUFF = 4096; // set length of json char buff area for stringize()
+    char *buff 		 = nullptr;
+	JsonItemClusterBase items;
     
-    void handleItemBaseVector(JsonItemCluster &items , char *buff , size_t &cur ) noexcept;
+    void handleItemBaseVector(JsonItemClusterBase& items) noexcept;
 public :
 	Json() = default;
-	Json(Json && _j) : cur(_j.cur) , buff(_j.buff) , items( std::move(_j.items) ) {}
-/**
-*	@brief 向创建的Json文件中添加一条记录。
-*	@param _item 记录K-V对。请用 ' , ' 代替Json中的 ' : '，并使用'{ }'包括起来。
-*/ 
-	void push_back(JsonCtor _item) {
-		items.push_back( _item.ptr );
-	}
-/**
-*	@brief 将Json文件字符串化
-*   @return const char* 指向结果的字符串
-*/ 
+    Json( const Json& ) = delete;
+	Json( Json&& _json ) : 
+        buff_cur(_json.buff_cur) , item_cur(_json.item_cur) , buff( std::move(_json.buff) ) , items( std::move(_json.items) ) {}
+    Json& operator = ( const Json& ) = delete;
+    Json& operator = ( Json&& _json )
+        { buff_cur = _json.buff_cur , item_cur = _json.item_cur , buff = _json.buff ,items = std::move(_json.items) ;
+		  return *this;}
+
+	void push_back(JsonCtor _item)    { items.push_back( _item.ptr ); }
+    void push_back(const Json& _json) { items.insert(items.end() , _json.items.begin() , _json.items.end()); }
+
     const char* stringize() {
-        if(buff != nullptr) return buff;
+        // buffer size initialize
+        if(buff == nullptr) {
+            buff = static_cast<char *>( calloc(1 , JSON_BUFF) );
+            BUFF_ADD('{'); BUFF_ADD('}');
+        }
+
+        // check whether it is up to date 
+        if( item_cur == items.size())
+            return buff;
         
-        buff = new char[JSON_BUFF];
-        BUFF_ADD('{');
-        handleItemBaseVector(items , buff , cur);
-        buff[cur-1] = '}';  
+        // recursively stringize
+        if( item_cur != 0 ) 
+             BUFF_REP(',')
+        else buff_cur--;
+        handleItemBaseVector(items);
+        BUFF_REP('}');
+        item_cur = items.size();
+
         return buff;
     }
-/**
-*	@brief 返回Json文件字符串化后，该字符串的长度。如没有stringize()，则为0
-*   @return size_t 结果字符串的长度
-*/    
-    size_t length() const {return cur;}
+
+   
+    size_t length() const {return buff_cur;}
     ~Json() {
-        if(buff != nullptr) 	delete buff; 
-        for(auto &it : items) 	delete it;
+        if(buff != nullptr) 	delete buff;
+        for(auto& it : items) 	delete it;
     }
 };
 
 //helper function for base-ptr classification  and stringize()
-inline void Json::handleItemBaseVector(JsonItemCluster &items , char *buff , size_t &cur ) noexcept {
-    for(auto&it : items) {
-    	if(it->key.length()) {
+inline void 
+    Json::handleItemBaseVector
+    (JsonItemClusterBase& items) noexcept 
+{
+    for(auto& it : items) 
+    {
+    	if(it->key.length()) 
+        {
 	        BUFF_ADD('"');
-	        strcpy(buff + cur , it->key.c_str()); cur += it->key.length();
-	        BUFF_ADD('"');
-	        BUFF_ADD(':');
+	        strcpy(buff + buff_cur , it->key.c_str()); buff_cur += it->key.length();
+	        BUFF_ADD('"'); BUFF_ADD(':');
 		}
 
-        switch (it->get_type())
+        switch (it->getType())
         {
             case ItemType::INT : 
             {
-                JsonItemInt* p = dynamic_cast<JsonItemInt*>(it);
-                cur += sprintf(buff + cur ,"%d" , p->value);
+                JsonItemInt* p = static_cast<JsonItemInt*>(it);
+                buff_cur += sprintf(buff + buff_cur ,"%d" , p->value);
                 break;
             }
             case ItemType::DOUBLE : 
             {
-                JsonItemDouble* p = dynamic_cast<JsonItemDouble *>(it);
-                cur += sprintf(buff + cur ,"%lf" , p->value);
+                JsonItemDouble* p = static_cast<JsonItemDouble *>(it);
+                buff_cur += sprintf(buff + buff_cur ,"%lf" , p->value);
                 break;
             }
             case ItemType::BOOL : 
             {
-                JsonItemBool* p = dynamic_cast<JsonItemBool *>(it);
-                if(p->value) {strcpy(buff + cur , "true");  cur += 4;}
-                else         {strcpy(buff + cur , "false"); cur += 5;}
+                JsonItemBool* p = static_cast<JsonItemBool *>(it);
+                if(p->value) {strcpy(buff + buff_cur , "true");  buff_cur += 4;}
+                else         {strcpy(buff + buff_cur , "false"); buff_cur += 5;}
                 break;                    
             }
             case ItemType::STRING : 
             {
-                JsonItemString* p = dynamic_cast<JsonItemString *>(it);
+                JsonItemString* p = static_cast<JsonItemString *>(it);
                 BUFF_ADD('"');
-                strcpy(buff + cur , p->value.c_str()); cur += p->value.length();
+                strcpy(buff + buff_cur , p->value.c_str()); buff_cur += p->value.length();
                 BUFF_ADD('"');
                 break;
             }
             case ItemType::OBJECT : 
             {
-                JsonItemObject* p= dynamic_cast<JsonItemObject *>(it);
+                JsonItemCluster* p = static_cast<JsonItemCluster *>(it);
                 BUFF_ADD('{');
-                handleItemBaseVector(p->value , buff , cur);
-                buff[cur-1] = '}';
+                handleItemBaseVector(p->value);
+                BUFF_REP('}');
                 break;
             }
             case ItemType::INT_ARRAY : 
             {
-                JsonItemIntArray* p= dynamic_cast<JsonItemIntArray *>(it);
+                JsonItemIntArray* p = static_cast<JsonItemIntArray *>(it);
                 BUFF_ADD('[');
-                for(auto &val : p->value) {
-                	cur += sprintf(buff + cur ,"%d" , val);
+                for(auto& val : p->value) 
+                {
+                	buff_cur += sprintf(buff + buff_cur ,"%d" , val);
                 	BUFF_ADD(',');
 				}
-                buff[cur-1] = ']';
+                BUFF_REP(']');
                 break;
             }
             case ItemType::DOUBLE_ARRAY : 
             {
-                JsonItemDoubleArray* p= dynamic_cast<JsonItemDoubleArray *>(it);
+                JsonItemDoubleArray* p = static_cast<JsonItemDoubleArray *>(it);
                 BUFF_ADD('[');
-                for(auto &val : p->value) {
-                	cur += sprintf(buff + cur ,"%lf" , val);
+                for(auto& val : p->value) 
+                {
+                	buff_cur += sprintf(buff + buff_cur ,"%lf" , val);
                 	BUFF_ADD(',');
 				}
-                buff[cur-1] = ']';
+                BUFF_REP(']');
                 break;
             }
             case ItemType::BOOL_ARRAY : 
             {
-                JsonItemBoolArray* p= dynamic_cast<JsonItemBoolArray *>(it);
+                JsonItemBoolArray* p = static_cast<JsonItemBoolArray *>(it);
                 BUFF_ADD('[');
-                for(auto val : p->value) {
-                	if(val) {strcpy(buff + cur , "true");  cur += 4;}
-                	else    {strcpy(buff + cur , "false"); cur += 5;}                	
+                for(auto val : p->value) 
+                {
+                	if(val) {strcpy(buff + buff_cur , "true");  buff_cur += 4;}
+                	else    {strcpy(buff + buff_cur , "false"); buff_cur += 5;}                	
 					BUFF_ADD(',');
 				}
-                buff[cur-1] = ']';
+                BUFF_REP(']');
                 break;
             }
             case ItemType::STRING_ARRAY : 
             {
-                JsonItemStringArray* p= dynamic_cast<JsonItemStringArray *>(it);
+                JsonItemStringArray* p = static_cast<JsonItemStringArray *>(it);
                 BUFF_ADD('[');
-                for(auto &val : p->value) {
+                for(auto& val : p->value) 
+                {
                     BUFF_ADD('"');
-                	strcpy(buff + cur , val.c_str()); cur += val.length();
-                	BUFF_ADD('"');
-                    BUFF_ADD(',');
+                	strcpy(buff + buff_cur , val.c_str()); buff_cur += val.length();
+                	BUFF_ADD('"'); BUFF_ADD(',');
 				}
-                buff[cur-1] = ']';
+                BUFF_REP(']');
                 break;
             }
+			case ItemType::OBJECT_ARRAY :
+			{
+				JsonItemCluster* p = static_cast<JsonItemCluster *>(it);
+				BUFF_ADD('[');
+				handleItemBaseVector(p->value);
+                BUFF_REP(']');
+				break;
+			}
             default : break;
         }
         BUFF_ADD(',');
