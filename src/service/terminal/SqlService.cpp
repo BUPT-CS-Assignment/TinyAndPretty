@@ -20,10 +20,9 @@ def_HttpEntry(SqlRun, req){
     if(function == ""){
         return new FileResponse{"web/sql/terminal.html" , "text/html"};
     }
-    /*
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
-    }*/
+    }
     if(function == "Authenticate"){
         return new HttpResponse{""};
     }
