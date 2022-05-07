@@ -45,8 +45,8 @@ def_HttpEntry(SqlRun , req);
 def_HttpEntry(SqlHelp ,  req);
 
 def_HttpEntry(UserIndex,req);
-def_HttpEntry(UserTask,req);
-def_HttpEntry(UserInfo,req);
+def_HttpEntry(UserScheduleIndex,req);
+
 
 def_HttpEntry(LogCheck,req);
 

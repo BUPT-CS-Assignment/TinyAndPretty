@@ -3,7 +3,7 @@
 
 #define ADD_URL(_url, _func) url_table.emplace(_url, _func);
 
-extern std::string getGMTtime(uint32_t offset);
+extern std::string getGMTtime(uint32_t offset = 0);
 extern EntryFunc StaticResponse;
 
 URLParser::URLParser(){

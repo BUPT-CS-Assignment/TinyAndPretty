@@ -17,7 +17,7 @@ string TokenSign(string userid){
 }
 
 void TimeStampReset(){
-    srand((unsigned)time(NULL));
+    srand((unsigned)time(nullptr));
     time_t p;
     time(&p);
     p += rand();
@@ -44,6 +44,8 @@ int ServicePreload(){
     if(__LSR__.Open(SYS_DIR + "/test/database_test") == NO_ERROR) num++;
     if(__LSR__.Open(SRC_DIR + "/major/majors") == NO_ERROR) num++;
     if(__LSR__.Open(SRC_DIR + "/school/schools") == NO_ERROR) num++;
+    if(__LSR__.Open(SRC_DIR + "/map/landmark") == NO_ERROR) num++;
+    if(__LSR__.Open(SRC_DIR + "/course/courses") == NO_ERROR) num++;
     if(__LSR__.Open(USER_DIR + "/users") == NO_ERROR) num++;
     return UTILSTD::CONSOLE_LOG(0, 1, 1, " %d Table Mounted\n", num);
 }

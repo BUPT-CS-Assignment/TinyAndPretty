@@ -41,18 +41,6 @@ namespace UTILSTD{
         return returnVal;
     }
 
-    
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * @brief erase space at head and tail of a string
@@ -75,10 +63,10 @@ namespace UTILSTD{
      * @param length splited number
      * @return std::string* splited string array
      */
-    inline std::string* Split(std::string str, char c, int& length){
+    inline std::string* Split(std::string& str, char c, int& length){
         if(str.length() == 0){
             length = 0;
-            return NULL;
+            return nullptr;
         }
         int count = 1;   // 拆分部分数量
         int index = 0;   // 字符索引位置

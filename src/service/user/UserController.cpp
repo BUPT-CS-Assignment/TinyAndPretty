@@ -5,50 +5,108 @@ using namespace NEDBSTD;
 using namespace UTILSTD;
 
 
-int UserSignIn(string userid, std::string passwdInput){
-    int count;
+User::User(string id){
+    this->id = id;
+    auth = USER_PERSON;
+}
+
+string User::getID(){
+    return id;
+}
+
+void User::setAuth(int auth){
+    this->auth = auth;
+}
+
+int User::Signin(string& passwd){
+    int count,length;
     string retVal;
-    int errCode = __LSR__.Select("token", "passwd", "id=" + userid, count, retVal);
+    int errCode = __LSR__.Select("token", "passwd", "id=" + id, count, retVal);
     if(errCode != 0){
-        return CONSOLE_LOG(errCode, 1, 1,"SQL-Error '%s'\n",NEexceptionName[errCode].c_str());
+        return CONSOLE_LOG(errCode, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode].c_str());
     }
     retVal = retVal.substr(retVal.find(";") + 1);
-    if(passwdInput != retVal){
+    if(passwd != retVal){
         return -1;
     }
-    return CONSOLE_LOG(0, 1, 1, "User '%s' Signed In\n", userid.c_str());
+    //info preload
+    
+    return CONSOLE_LOG(0, 1, 1, "User '%s' Signed In\n", id.c_str());
 }
 
-int UserSignUp(string userid, string passwdInput){
-    int errCode1 = __LSR__.Insert("token", "", userid + "," + passwdInput + ",0");
+void User::Init(){
+    int count,length;
+    string retVal;
+    int errCode = __LSR__.Select("users","*","id=" + id, count, retVal);
+    retVal = retVal.substr(retVal.find_first_of(';')+1);
+    string * str = Split(retVal,',',length);
+    auth = stoi(str[1]);
+    name = str[2];
+    gender = (str[3] == "0" ? "女" : "男");
+    schoolid = str[4];
+    majorid = str[5];
+    classid = str[6];
+    delete[] str;
+}
+
+int User::Signup(string& passwd){
+    int errCode1 = __LSR__.Insert("token", "", id + "," + passwd + ",0");
     if(errCode1 != NO_ERROR){
-        return CONSOLE_LOG(errCode1, 1, 1,"SQL-Error '%s'\n",NEexceptionName[errCode1].c_str());
+        return CONSOLE_LOG(errCode1, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode1].c_str());
     }
-    int errCode2 = __LSR__.Insert("users", "id", userid);
-    return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", userid);
+    int errCode2 = __LSR__.Insert("users", "id,auth", id + "," + to_string(auth));
+    return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", id);
 }
 
-string UserInfoFetch(string userid){
+Json User::getInfo(){
     int count;
     string retVal;
-    int errCode = __LSR__.Select("users", "*", "id=" + userid, count, retVal);
-    if(errCode != NO_ERROR) return "";
-    int length;
-    string* str = Split(retVal.substr(retVal.find(";") + 1), ',', length);
-    string info = str[0] + "," + str[1] + "," + (str[2] == "0" ? "女," : "男,");
-    errCode = __LSR__.Select("schools", "name", "id=" + str[3], count, retVal);
-    info += retVal.substr(retVal.find(";") + 1) + ",";
-    errCode = __LSR__.Select("majors", "name", "id=" + str[4], count, retVal);
-    info += retVal.substr(retVal.find(";") + 1) + ",";
-    info += str[5];
-    delete[] str;
-    return info;
+    Json J;
+    J.push_back({"id",stoi(id)});
+    J.push_back({"auth",auth});
+    J.push_back({"name",name.c_str()});
+    J.push_back({"gender",gender.c_str()});
+    //school
+    int errCode = __LSR__.Select("schools", "name", "id=" + schoolid, count, retVal);
+    J.push_back({"school",retVal.substr(retVal.find(";") + 1).c_str()});
+    //major
+    errCode = __LSR__.Select("majors", "name", "id=" + majorid, count, retVal);
+    J.push_back({"major",retVal.substr(retVal.find(";") + 1).c_str()});
+    //class
+    J.push_back({"class",stoi(classid)});
+    return J;
 }
 
-int UserInfoUpdate(string userid,string value){
+int User::setInfo(string& value){
     int count;
-    int errCode = __LSR__.Update("users",value,"id="+userid,count);
+    int errCode = __LSR__.Update("users", value, "id=" + id, count);
     return errCode;
 }
+
+string User::getName(){
+    return name;
+}
+
+int User::getAuth(){
+    return auth;
+}
+
+string User::getGender(){
+    return gender;
+}
+
+string User::getSchool(){
+    return schoolid;
+}
+
+string User::getMajor(){
+    return majorid;
+}
+
+std::string User::getClass(){
+    return classid;
+}
+
+
 
 

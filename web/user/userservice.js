@@ -2,6 +2,24 @@ var userid = localStorage.getItem("Userid");
 var token = localStorage.getItem("Token");
 var ROOT = "http://" + location.host;
 
+function TimeTable(){
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET",ROOT + "/user/schedule/",false);
+    xhttp.setRequestHeader("Content-type", "multipart/form-data");
+    xhttp.setRequestHeader("Userid", userid);
+    xhttp.setRequestHeader("Token",token);
+    xhttp.setRequestHeader("Function", "Fetch");
+    xhttp.send();
+    if(xhttp.status==200){
+        var rec = xhttp.responseText;
+        console.log(rec);
+    }else if(xhttp.status == 401){
+        alert("ACCESS_DENIED");
+    }else if(xhttp.status == 400){
+        alert("BAD_REQUEST");
+    }
+}
+
 function getUserInfo(){
     var xhttp = new XMLHttpRequest();
     xhttp.open("GET",ROOT + "/user/",false);
@@ -18,7 +36,7 @@ function getUserInfo(){
         var value = rec.substring(idx+1);
         if(code != "0"){
             alert("ErrCode '"+code+"'");
-            value = "NULL,NULL,NULL,NULL,NULL,NULL"
+            value = "NULL,NULL,NULL,NULL,NULL,NULL";
         }
         var arr = value.split(",");
         document.getElementById("user_id").innerHTML = arr[0];

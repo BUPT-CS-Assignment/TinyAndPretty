@@ -16,8 +16,9 @@ def_HttpEntry(SignIn, req){
     if(function != "signin"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
+    User user(userid);
     int res;
-    if((res = UserSignIn(userid,passwd)) == 0){
+    if((res = user.Signin(passwd)) == 0){
         HttpResponse* resp = new HttpResponse("0?NO_ERROR");
         resp->appendHeader("Token",TokenSign(userid));
         return resp;
@@ -40,7 +41,8 @@ def_HttpEntry(SignUp, req){
     if(function != "signup"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
-    int res = UserSignUp(userid,passwd);
+    User user(userid);
+    int res = user.Signup(passwd);
     if(res == 0){
         return new HttpResponse("0?NO_ERROR");
     }else{

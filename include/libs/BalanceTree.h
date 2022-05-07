@@ -60,7 +60,7 @@ namespace BTREESTD{
         Node<DAT, Idx>* node_merge(Node<DAT, Idx>*, Idx&, Node<DAT, Idx>*); //拉取父索引后合并
         //
         Node<DAT, Idx>* findHead(Node<DAT, Idx>* node){
-            if(node == NULL) return NULL;
+            if(node == nullptr) return nullptr;
             if(node->__type == __LEAF__) return node;
             return findHead(node->__child[0]);
         }
@@ -137,7 +137,7 @@ namespace BTREESTD{
     template<class DAT, class Idx>
     BalanceTree<DAT, Idx>::BalanceTree(int id){
         __ID__ = id;
-        __Root__ = NULL;
+        __Root__ = nullptr;
     }
 
     /**
@@ -164,15 +164,15 @@ namespace BTREESTD{
         Node<DAT, Idx>* node = __Root__;
         int layer = 1;
         std::cout << "BTree ID : " << __ID__ << std::endl;
-        while(node != NULL){
+        while(node != nullptr){
             std::cout << "Layer " << layer++ << " : ";
             Node<DAT, Idx>* temp = node;
-            while(temp != NULL){
+            while(temp != nullptr){
                 std::cout << "[ ";
                 for(int i = 0; i < temp->__cursor; i++){
                     std::cout << temp->__index[i] << ",";
                 }
-                if(temp->__parent != NULL){
+                if(temp->__parent != nullptr){
                     std::cout << "(P:" << temp->__parent->__index[0] << ")";
                 }
                 else std::cout << "(ROOT)";
@@ -196,33 +196,33 @@ namespace BTREESTD{
     template<class DAT, class Idx>
     void BalanceTree<DAT, Idx>::CutDown(){
         Node<DAT, Idx>* node = __Root__;
-        while(node != NULL){
+        while(node != nullptr){
             Node<DAT, Idx>* temp = node;
-            while(temp != NULL){
+            while(temp != nullptr){
                 if(temp->__type != __LEAF__){
                     for(int i = 0; i < temp->__cursor; i++){
-                        temp->__child[i + 1] = NULL;
+                        temp->__child[i + 1] = nullptr;
                     }
                     if(temp != node){
-                        temp->__child[0] = NULL;
+                        temp->__child[0] = nullptr;
                     }
                 }
-                temp->__parent = NULL;
+                temp->__parent = nullptr;
                 delete[] temp->__index;
                 delete[] temp->__data;
                 if(temp != node){
                     delete[] temp->__child;
                 }
                 temp = temp->__right;
-                if(temp != NULL) temp->__left->__right = NULL;
+                if(temp != nullptr) temp->__left->__right = nullptr;
             }
             if(node->__type == __LEAF__) break;
             temp = node;
             node = node->__child[0];
             delete[] temp->__child;
         }
-        __Root__ = NULL;
-        __Data__ = NULL;
+        __Root__ = nullptr;
+        __Data__ = nullptr;
     }
 
 
@@ -238,11 +238,11 @@ namespace BTREESTD{
          * @brief 节点类构造函数 <parm>节点类型
          */
         __type = type;
-        __parent = __left = __right = NULL;
+        __parent = __left = __right = nullptr;
         __index = new Idx[__ORDER__];
         //判断节点类型进行内存分配
-        __data = (type == __LEAF__ ? new DAT[__ORDER__] : NULL);
-        __child = (type == __INTERNAL__ ? new Node<DAT, Idx>*[__ORDER__ + 1] : NULL);
+        __data = (type == __LEAF__ ? new DAT[__ORDER__] : nullptr);
+        __child = (type == __INTERNAL__ ? new Node<DAT, Idx>*[__ORDER__ + 1] : nullptr);
         __cursor = 0;
     }
 
@@ -285,7 +285,7 @@ namespace BTREESTD{
         /**
          * @brief 根据参数位置分裂节点 <parm>分裂位置
          */
-        Node<DAT, Idx>* new_node = NULL;
+        Node<DAT, Idx>* new_node = nullptr;
         if(this->__type == __LEAF__){
             new_node = new Node<DAT, Idx>(__LEAF__); //新增叶节点
             //数据转移
@@ -299,17 +299,17 @@ namespace BTREESTD{
             //最左侧节点指针初始化
             new_node->__child[0] = __child[__ORDER__ / 2 + 1];
             new_node->__child[0]->__parent = new_node;
-            __child[__ORDER__ / 2 + 1] = NULL;
+            __child[__ORDER__ / 2 + 1] = nullptr;
             //节点/孩子节点指针插入
             for(int i = __ORDER__ / 2 + 1; i < __cursor; i++){
                 new_node->insert(__index[i], __child[i + 1]);
-                __child[i + 1] = NULL;
+                __child[i + 1] = nullptr;
             }
         }
         //调整节点间指针
         new_node->__right = __right;
         new_node->__left = this;
-        if(__right != NULL)   __right->__left = new_node;
+        if(__right != nullptr)   __right->__left = new_node;
         __right = new_node;
         __cursor = __ORDER__ / 2;   //更新原节点光标
         return new_node;
@@ -323,10 +323,10 @@ namespace BTREESTD{
          */
 
         if(__type == __INTERNAL__){
-            for(int i = 0; i < __ORDER__ + 1; i++)    __child[i] = NULL;
+            for(int i = 0; i < __ORDER__ + 1; i++)    __child[i] = nullptr;
         }
-        if(__left != NULL) __left->__right = this->__right;
-        __parent = __left = __right = NULL;
+        if(__left != nullptr) __left->__right = this->__right;
+        __parent = __left = __right = nullptr;
     }
 
     template<class DAT, class Idx>
@@ -341,10 +341,10 @@ namespace BTREESTD{
     template<class DAT, class Idx>
     Node<DAT, Idx>* Node<DAT, Idx>::get_side(int side){
         if(side == 0){
-            return (__left == NULL ? NULL : __left);
+            return (__left == nullptr ? nullptr : __left);
         }
         else{
-            return (__right == NULL ? NULL : __right);
+            return (__right == nullptr ? nullptr : __right);
         }
     }
 
@@ -359,10 +359,10 @@ namespace BTREESTD{
         /**
          * @brief 根据索引定位数据查找/插入的叶节点 <parm>索引指针, 起始节点指针
          */
-        if(start == NULL) return NULL;
+        if(start == nullptr) return nullptr;
         if(start->__type == __LEAF__) return start;
         int p = start->find_insert_position(idx);
-        if(p == -1) return NULL;
+        if(p == -1) return nullptr;
         return find_insert_leaf_node(idx, start->__child[p]);
     }
 
@@ -381,7 +381,7 @@ namespace BTREESTD{
          */
         DataNode<DAT, Idx> data_node = * new DataNode<DAT, Idx>();
         Node<DAT, Idx>* node = find_insert_leaf_node(idx, __Root__);
-        if(node == NULL) return data_node;
+        if(node == nullptr) return data_node;
         if(idx < node->__index[0]){
             return data_node; //需要新建数据页
         }
@@ -410,13 +410,13 @@ namespace BTREESTD{
     DAT* BalanceTree<DAT, Idx>::AccurateLoacte(Idx& idx){
         // @brief 根据索引定位数据页 <parm>索引指针
         Node<DAT, Idx>* node = find_insert_leaf_node(idx, __Root__);
-        if(node == NULL) return NULL;
+        if(node == nullptr) return nullptr;
         for(int i = 0; i < node->__cursor; i ++){
             if(node->__index[i] == idx){
                 return &node->__data[i];
             }
         }
-        return NULL;
+        return nullptr;
     }
 
     template<class DAT, class Idx>
@@ -460,16 +460,16 @@ namespace BTREESTD{
 
     template<class DAT, class Idx>
     Idx* BalanceTree<DAT, Idx>::common_index_locate(Node<DAT, Idx>* NodeA, Node<DAT, Idx>* NodeB, Node<DAT, Idx>* start){
-        if(start->__type == __LEAF__) return NULL;
+        if(start->__type == __LEAF__) return nullptr;
         int A_pos = -1, B_pos = -1;
         for(int i = 0; i <= start->__cursor; i++){
             if(start->__child[i]->find_node(NodeA)) A_pos = i;
             if(start->__child[i]->find_node(NodeB)) B_pos = i;
         }
-        if(A_pos == -1 || B_pos == -1) return NULL;
+        if(A_pos == -1 || B_pos == -1) return nullptr;
         if(B_pos - A_pos == 1) return &start->__index[A_pos];
         if(A_pos == B_pos) return common_index_locate(NodeA, NodeB, start->__child[B_pos]);
-        return NULL;
+        return nullptr;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -488,7 +488,7 @@ namespace BTREESTD{
          * @brief 插入数据单元 <parm>数据指针, 索引指针
          */
          //根节点为空, 创建根节点
-        if(__Root__ == NULL){
+        if(__Root__ == nullptr){
             __Root__ = new Node<DAT, Idx>(__LEAF__);
             __Root__->insert(idx, data);
             __Data__ = __Root__;
@@ -504,13 +504,13 @@ namespace BTREESTD{
         /**
          * @brief 树结构调整 <parm>需调整节点指针
          */
-        if(node == NULL || ! node->isFull()) return;
+        if(node == nullptr || ! node->isFull()) return;
         Node<DAT, Idx>* resource = node->__parent;   //定位父亲节点
         Idx new_idx = node->__index[__ORDER__ / 2];  //确定新索引
         //节点分裂
         Node<DAT, Idx>* new_node = node->divide();
         //父节点操作
-        if(resource == NULL){
+        if(resource == nullptr){
             resource = new Node<DAT, Idx>(__INTERNAL__); //新建父节点索引
             resource->__child[0] = node;
             node->__parent = resource;
@@ -569,59 +569,59 @@ namespace BTREESTD{
     template<class DAT, class Idx>
     void BalanceTree<DAT, Idx>::DeleteData(Idx& idx){
         Node<DAT, Idx>* node = find_insert_leaf_node(idx, __Root__);
-        if(node == NULL) return;
+        if(node == nullptr) return;
         if(!node->DeleteData(idx)) return;
         if(node == __Root__) return;
         if(node->isSatisfied()) return;
         //合并节点优先///////////////////////////////////////////////////////////////////
-        if(node->__left != NULL && node->isMerge(node->__left)){
+        if(node->__left != nullptr && node->isMerge(node->__left)){
             //左合并
             Node<DAT, Idx>* temp = node;
             node = node->left_merge(node->__left);
             temp->__cursor = 0;
             if(node->__parent == __Root__ && node->__parent->__cursor == 0){
                 __Root__ = node;
-                __Root__->__parent = NULL;
+                __Root__->__parent = nullptr;
                 return;
             }
             delete_adjust(node->__parent);
         }
-        else if(node->__right != NULL && node->isMerge(node->__right)){
+        else if(node->__right != nullptr && node->isMerge(node->__right)){
             //右合并
             node->right_merge(node->__right);
             if(node->__parent == __Root__ && node->__parent->__cursor == 0){
                 __Root__ = node;
-                __Root__->__parent = NULL;
+                __Root__->__parent = nullptr;
                 return;
             }
             delete_adjust(node->__parent);
         }
-        else if(node->__left != NULL && node->__left->isLend()){ //左节点可借
+        else if(node->__left != nullptr && node->__left->isLend()){ //左节点可借
             node->left_lend(idx);
             Idx* common_idx = common_index_locate(node->__left, node, __Root__); //找到共同父索引
             *common_idx = node->__index[0];    //更新共同父索引
         }
-        else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
+        else if(node->__right != nullptr && node->__right->isLend()){ //右节点可借
             node->right_lend(idx);
             Idx* common_idx = common_index_locate(node, node->__right, __Root__); //找到共同父索引
             *common_idx = node->__right->__index[0]; //更新共同父索引
         }
         /* 借节点优先/////////////////////////////////////////////////////////////
-        if(node->__left != NULL && node->__left->isLend()){ //左节点可借
-            node->left_lend(NULL);
+        if(node->__left != nullptr && node->__left->isLend()){ //左节点可借
+            node->left_lend(nullptr);
             Idx* common_idx = common_index_locate(node->__left,node,__Root__); //找到共同父索引
             *common_idx = *(new Idx(*node->__index[0]));    //更新共同父索引
 
-        }else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
-            node->right_lend(NULL);
+        }else if(node->__right != nullptr && node->__right->isLend()){ //右节点可借
+            node->right_lend(nullptr);
             Idx* common_idx = common_index_locate(node,node->__right,__Root__); //找到共同父索引
             *common_idx = *(new Idx(*node->__right->__index[0])); //更新共同父索引
 
         }else{
-            if(node->__left !=NULL && node->__left->__parent == node->__parent){
+            if(node->__left !=nullptr && node->__left->__parent == node->__parent){
                 //左合并
                 node = node->left_merge(node->__left);
-            }else if(node->__right != NULL && node->__right->__parent == node->__parent){
+            }else if(node->__right != nullptr && node->__right->__parent == node->__parent){
                 //右合并
                 node->right_merge(node->__right);
             }
@@ -655,7 +655,7 @@ namespace BTREESTD{
             __index[i] = __index[i + 1];
             __child[i + 1] = __child[i + 2];
         }
-        __child[__cursor] = NULL;
+        __child[__cursor] = nullptr;
         __cursor --;
     }
 
@@ -668,7 +668,7 @@ namespace BTREESTD{
          */
         if(node == __Root__) return;    //根节点无需调整
         if(node->isSatisfied()) return; //满足树结构无需调整
-        if(node->__left != NULL && node->__left->isLend()){ //左节点可借
+        if(node->__left != nullptr && node->__left->isLend()){ //左节点可借
             //拷贝原索引
             Idx temp_idx = node->__index[0];
             Idx* common_idx = common_index_locate(node->__left, node, __Root__); //找到共同父索引
@@ -677,7 +677,7 @@ namespace BTREESTD{
             return;
 
         }
-        else if(node->__right != NULL && node->__right->isLend()){ //右节点可借
+        else if(node->__right != nullptr && node->__right->isLend()){ //右节点可借
            //拷贝原索引
             Idx temp_idx = node->__right->__index[0];
             Idx* common_idx = common_index_locate(node, node->__right, __Root__); //找到共同父索引
@@ -688,7 +688,7 @@ namespace BTREESTD{
         else{
             //拉取父索引
             int p;
-            if(node->__left != NULL && node->__left->__parent == node->__parent){
+            if(node->__left != nullptr && node->__left->__parent == node->__parent){
                 //左合并
                 //定位父索引
                 p = node->__parent->find_insert_position(node->__left->__index[node->__left->__cursor - 1]);
@@ -698,7 +698,7 @@ namespace BTREESTD{
                 temp->__cursor = 0;
                 node->__parent->delete_index(p);    //删除父索引
             }
-            else if(node->__right != NULL && node->__right->__parent == node->__parent){
+            else if(node->__right != nullptr && node->__right->__parent == node->__parent){
                 //右合并
                 p = node->__parent->find_insert_position(node->__index[node->__cursor - 1]);  //定位父索引
                 Idx temp_idx = node->__parent->__index[p];   //拉取父索引
@@ -707,7 +707,7 @@ namespace BTREESTD{
             }
             if(node->__parent == __Root__ && __Root__->__cursor == 0){
                 __Root__ = node;    //更新根节点
-                node->__parent = NULL;
+                node->__parent = nullptr;
                 return;
             }
         }
@@ -729,15 +729,15 @@ namespace BTREESTD{
             nodeA->__index[nodeA->__cursor] = nodeB->__index[i];
             nodeB->__child[i]->__parent = nodeA;
             nodeA->__child[nodeA->__cursor] = nodeB->__child[i];
-            nodeB->__child[i] = NULL;
+            nodeB->__child[i] = nullptr;
             nodeA->__cursor++;
         }
         nodeA->__child[nodeA->__cursor] = nodeB->__child[nodeB->__cursor];
-        nodeB->__child[nodeB->__cursor] = NULL;
+        nodeB->__child[nodeB->__cursor] = nullptr;
         nodeA->__child[nodeA->__cursor]->__parent = nodeA;
         //节点间指针更新
         nodeA->__right = nodeB->__right;
-        if(nodeB->__right != NULL)    nodeB->__right->__left = nodeA;
+        if(nodeB->__right != nullptr)    nodeB->__right->__left = nodeA;
         nodeB->remove();
         return nodeA;
     }
@@ -754,8 +754,8 @@ namespace BTREESTD{
             node->insert(__index[i], __data[i]);
         }
         node->__right = __right;
-        if(node->__left != NULL) node->__left->__right = node;
-        __left = __right = __parent = NULL;
+        if(node->__left != nullptr) node->__left->__right = node;
+        __left = __right = __parent = nullptr;
         node->__parent->delete_index(p);
         return node;
     }
@@ -769,9 +769,9 @@ namespace BTREESTD{
         for(int i = 0; i < node->__cursor; i++){
             this->insert(node->__index[i], node->__data[i]);
         }
-        if(node->__right != NULL) node->__right->__left = this;
+        if(node->__right != nullptr) node->__right->__left = this;
         this->__right = node->__right;
-        node->__left = node->__right = node->__parent = NULL;
+        node->__left = node->__right = node->__parent = nullptr;
         __parent->delete_index(p - 1);
     }
 
@@ -818,7 +818,7 @@ namespace BTREESTD{
                 }
                 right->__child[i] = right->__child[i + 1];
             }
-            right->__child[right->__cursor] = NULL;
+            right->__child[right->__cursor] = nullptr;
             __index[__cursor] = new_idx;
 
         }
@@ -840,7 +840,7 @@ namespace BTREESTD{
 
     template<class DAT, class Idx>
     DataNode<DAT, Idx>::DataNode(){
-        node = NULL;
+        node = nullptr;
         pos = -1;
     }
 
@@ -850,12 +850,12 @@ namespace BTREESTD{
             pos++;
         }
         else{
-            if(node->__right != NULL){
+            if(node->__right != nullptr){
                 node = node->__right;
                 pos = 0;
             }
             else{
-                node = NULL;
+                node = nullptr;
             }
         }
         return *this;
@@ -867,12 +867,12 @@ namespace BTREESTD{
             pos--;
         }
         else{
-            if(node->__left != NULL){
+            if(node->__left != nullptr){
                 node = node->__left;
                 pos = node->__cursor - 1;
             }
             else{
-                node = NULL;
+                node = nullptr;
             }
         }
         return *this;
@@ -880,8 +880,8 @@ namespace BTREESTD{
 
     template<class DAT, class Idx>
     DAT* DataNode<DAT, Idx>::getData(){
-        if(node == NULL || pos == -1 || pos >= node->__cursor){
-            return NULL;
+        if(node == nullptr || pos == -1 || pos >= node->__cursor){
+            return nullptr;
         }
         return &node->__data[pos];
     }
