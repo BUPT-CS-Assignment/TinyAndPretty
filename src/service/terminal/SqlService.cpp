@@ -23,7 +23,7 @@ def_HttpEntry(SqlRun, req){
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
     }
-    if(function == "Authenticate"){
+    if(function == "authenticate"){
         return new HttpResponse{""};
     }
     int count;

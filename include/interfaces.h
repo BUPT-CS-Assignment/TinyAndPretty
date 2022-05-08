@@ -50,8 +50,7 @@ def_HttpEntry(SqlRun , req);
 def_HttpEntry(SqlHelp ,  req);
 
 def_HttpEntry(UserIndex,req);
-def_HttpEntry(UserScheduleIndex,req);
-
+def_HttpEntry(ScheduleIndex,req);
 
 def_HttpEntry(LogCheck,req);
 

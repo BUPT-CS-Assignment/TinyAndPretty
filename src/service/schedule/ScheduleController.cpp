@@ -30,32 +30,31 @@ std::string Course::getUser(){
     return userid;
 }
 
-Json Course::getCourseInfo(string courseid){
+SimpleJson::Object Course::getCourseInfo(string courseid){
     int count;
     string retVal;
     __LSR__.Select("courses","*","id="+courseid,count,retVal);
     int length;
-    Json J;
     string *str = Split(retVal,';',length);
     if(retVal == "" || count == 0 || str == nullptr){
-        return J;
+        return SimpleJson::Object({});
     }
     cout<<"retVal : "<<retVal<<endl;
     string *info = Split(str[1],',',length);
-    //name ,id
-    J.push_back({"id",info[0].c_str()});
-    J.push_back({"name",info[1].c_str()});
-    //time
-    J.push_back({"time",stoi(info[2])});
-    //prof
     __LSR__.Select("users","name","id="+info[3],count,retVal);
-    J.push_back({"prof",retVal.substr(retVal.find(';')+1).c_str()});
+    string username = retVal.substr(retVal.find(';')+1);
     //loc
     __LSR__.Select("landmark","name","id="+info[4],count,retVal);
-    J.push_back({"loc",retVal.substr(retVal.find(';')+1).c_str()});
-    //room
-    J.push_back({"room",info[5].c_str()});
-    delete[] str;
+    string landmarkname = retVal.substr(retVal.find(';')+1);
+
+    SimpleJson::Object J({
+        {"id",info[0].c_str()},
+        {"name",info[1].c_str()},
+        {"time",stoi(info[2])},
+        {"prof",username.c_str()},
+        {"loc",landmarkname.c_str()},
+        {"room",info[5].c_str()}
+    });
     delete[] info;
     return J;
 }
@@ -68,12 +67,34 @@ Json Course::getTimeTable(){
     int errCode = TempDB.Select("timetable","*","",count,retVal);
     int length;
     Json J;
-    string * str = Split(retVal,';',length); //fields ; a ; b ;
+    string * str = Split(retVal,';',length);
+    //fields ; a ; b ;
+    //fields: id,mon,tue,wed,thur,fri
     if(retVal == "" || str == nullptr){
         TempDB.Close();
         return J;
     }
-    int templ;
+    int length_temp;
+    vector<SimpleJson::Object> courseInfo;
+    vector<SimpleJson::Object> timeCode;
+    for(int i = 1;i < length;i++){
+        string * info = Split(str[i],',',length_temp);
+        SimpleJson::Object obj = getCourseInfo(info[0]);
+        int daycode[6];
+        for(int j=1;j<=5;j++){
+            daycode[j]=stoi(info[j]);
+        }
+        vector<int> code(daycode+1,daycode+6);
+        timeCode.push_back(SimpleJson::Object({{"pos",i},{"timeCode",code}}));
+        //tempJson.push_back({"daycode",code});
+        courseInfo.push_back(obj);
+        delete[] info;
+    }
+    J.push_back({"basic",timeCode});
+    J.push_back({"detail",courseInfo});
+    delete[] str;
+    return J;
+    /*
     string * field = Split(str[0],',',templ);
     for(int i = 1; i < length; i++){
         int l;
@@ -94,6 +115,22 @@ Json Course::getTimeTable(){
     delete[] str;
     delete[] field;
     return J;
+    */
+}
+
+/*
+
+{"detail":
+    [
+        {
+            "id":xx,...
+        },
+        {
+            "id":xx,...
+        }
+    ]
+
 }
 
 
+*/

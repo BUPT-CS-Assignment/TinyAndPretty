@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+        <meta charset="UTF-8">
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
+    </head>
+    <body onload="vm.getTable()">
+        <h1>TAP TimeTable</h1>
+        <h4>
+            <div id = "timetable">
+                <table border="2"   cellpadding="3" cellspacing="2" frame="box"
+                        style="border-collapse: collapse;   border-spacing: 0; 
+                        font-size: small;
+                        empty-cells: show;  border: 1px solid #cbcbcb;">
+                    <thead>TimeTable</thead>
+                    <tr>
+                        <th>Sec.</th>
+                        <th>Mon.</th>
+                        <th>Tue.</th>
+                        <th>Wed.</th>
+                        <th>Thur.</th>
+                        <th>Fri.</th>
+                        <th>Sat.</th>
+                        <th>Sun.</th>
+                    </tr>
+                    <tr v-for="(value,index) in table">
+                        <td>第{{index+1}}节</td>
+                        <td v-for="(val) in value">
+                            {{detail[val].name}}<br>
+                            {{detail[val].prof}}<br>
+                            {{detail[val].loc}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </h4>  
+        <button type = "button" onclick="window.open('http://'+location.host+'/user/','_self')">Back</button>
+        <br>
+        <hr align=center width="400px" size=2 style = "float:left">
+        <br>
+        <h3>
+            For More Infomation:
+            <br>
+            <button id="sql" onclick="window.open('http://'+location.host+'/sql')">TAP SQL Test</button>
+	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+            <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        </h3>
+        <script>
+            var userid = localStorage.getItem("Userid");
+            var token = localStorage.getItem("Token");
+            var ROOT = "http://" + location.host;
+            var vm = new Vue({
+                el: '#timetable',
+                data:{
+                    table:[],
+                    detail:[],
+                },
+                methods:{
+                    getTable:function(){
+                        axios.get('/user/schedule/',{
+                            headers:{
+                                'Content-type': 'multipart/form-data',
+                                'Function': 'fetch',
+                                'Userid':userid,
+                                'Token':token
+                            }}
+                        )
+                        .then(res => {
+                            this.table = Array.from(Array(14),()=>new Int32Array(7));
+                            console.log(res);
+                            this.detail = [];
+                            this.detail.push('');
+                            res.data.detail.forEach(element => {
+                                this.detail.push(element)
+                            });
+                            res.data.basic.forEach(course => {
+                                for(var day = 0; day < course.timeCode.length; day++){
+                                    var code = course.timeCode[day] << 1;
+                                    for(var timeP =0; timeP <14; timeP++){
+                                        code >>= 1;
+                                        if(code & 0x1 == 1) this.table[timeP][day] = course.pos;
+                                    }
+                                }
+                            });
+                            console.log(this.table);
+                        })
+                        .catch(err =>{
+                            console.log(err);
+                            if(err.response.status == 401){
+                                alert("ACCESS_DENIED");
+                            }
+                        })
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

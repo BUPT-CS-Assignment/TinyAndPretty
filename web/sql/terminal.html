@@ -218,7 +218,7 @@
                 axios.get('/sql',{
                     headers:{
                         'Content-type': 'multipart/form-data',
-                        'Function': 'fetch',
+                        'Function': 'authenticate',
                         'Token':localStorage.getItem('Token'),
                         'Userid':localStorage.getItem('Userid')
                     }

@@ -25,7 +25,7 @@
                     <div style = "float:left" v-cloak>Class : {{classid}}</div>
                 </form>
                 <br>
-                <button type = "button" @click="TimeTable()">Time Table</button>
+                <button type = "button" onclick="window.open('http://'+location.host+'/user/schedule/','_self')">Time Table</button>
                 <button type = "button" onclick="DivShow() ">Change Info</button>
                 <button type = "button" onclick="SignOut() ">Sign Out</button>
             </div>
@@ -133,7 +133,7 @@
                     gender:1,
                     school:0,
                     major:0,
-                    classid:''
+                    classid:0
                 },
                 methods:{
                     update:function(){
@@ -141,13 +141,8 @@
                             alert("empty input!");
                             return;
                         }
-                        if(this.userid == 10001){
                         if(Number(this.classid)<0 || Number(this.classid)>2147483647){
                             alert("classid range from 0 to 2147483647!");
-                            return;
-                        }
-                        }else if(this.classid.length != 10 || Number(this.classid)>2147483647){
-                            alert("classid range from 1000000000 to 2147483647!");
                             return;
                         }
                         var str = "name="+this.name+",gender="+this.gender+",school="+this.school

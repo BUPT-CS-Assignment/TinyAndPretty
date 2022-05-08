@@ -4,6 +4,7 @@
 #include<interfaces.h>
 #define WEEK_NUM_TERM 20
 
+#define SET_TIME(code,timenum) ({code |= (1 << (timenum-1));})
 #define WEEK_CHECK(weeks,week) ({(weeks >> (week-1)) & 0x1;})
 
 std::string TimeTableFetch(std::string schoolid,std::string classid,std::string userid);
@@ -21,7 +22,7 @@ public:
     std::string getSchool();
     std::string getClass();
     std::string getUser();
-    Json getCourseInfo(std::string courseid);
+    SimpleJson::Object getCourseInfo(std::string courseid);
     Json getTimeTable();
     Json getPersonalTimeTable();
 };
