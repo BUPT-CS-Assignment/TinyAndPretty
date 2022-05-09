@@ -1,0 +1,120 @@
+body{
+    background:url(src/bg3.png);
+    background-size: cover;
+}
+
+.main{
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    margin:0;
+    margin-left:5%;
+    margin-right: 5%;
+}
+
+.main .head{
+    margin-top: 10px;
+    background-color:whitesmoke;
+    border:1px solid;
+    border-radius:6px;
+    width:16%;
+    width: 150px;
+    height: 45px;
+    overflow: hidden;
+    /* margin */
+    margin-bottom: 20px;
+    /* padding */
+    box-sizing:border-box;
+    padding:0;
+    padding-left:15px;
+    padding-top:6px;
+}
+
+.main .head:hover{
+    transform: scale(1.05);
+}
+
+.main .box{
+    color: white;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.main .box .small{
+    /* size */
+    width: 180px;
+    height: 250px;
+    /* padding */
+    box-sizing:border-box;
+    padding:15px;
+    padding-left:10px;
+    /* margin */
+    margin-right: 10px;
+    margin-bottom: 15px;
+    /* content */
+    display: flex;
+    flex-direction: column-reverse;
+    /* inside */
+    overflow: hidden;
+}
+
+.main .box .large{
+    /* size */
+    width: 460px;
+    height: 250px;
+    /* padding */
+    box-sizing:border-box;
+    padding:15px;
+    padding-left:10px;
+    /* margin */
+    margin-bottom: 15px;
+    /* content */
+    display: flex;
+    flex-direction: column-reverse;
+    /* inside */
+    overflow: hidden;
+}
+
+.main .box:hover *{
+    filter: blur(3px);
+}
+
+#database{
+    background:url(src/item1.jpg);
+    background-size:260px;
+    color: black;
+}
+#database:hover{
+    transform: scale(1.05);
+    filter: blur(0);
+}
+#database:hover *{
+    filter: blur(0);
+}
+
+
+#md5{
+    background:url(src/item3.jpg);
+    background-size: cover;
+}
+#md5:hover{
+    transform: scale(1.05);
+    filter: blur(0);
+}
+#md5:hover *{
+    filter: blur(0);
+}
+
+#course{
+    background:url(src/item4.jpg);
+    background-size:650px;
+}
+#course:hover{
+    transform: scale(1.05);
+    filter: blur(0);
+}
+#course:hover *{
+    filter: blur(0);
+}

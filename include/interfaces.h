@@ -41,6 +41,8 @@ def_HttpEntry(Vue2,req);
 def_HttpEntry(Vue3,req);
 def_HttpEntry(Axios,req);
 
+def_HttpEntry(Main,req);
+
 /* User Service */
 def_HttpEntry(SignIn,req);
 def_HttpEntry(SignUp,req);

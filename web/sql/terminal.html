@@ -143,9 +143,10 @@
                             this.req = '';
                             if(err.response.status == 401){
                                 alert("ACCESS_DENIED");
+                                localStorage.setItem('Next','Sql');
                                 window.open(ROOT+"/signin",'_self');
-                            }else if(err.response.status == 400){
-                                alert("BAD_REQUEST");
+                            }else{
+                                alert(err.response.status);
                             }
                         });
                     },
@@ -178,7 +179,7 @@
                         }) 
                         .catch(err => {
                             console.error(err); 
-                            document.write(err.response.data);
+                            alert(err.response.status);
                         })
                     },
 
@@ -207,7 +208,7 @@
                         }) 
                         .catch(err => {
                             console.error(err); 
-                            document.write(err.response.data);
+                            alert(err.response.status);
                         }) 
                     }
                 }
@@ -229,10 +230,15 @@
                 })
                 .catch(err => {
                     console.error(err); 
-                    document.write(err.response.data);
+                    if(err.response.status == 401){
+                        alert("ACCESS_DENIED");
+                    }else{
+                        alert(err.response.status);
+                    }
+                    localStorage.setItem('Next','Sql');
+                    window.open(ROOT+"/signin",'_self');
                 })
             }
         </script>
-        <script type =  "text/javascript" src = "sql/terminal.js"></script>
     </body>
 </html>

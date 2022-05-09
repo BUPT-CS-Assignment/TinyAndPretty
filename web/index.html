@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+        <link rel="stylesheet" type="text/css" href="index.css">
+    </head>
+    <body>
+        <h1 style="font-size:50px; color: black;
+                    margin-top: 50px; margin-left:5%;
+            ">Tiny & Pretty</h1>
+        <div class="main">
+            <div class="head" id="repo" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">
+                <h5 style="color:black; margin:0;">View Repo</h5>
+                <h6 style="color:grey; margin:0;">@Github</h6>
+            </div>
+            <div class="box" id="boxitem" >
+                <div class="small" id="database" onclick="sql()">
+                    <h1 style="margin:0;">Console</h1>
+                    <h3 style="margin:0;">DataBase</h3>
+                </div>
+                <div class="small" id="md5" onclick="window.open('http://'+location.host+'/md5','_self')">
+                    <h1 style="margin:0; opacity: 1;">MD5</h1>
+                    <h3 style="margin:0;opacity: 1;">Calculate</h3>
+                </div>
+                <div class="large" id="course" onclick="user()">
+                    <h1 style="margin:0;opacity: 1;">Course Assistance</h1>
+                    <h3 style="margin:0;opacity: 1;">Offline</h3>
+                </div>
+            </div>
+        </div> 
+        <script>
+            function sql(){
+                if(localStorage.getItem('Status') != 'True'){
+                    localStorage.setItem('Next','Sql');
+                    window.open('http://'+location.host+'/signin','_self');
+                }else{
+                    window.open('http://'+location.host+'/sql','_self');
+                }   
+            }
+            function user(){
+                if(localStorage.getItem('Status') != 'True'){
+                    localStorage.setItem('Next','User');
+                    window.open('http://'+location.host+'/signin','_self');
+                }else{
+                    window.open('http://'+location.host+'/user/','_self');
+                }
+            }
+        </script>
+    </body>
+</html>

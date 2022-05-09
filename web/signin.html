@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<link href="favicon.ico" rel="shortcut icon">
+<html>
+    <head>
+        <title>Tiny And Pretty</title>
+        <script src="/lib/vue2.js"></script>
+        <script src="/lib/axios.js"></script>
+    </head>
+    <body>
+        <h1>TAP Authentication</h1>
+        <h2>    
+            <div id="signin">
+                UserID:<br> 
+                <input type="text" v-model="userid" style = "width: 160px; height: 16px;">
+                <br>
+                Password:<br> 
+                <input type = "password" v-model="passwd" style = "width: 160px; height: 16px;">
+                <br>
+                <button type = "button" @click="signin()">Sign In</button>
+                <button type = "button" onclick="window.open('http://'+location.host+'/signup','_self')">Sign Up</button>       
+                <br>
+            </div>
+        </h2>
+        <br>
+        <hr align=center width="400px" size=2 style = "float:left">
+        <br>
+        <h3>
+            For More Infomation:
+            <br>
+	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
+            <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
+        </h3>
+    </body>
+    <script>
+        var ROOT = "http://" + location.host;
+        var NEXT = localStorage.getItem("Next");
+        var signinvm = new Vue({
+        el: '#signin',
+        data:{
+            userid:'',
+            passwd:''
+        },
+        methods:{
+            signin:function(){
+                if(this.userid == '' || this.passwd == ''){
+                    alert("empty input!");
+                    return;
+                }
+                var id = this.userid=="admin"?10000:Number(this.userid);
+                if(isNaN(id)){
+                    alert("userid must be numeric!");
+                    return;
+                }
+                axios.post('/signin',
+                    this.passwd,
+                    {headers:{
+                        'Content-type': 'multipart/form-data',
+                        'Function': 'signin',
+                        'Userid':id
+                    }}
+                )
+                .then(res => {
+                    if(res.data!="NO_ERROR"){
+                        alert(res.data);
+                        localStorage.removeItem('Status');
+                        return;
+                    }
+                    var token = res.headers["token"];
+                    localStorage.setItem("Userid",id);
+                    localStorage.setItem("Token",token);
+                    console.log(localStorage);
+                    if(NEXT == "Sql"){
+                        window.open(ROOT+"/sql",'_self');
+                    }else if(NEXT == "User"){
+                        window.open(ROOT+"/user/",'_self');
+                    }else{
+                        window.open(ROOT,'_self');
+                    }
+                    localStorage.setItem('Next','');
+                    localStorage.setItem('Status','True');
+                })
+                .catch(err =>{
+                    console.log(err);
+                    if(err.response.status == 401){
+                        alert("ACCESS_DENIED");
+                    }
+                })
+            }
+        }
+    });
+    </script>
+</html>

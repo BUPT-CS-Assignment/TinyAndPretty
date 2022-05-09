@@ -7,7 +7,7 @@ using namespace UTILSTD;
 def_HttpEntry(SignIn, req){
     string function(req.queryHeader("Function"));
     if(function == ""){
-        return new FileResponse{"web/user/signin.html" , "text/html"};
+        return new FileResponse{"web/signin.html" , "text/html"};
     }
     string userid(req.queryHeader("Userid"));
     CONSOLE_LOG(0,1,1,"Signin-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
@@ -34,7 +34,7 @@ def_HttpEntry(SignIn, req){
 def_HttpEntry(SignUp, req){
     string function(req.queryHeader("Function"));
     if(function == ""){
-        return new FileResponse{"web/user/signup.html" , "text/html"};
+        return new FileResponse{"web/signup.html" , "text/html"};
     }
     string userid(req.queryHeader("Userid"));
     CONSOLE_LOG(0,1,1,"SignUp-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());

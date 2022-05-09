@@ -119,8 +119,11 @@
                             console.log(err);
                             if(err.response.status == 401){
                                 alert("ACCESS_DENIED");
-                                window.open(ROOT+"/signin",'_self');
+                            }else{
+                                alert(err.response.status);
                             }
+                            localStorage.setItem('Next','User');
+                            window.open(ROOT+"/signin",'_self');
                         })
                      } 
                 },
@@ -179,8 +182,10 @@
             function SignOut(){
                 localStorage.removeItem("Userid");
                 localStorage.removeItem("Token");
+                localStorage.removeItem('Status');
                 alert("Signed Out");
-                window.open("http://" + location.host + "/signin",'_self')
+
+                window.open("http://" + location.host,'_self')
             }
 
             function DivShow(){

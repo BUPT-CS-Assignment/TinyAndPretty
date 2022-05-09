@@ -57,6 +57,10 @@ void DirectoryInit(){
     SYS_DIR = PROJECT_DIR + "/data/sys";
 }
 
+def_HttpEntry(Main,req){
+    return new FileResponse{"web/index.html" , "text/html"};
+}
+
 def_HttpEntry(Vue2, req){
     return new FileResponse{"lib/vue2.js" , "application/javascript"};
 }
