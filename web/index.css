@@ -6,7 +6,6 @@ body{
 .main{
     display: flex;
     flex-direction: column;
-    width: auto;
     margin:0;
     margin-left:5%;
     margin-right: 5%;
@@ -52,7 +51,7 @@ body{
     padding-left:10px;
     /* margin */
     margin-right: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     /* content */
     display: flex;
     flex-direction: column-reverse;
@@ -69,7 +68,7 @@ body{
     padding:15px;
     padding-left:10px;
     /* margin */
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     /* content */
     display: flex;
     flex-direction: column-reverse;

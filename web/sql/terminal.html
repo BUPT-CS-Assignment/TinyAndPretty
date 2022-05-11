@@ -43,10 +43,22 @@
                     <tr>
                         <th v-for="(fieldname) in field">{{fieldname}}</th>
                     </tr>
-                    <tr v-for="(value) in detail">
-                        <td v-for="(item) in value">{{item}}</td>
+                    <tr v-for="(value,index0) in detail">
+                        <td>{{value[0]}}</td>
+                        <td class="editable" v-for="(info,index1) in value" v-if="index1!=0">
+                            <input v-if="edit[index0]" v-model="detail[index0][index1]"></input>
+                            <p v-if="!edit[index0]">{{info}}</p>
+                        <td>
+                            <button v-if="!edit[index0]" @click="setValue(index0)">Revise</button>
+                            <button v-if="edit[index0]" @click="saveValue(index0)">Save</button>
+                            <button v-if="edit[index0]" @click="cancelValue(index0)">Cancel</button>
+                            <button @click="delValue(this)">Delete</button>
+                        </td>
                     </tr>
                 </table>
+            </div>
+            <div>
+
             </div>
         </div>
 
@@ -159,7 +171,9 @@
                     tablelist:[],
                     name:'',
                     field:[],
-                    detail:[]
+                    detail:[],
+                    edit:[],
+                    preVal:[],
                 },
                 methods:{
                     getList:function(){
@@ -200,9 +214,11 @@
                             this.name = res.data.name;
                             this.field = res.data.field.split(",");
                             this.detail = [];
+                            this.edit=[];
                             var values = res.data.data.split(";");
                             for(var i=0;i<values.length;i++){
                                 this.detail.push(values[i].split(","));
+                                this.edit.push(false);
                             }
                             document.getElementById("cover").style.display="none";
                         }) 
@@ -210,6 +226,23 @@
                             console.error(err); 
                             alert(err.response.status);
                         }) 
+                    },
+
+                    setValue:function(index){
+                        var arr = Array.from(this.detail[index]);
+                        this.preVal.push({idx:index,data:arr});
+                        this.$set(this.edit,index,true);
+                    },
+
+                    saveValue:function(index){
+                        this.preVal.splice(this.preVal.findIndex(element =>(element.idx == index)),1);
+                        this.$set(this.edit,index,false);
+                    },
+
+                    cancelValue:function(index){
+                        var idx = this.preVal.findIndex(element =>(element.idx == index));
+                        this.detail[index] = this.preVal[idx].data; 
+                        this.$set(this.edit,index,false);
                     }
                 }
             });
