@@ -45,17 +45,25 @@
                     </tr>
                     <tr v-for="(value,index0) in detail">
                         <td>{{value[0]}}</td>
-                        <td class="editable" v-for="(info,index1) in value" v-if="index1!=0">
+                        <td v-for="(info,index1) in value" v-if="index1!=0">
                             <input v-if="edit[index0]" v-model="detail[index0][index1]"></input>
                             <p v-if="!edit[index0]">{{info}}</p>
                         <td>
                             <button v-if="!edit[index0]" @click="setValue(index0)">Revise</button>
                             <button v-if="edit[index0]" @click="saveValue(index0)">Save</button>
                             <button v-if="edit[index0]" @click="cancelValue(index0)">Cancel</button>
-                            <button @click="delValue(this)">Delete</button>
+                            <button v-if="!edit[index0]" @click="delValue(index0)">Delete</button>
                         </td>
                     </tr>
+                    <tr v-if="addSignal">
+                        <td v-for="(fieldname,index) in field">
+                            <input v-model="addVal[index]"></input>
+                        <td>
+                    </tr>
                 </table>
+                <button v-if="!addSignal && name != ''" @click="addSignal=true">Add</button>
+                <button v-if="addSignal" @click="addValue()">Save</button>
+                <button  v-if="addSignal" @click="cancelAdd()">Cancel</button>
             </div>
             <div>
 
@@ -134,33 +142,13 @@
                     Send:function(){
                         if(this.inputsql=='') return;
                         console.log(this.inputsql);
-                        axios.post('/sql',this.inputsql,{
-                            headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'run',
-                                'Userid':userid,
-                                'Token':token
-                            }
-                        })
-                        .then(res => {
-                            console.log(res);
+                        axiosPostWithToken('run',this.inputsql,()=>{
                             this.req = this.inputsql;
                             this.Clear();
                             this.msg = res.data.msg;
                             this.count = res.data.count;
                             this.val = res.data.retVal;
-                        })
-                        .catch(err => {
-                            this.Clear();
-                            this.req = '';
-                            if(err.response.status == 401){
-                                alert("ACCESS_DENIED");
-                                localStorage.setItem('Next','Sql');
-                                window.open(ROOT+"/signin",'_self');
-                            }else{
-                                alert(err.response.status);
-                            }
-                        });
+                        },()=>{});
                     },
                 }
             });
@@ -174,43 +162,21 @@
                     detail:[],
                     edit:[],
                     preVal:[],
+                    addSignal:false,
+                    addVal:[],
                 },
                 methods:{
                     getList:function(){
-                        axios.get('/sql',{
-                            headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'list',
-                                'Token':localStorage.getItem('Token'),
-                                'Userid':localStorage.getItem('Userid')
-                            }
-                        })
-                        .then(res => {
-                            console.log(res);
+                        this.name='';
+                        axiosGetWithToken('list',(res)=>{
                             this.tablelist = res.data.list;
-                            console.log()
                             document.getElementById("cover").style.display="none";
-                        }) 
-                        .catch(err => {
-                            console.error(err); 
-                            alert(err.response.status);
-                        })
+                        },()=>{})
+                        
                     },
 
                     getValue:function(tablename){
-                        axios.get('/sql',{
-                            params:{
-                                table:tablename
-                            },
-                            headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'detail',
-                                'Token':localStorage.getItem('Token'),
-                                'Userid':localStorage.getItem('Userid')
-                            }
-                        })
-                        .then(res => {
-                            console.log(res);
+                        axiosGetWithToken('detail',(res)=>{
                             this.name = res.data.name;
                             this.field = res.data.field.split(",");
                             this.detail = [];
@@ -219,13 +185,11 @@
                             for(var i=0;i<values.length;i++){
                                 this.detail.push(values[i].split(","));
                                 this.edit.push(false);
+                                this.addVal.push('');
                             }
                             document.getElementById("cover").style.display="none";
-                        }) 
-                        .catch(err => {
-                            console.error(err); 
-                            alert(err.response.status);
-                        }) 
+                        },()=>{},{table:tablename});
+                        
                     },
 
                     setValue:function(index){
@@ -235,42 +199,133 @@
                     },
 
                     saveValue:function(index){
-                        this.preVal.splice(this.preVal.findIndex(element =>(element.idx == index)),1);
-                        this.$set(this.edit,index,false);
+                        var sql = this.name+';'+this.field[0]+'='+this.detail[index][0]+';';
+                        for(var i = 1;i<this.field.length;i++){
+                            sql += this.field[i]+'='+this.detail[index][i]+ (i==this.field.length-1?'':' , ');
+                        }
+                        axiosPostWithToken("update",sql,
+                            ()=>{
+                                this.$set(this.edit,index,false);
+                                this.preVal.splice(this.preVal.findIndex(element =>(element.idx == index)),1);
+                            },
+                            (res)=>{
+                                alert(res.data);
+                                this.cancelValue(index);
+                            }
+                        );
                     },
 
                     cancelValue:function(index){
                         var idx = this.preVal.findIndex(element =>(element.idx == index));
-                        this.detail[index] = this.preVal[idx].data; 
+                        this.$set(this.detail,index,this.preVal[idx].data);
+                        this.preVal.splice(idx,1);
                         this.$set(this.edit,index,false);
-                    }
+                    },
+
+                    delValue:function(index){
+                        var sql = this.name+';'+this.field[0]+'='+this.detail[index][0];
+                        console.log(sql);
+                        axiosPostWithToken("delete",sql,()=>{
+                            this.detail.splice(index,1);
+                        },()=>{});
+                    },
+
+                    addValue:function(){
+                        var sql=this.name+';';
+                        var field = '';
+                        var val = '';
+                        if(this.addVal.indexOf('')!=-1){
+                            this.addVal.forEach((element,index) => {
+                                if(element != ''){
+                                    field += this.field[index]+',';
+                                    val += element+',';
+                                }
+                            });
+                            field = field.substring(0,field.length-1);
+                        }else{
+                            this.addVal.forEach(element =>{
+                                val += element + ',';
+                            })
+                        }
+                        val = val.substring(0,val.length-1);
+                        sql += field+';'+val;
+                        axiosPostWithToken("insert",sql,()=>{
+                            this.cancelAdd();
+                            this.getValue(this.name);
+                        },()=>{});
+                    },
+
+                    cancelAdd:function(){
+                        this.addSignal = false;
+                        this.addVal = [];
+                    },
+
                 }
             });
 
-
-            function Authenticate(){
-                axios.get('/sql',{
+            function axiosPostWithToken(Function,Val,NoErrFuncton,ErrFunction){
+                axios.post('/sql',Val,{
                     headers:{
                         'Content-type': 'multipart/form-data',
-                        'Function': 'authenticate',
+                        'Function': Function,
                         'Token':localStorage.getItem('Token'),
                         'Userid':localStorage.getItem('Userid')
                     }
                 })
                 .then(res => {
                     console.log(res);
-                    document.getElementById("cover").style.display="none";
+                    if(res.headers.msg == "NO_ERROR"){
+                        NoErrFuncton(res);
+                    }else{
+                        ErrFunction(res);
+                    }
                 })
                 .catch(err => {
-                    console.error(err); 
+                    console.log(err);
+                    if(err.status == 401){
+                        alert("ACCESS_DENIED");
+                        localStorage.setItem('Next','Sql');
+                        window.open(ROOT+"/signin",'_self');
+                    }else{
+                        alert(err.status);
+                    }
+                });
+            }
+
+            function axiosGetWithToken(Function,NoErrFuncton,ErrFunction,Param){
+                axios.get('/sql',{
+                    params:Param,
+                    headers:{
+                        'Content-type': 'multipart/form-data',
+                        'Function': Function,
+                        'Token':localStorage.getItem('Token'),
+                        'Userid':localStorage.getItem('Userid')
+                    }
+                })
+                .then(res => {
+                    console.log(res);
+                    if(res.headers.msg == "NO_ERROR"){
+                        NoErrFuncton(res);
+                    }else{
+                        ErrFunction(res);
+                    }
+                }) 
+                .catch(err => {
+                    console.log(err);
                     if(err.response.status == 401){
                         alert("ACCESS_DENIED");
+                        localStorage.setItem('Next','Sql');
+                        window.open(ROOT+"/signin",'_self');
                     }else{
-                        alert(err.response.status);
+                        alert(err.status);
                     }
-                    localStorage.setItem('Next','Sql');
-                    window.open(ROOT+"/signin",'_self');
                 })
+            }
+
+            function Authenticate(){
+                axiosGetWithToken("authenticate",()=>{
+                    document.getElementById("cover").style.display="none";
+                },()=>{});
             }
         </script>
     </body>

@@ -24,7 +24,9 @@ def_HttpEntry(SqlRun, req){
         return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
     }
     if(function == "authenticate"){
-        return new HttpResponse{""};
+        HttpResponse* HResp = new HttpResponse{""};
+        HResp->appendHeader("msg","NO_ERROR");
+        return HResp;
     }
     int count;
     string res;
@@ -35,10 +37,12 @@ def_HttpEntry(SqlRun, req){
         int errCode = __LSR__.Query(sql, count, res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
-        J.push_back({"msg",NEexceptionName[errCode].c_str()});
+        //J.push_back({"msg",NEexceptionName[errCode].c_str()});
         J.push_back({"count",count});
         J.push_back({"retVal",res.c_str()});
-        return new JsonResponse{J};
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg",NEexceptionName[errCode]);
+        return JResp;
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Get Table List
@@ -54,8 +58,11 @@ def_HttpEntry(SqlRun, req){
             list.push_back(str[i]);
         }
         delete[] str;
-        J.push_back({"msg",NEexceptionName[errCode].c_str()});
+        //J.push_back({"msg",NEexceptionName[errCode].c_str()});
         J.push_back({"list",list});
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg",NEexceptionName[errCode]);
+        return JResp;
         return new JsonResponse{J};        
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
@@ -66,21 +73,40 @@ def_HttpEntry(SqlRun, req){
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
         J.push_back({"name",tablename.c_str()});
-        if(errCode!=NO_ERROR) return new JsonResponse{J};
-        string fields = res.substr(0,res.find_first_of(";"));
-        string data = res.substr(res.find_first_of(";")+1);
-        J.push_back({"field",fields.c_str()});
-        J.push_back({"data",data.c_str()});
-        return new JsonResponse{J};
+        if(errCode==NO_ERROR){
+            string fields = res.substr(0,res.find_first_of(";"));
+            string data = res.substr(res.find_first_of(";")+1);
+            J.push_back({"field",fields.c_str()});
+            J.push_back({"data",data.c_str()});
+        }
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg",NEexceptionName[errCode]);
+        return JResp;
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
+    if(function != "update" && function != "insert" && function != "delete"){
+        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
+    }
+    int errCode;
+    string * str = Split(ans,';',count);
     //Update Table Info
     if(function == "update"){
-        string * str = Split(ans,';',count);
-        int errCode = __LSR__.Update(str[0],str[1],str[2],count);
-        CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+        errCode = __LSR__.Update(str[0],str[2],str[1],count);
     }
-    return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
+    //insert Table Info
+    if(function == "insert"){
+        errCode = __LSR__.Insert(str[0],str[1],str[2]);
+    }
+    //delete value
+    if(function == "delete"){
+        errCode = __LSR__.Delete(str[0],str[1],count);
+    }
+    CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
+    delete [] str;
+    HttpResponse* HResp = new HttpResponse{""};
+    HResp->appendHeader("msg",NEexceptionName[errCode]);
+    return HResp;
+    
 }
 
 // EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
