@@ -17,7 +17,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
 {
     IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
     size_t cur = 0;
-    std::cerr<<NOW_POS<<std::endl;
+    std::cerr << NOW_POS << std::endl;
     //split url method
     method = nsplit((char *)str, " ", 1);
     CUR_MOV(method, 1);
@@ -44,55 +44,49 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
 
     //split http header
     headers = std::make_unique<StringDict>(nsplit(NOW_POS, "\r\n\r\n", 4), ": ", "\r\n");
-    CUR_MOV( (*(headers)) , 4);
+    CUR_MOV((*(headers)), 4);
 
     length = len - cur; // calculate body length
     if( !RequestLengthChecker(this , length) )
         throw HttpException::ERROR_LEN;
     
-
-    if (length > 0) // if has body
-    {
+    // if has body section
+    if (length > 0) { 
         body = std::make_unique<uint8_t[]>(length);
         memcpy(body.get(), NOW_POS, length);
-        try
-        {   //split body to multipart/form-data
-            std::string &type = headers->get("Content-Type");
+        
+        //split body to multipart/form-data
+        try {   
+        std::string &type = headers->get("Content-Type");
 
-            if (type.find("multipart/form-data") != type.npos)
-            {   
-                size_t t_pos = type.find("boundary");
-                std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
-                type = "multipart/form-data";
-                form = std::make_unique<FormData>(boundary, str + cur, length);
-            }
+        if (type.find("multipart/form-data") != type.npos) {   
+            size_t t_pos = type.find("boundary");
+            std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
+            type = "multipart/form-data";
+            form = std::make_unique<FormData>(boundary, str + cur, length);
         }
-        catch (const HttpException &e) { ; }
+        } catch (const HttpException &e) { ; }
     }
-    std::string_view status = queryHeader("Connection");
-    IFDEBUG(std::cerr << "Connection Status : " << status << "\n");
 
-    if (status != "keep-alive")
-        conn->setCloseFlag();
-    IFDEBUG(
-        std::cerr << "---------------HttpRequest Finish---------------" << std::endl;
-    );
+    IFDEBUG ( std::cerr << "---------------HttpRequest Finish---------------" << std::endl );
 }
 
 // check whether length in header is equal to the real
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
 
     std::string_view content_length = re->queryHeader("Content-Length");
-    IFDEBUG(
+    IFDEBUG (
         std::cerr << "In Header Length: " << content_length 
                   << "\n\tReal Length: "  << real << std::endl;
     );
-    if (content_length != "" && content_length != std::to_string(real))
+    if (content_length != "" && 
+        content_length != std::to_string(real))
         return false;
+
     return true;
 }
 
-FormItem& HttpRequest::queryForm ( std::string_view _idx)
+FormItem& HttpRequest::queryForm(std::string_view _idx)
 {
     if(form == nullptr) 
         throw HttpException::NON_FORM;
@@ -105,12 +99,9 @@ std::string_view HttpRequest::queryParam(std::string_view _idx) noexcept
     if (params == nullptr)
         return std::string_view("");
 
-    try
-    {
+    try {
         return params->get(_idx);
-    }
-    catch (const HttpException &e)
-    {
+    } catch (const HttpException &e) {
         return std::string_view("");
     }
 }
@@ -119,12 +110,9 @@ std::string_view HttpRequest::queryHeader(std::string_view _idx) noexcept
     if (headers == nullptr)
         return std::string_view("");
 
-    try
-    {
+    try {
         return headers->get(_idx);
-    }
-    catch (const HttpException &e)
-    {
+    } catch (const HttpException &e) {
         return std::string_view("");
     }
 }
@@ -150,7 +138,7 @@ void HttpResponseBase::setDefaultHeaders()
     if (headers == nullptr) return;
 
     headers->push("Date", getGMTtime());
-    headers->push("Server", "TINYandPRETTY-1.3");
+    headers->push("Server", "TINY&PRETTY-1.4");
     headers->push("Connection", "keep-alive");
     headers->push("Keep-Alive", "timeout=120");
 }
@@ -287,8 +275,7 @@ size_t FileResponse::stringize(uint8_t **buff)
     body_len = cur;
     //set offet to file begin
     body.seekg(0 , std::ios::beg);
-    while(!body.eof()) 
-    {
+    while(!body.eof()) {
         body.read( (char *)*buff + cur , buff_size - cur);
         cur += body.gcount();
         if(cur == buff_size) // reallocate to 2x
@@ -297,7 +284,7 @@ size_t FileResponse::stringize(uint8_t **buff)
     body.close();
     body_len = cur - body_len;
     
-    IFDEBUG(
+    IFDEBUG (
         std::cerr << "* File Info : \n\vBuff_size : " << buff_size 
                   << " File Size : " << body_len << "\n"
     );
@@ -349,7 +336,7 @@ size_t JsonResponse::stringize(uint8_t **buff)
 }
 /*---------------------------------StaticResponse---------------------------------*/
 
-std::string estimateFileType(std::filesystem::path& p);
+std::string estimateFileType(const std::filesystem::path& p);
 
 EntryFunc StaticResponse = [](HttpRequest &req) 
     -> HttpResponseBase*

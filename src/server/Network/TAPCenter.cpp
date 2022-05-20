@@ -46,11 +46,11 @@ void TAPManager::start()
 	ptr->start();
 }
 
+/* load additonal plugin */
 void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 {
 	sub->setSock(ptr->sock);
 	ptr->plugins.emplace_back(std::move(sub));
-	
 }
 
 void TAPCenter::distributeTask(Connection* conn)
@@ -58,11 +58,13 @@ void TAPCenter::distributeTask(Connection* conn)
 	IFDEBUG(std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n");
 	for(auto& ptr : plugins) 
 	{
-		thpool->enqueue([& , _conn = conn]{ // sock also =? why must = ?
+		thpool->enqueue([& , _conn = conn] { // sock also =? why must = ?=
 			if( ptr->protocalConfirm() ){
 				ptr->createTask(_conn);
+				// move ownership back
+				epool->modifyPtr(_conn , _conn->getFD() , EPOLLIN | EPOLLET | EPOLLONESHOT );
 			}
-			// near future , CURRENTLY long connection is not supported
+
 		});
 	}
 }
@@ -72,22 +74,29 @@ void TAPCenter::start()
 	epool->Loop([&](epoll_data_t data, int type)
 				{
 		IFDEBUG(std::cerr << "Type status : " << type << "\n");
+		// motivated by socket-fd, new connection arrive
 		if(data.fd == sock->getFD()) {
 			for(;;) {
 				Connection* con = sock->onConnect();
+				// handled every new connection
 				if(con == nullptr) break;
 
-				IFDEBUG(std::cerr << "Connection : " << con->getFD() << " Handshake!\n");	
-				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET);
+				IFDEBUG(std::cerr << "Connection : " << con->getFD() << " Handshake!\n");
+				// start listening connection
+				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET | EPOLLONESHOT );
 			}
-		}
-		else if (type & EPOLLHUP || type & EPOLLERR) {
+
+		// connection timeout. close forcely
+		} else if (type & EPOLLHUP || type & EPOLLERR) {
 			Connection* conn = static_cast<Connection *>(data.ptr) ;
-			IFDEBUG( printf("I will try close %d" , conn->getFD()) );
-			conn->closeFD();  // another strage , by time out
-		}
-		else if (type == EPOLLIN) {
+			IFDEBUG( ::printf("I will try close %d" , conn->getFD()) );
+			conn->closeFD();  // another strage : by time out
+
+		// data from a connection arrived
+		} else if (type == EPOLLIN) {
+			// also move ownership to work-thread
 			Connection* conn = static_cast<Connection *>(data.ptr) ;
 			this->distributeTask( conn );
+
 		} });
 }

@@ -4,7 +4,7 @@
 #include <string>
 #include <filesystem>
 
-////split str by token string
+/* split str by token string */
 char *nsplit(char *str, const char *token, int n)
 {
 	char *ret = str;
@@ -12,7 +12,7 @@ char *nsplit(char *str, const char *token, int n)
 	return ret;
 }
 
-////get GMT time 
+/* get GMT time */ 
 static const char *wday[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 static const char *mons[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
 std::string getGMTtime(uint32_t offset)
@@ -32,7 +32,8 @@ std::string getGMTtime(uint32_t offset)
 }
 
 
-std::string estimateFileType(std::filesystem::path& p) {
+std::string estimateFileType(const std::filesystem::path& p) 
+{
 	if	   (p.extension() == ".html") 	return "text/html";
     else if(p.extension() == ".css") 	return "text/css";
 	else if(p.extension() == ".txt") 	return "text/plain";
@@ -47,12 +48,21 @@ std::string estimateFileType(std::filesystem::path& p) {
 	else return "application/octet-stream";
 }
 
-
-size_t preFetchLength(const char * str) {
+/* get http body's length in http header */
+size_t preFetchLength(const char * str) 
+{
 	char buff[32] = {0};
 	size_t cur = 0;
 	while ( strncmp(++str, "Content-Length: " , 16) && (*str)) ;
-	if(*str) while ( (buff[cur++] = (str + 16)[cur]) != '\r' )  ;
+	if(*str) while ( (buff[cur++] = (str + 16)[cur]) != '\r' ) ;
 
 	return cur == 0 ? -1ULL : atoll(buff);
+}
+
+/* get http header's length */
+size_t preFetchHeader(const char * str)
+{
+	size_t cur = 0;
+	while ( strncmp((char *)str + cur , "\r\n\r\n" , 4) && str[cur++]);
+	return cur;
 }

@@ -38,6 +38,7 @@ def_HttpEntry(Link_Start , request){
         case HttpException::NON_POS : //NON_POS : 有form，但没有这个key
             t += "OMG , I FAIL!";
             break;
+
         case HttpException::NON_FORM: // NON_FORM : 没有form
             t += "<h2>NOTHING!</h2>";
             t += "<h3>no laughing matter... </h3>";
@@ -93,7 +94,7 @@ def_HttpEntry(MD5Test,req){
         return new FileResponse{"utils/md5test.html" , "text/html"};
     }
     
-    std::cerr<<"["<<getGMTtime()<<"] "<<"MD5-req: "<<ans<<std::endl;
+    std::cerr<<"["<<getGMTtime(0)<<"] "<<"MD5-req: "<<ans<<std::endl;
     std::string str_md5 = md5(ans);
     std::cerr<<"MD5 Process Result : "<<str_md5<<std::endl;
     return new HttpResponse{str_md5};

@@ -15,10 +15,10 @@ Socket::Socket()
 
 // Set up host address
 #ifdef IPV_4
-	address = sockaddr_in{
+	address = sockaddr_in {
 		sin_family : PROTO_FAMILT,
-		sin_port : htons(PORT),
-		sin_addr : {s_addr : htonl(HOST_ADDR)},
+		sin_port   : htons(PORT),
+		sin_addr   : {s_addr : htonl(HOST_ADDR)},
 	};
 #elif IPV_6 // near future
 #endif
@@ -31,7 +31,7 @@ Socket::Socket()
 	, "set address reuse");
 #endif
 
-	// Set up timeout limit for receive and send
+	//Set up timeout limit for receive and send
 	struct timeval recv_timeout = (timeval)RECV_TIMEOUT;
 	 NETERROR(
 	     setsockopt(sockfd,SOL_SOCKET,SO_RCVTIMEO,&recv_timeout,sizeof(timeval)) < 0
@@ -55,7 +55,7 @@ Socket::Socket()
 	::printf("Successfully Listen on %d\n" , PORT);
 }
 
-////get one connection
+/* get one valid connection */
 Connection *Socket::onConnect()
 {
 	struct sockaddr_in _addr {0};
@@ -67,50 +67,91 @@ Connection *Socket::onConnect()
 	else 
 		return new Connection{_connfd, _len, _addr};
 }
-////block recv with time out 
-size_t Socket::recvData(int _connfd, uint8_t **data)
+
+
+/* block recv with time out*/ 
+size_t Socket::recvData (
+	int _connfd, 
+	uint8_t **data,
+	int flags,
+	size_t buff_size )
 {
 	//initial temporary length var
-	size_t  len 	  = 0;
-	size_t  buff_size = BUFF_INIT_SIZE;
+	size_t  cur 	  = 0;
 	ssize_t buff_len  = 0;
-	*data = (uint8_t *)calloc(1 , buff_size);
-	//loop recv and dynamically adjust buff size
-	while ( (buff_len = recv(_connfd, *data + len, buff_size - len, 0)) )
-	{
 
-	// IFDEBUG(
-	// 	std::cerr << "Recv Buff Info : FROM - " << _connfd << " " << len  << " " << buff_len << "\n"
-	// 			  << "\terrno : " << errno << " ## " << std::endl;
-	// )
-		//handle errno occurs
-		if (buff_len == -1)
-		{
-			if 		(errno == EAGAIN)	{errno = 0; break;}
+	*data = static_cast<uint8_t *>( calloc(1 , buff_size) );
+	//loop recv and adjust buff size dynamically
+	while ( (buff_len = recv(_connfd, *data + cur, buff_size - cur, flags)) )
+	{
+	IFDEBUG (
+		std::cerr << "Recv Buff Info : FROM - " << _connfd << " " << cur  << " " << buff_len << "\n"
+				  << "\terrno : " << errno << " ## " << std::endl;
+	)
+		// handle errno occurs
+		if (buff_len == -1) {
+			if (errno == EAGAIN && !flags)	{errno = 0; break;}
 			else if (errno == EINTR)	{errno = 0; continue;}
 			else						{errno = 0; break;}
 		}
 		
-		len += buff_len;
-		//adjust buff size to 2x
-		if (len == buff_size)
-		{
+		cur += buff_len;
+		// handle PEEK read
+		if (flags & MSG_PEEK) break;
+		// adjust buff size to 2x
+		if (cur == buff_size && !flags) {
 			buff_size <<= 1;
-			if (buff_size > BUFF_MAX_SIZE || buff_size < len)
-			{
-				len = -1ULL;
+			if (buff_size > BUFF_MAX_SIZE || buff_size < cur) {
+				cur = -1ULL; // ulld max
 				break;
-			} // ulld max
-			else
-			{
-				*data = (uint8_t *)realloc(*data, buff_size); // 2^N
-				memset(*data + len, 0, buff_size >> 1);
+
+			} else { 
+				*data = static_cast<uint8_t *>( realloc(*data, buff_size) ); // 2^N
+				memset(*data + cur, 0, buff_size >> 1);
 			}
 		}
 	}
-	return len;
+	return cur;
 }
-////block send with time out 
+
+/* block recv but don't flush buffer */
+size_t Socket::recvPeekData(int _connfd , uint8_t **data)
+{
+	return recvData(_connfd , data , MSG_PEEK | MSG_DONTWAIT);
+}
+
+/* non-block recv */
+size_t Socket::recvNonBlockData(int _connfd , uint8_t **data)
+{
+	return recvData(_connfd , data , MSG_DONTWAIT);
+}
+
+/* non-block recv with absolutely length */
+size_t Socket::recvCertainData(int _connfd , uint8_t **data , size_t _len)
+{
+	//initial temporary length var
+	size_t  cur 	  = 0;
+	ssize_t buff_len  = 0;
+
+	*data = static_cast<uint8_t *>( calloc(1 , _len + 1) );
+
+	while ((buff_len = recv(_connfd , *data + cur , _len - cur , MSG_DONTWAIT | MSG_WAITALL))) 
+	{
+	IFDEBUG (
+		std::cerr << "Cer Recv Buff Info : " << _len << " " << cur  << " " << buff_len << "\n"
+				  << "\terrno : " << errno << " ## " << std::endl;
+	)
+		if (buff_len == -1) {
+			if (cur == _len) 	 { errno = 0; break; } // successfully recv
+			if (errno == EAGAIN) { errno = 0; continue; } 
+			else  				 { errno = 0; break; }
+		}
+		cur += buff_len;
+	}
+	return (cur == _len) ? cur : -1ULL;
+}
+
+/* block send with time out */ 
 size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid version
 {
 	//initial temporary length var
@@ -122,20 +163,20 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 		if(buff_len == -1) {errno = 0; break;}
 
 		cur += buff_len;
-		// IFDEBUG(
-		// 	std::cerr << "Send Buff Info : " << _len << " " 
-		// 			  << cur  << " " << buff_len <<"\n"
-		// 			  << "\terrno : " << errno << " ## " << std::endl
-		// );
+		IFDEBUG (
+			std::cerr << "Send Buff Info : " << _len << " " 
+					  << cur  << " " << buff_len <<"\n"
+					  << "\terrno : " << errno << " ## " << std::endl
+		);
 	}
 	return ( cur == _len ) ? cur : -1ULL;
 }
 
 static void handlePipe(int id) {
-	::printf("# Peer Socket Close\n");
+	::printf("# Broken pipe, Peer Socket Close\n");
 }
 
-////specially send file base on unix/sendfile() 
+/* specially send file base on unix/sendfile() */ 
 size_t Socket::sendFile(int _connfd , const char* _fpath) 
 {
 	struct stat target {0};
@@ -159,11 +200,12 @@ size_t Socket::sendFile(int _connfd , const char* _fpath)
 					  << "\terrno : " << errno << " ## " << std::endl
 		);
 	}
+
 	close(fd);
 	return ( cur == target.st_size ) ? cur : -1ULL;
 }
 
-////same as sendFile() just with a header
+/* same as sendFile() just with a header */
 size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *header ,  size_t header_len)
 {
 	//int opt = 1; // use TCP_CORK , but segmentation fault ***
@@ -171,9 +213,9 @@ size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *he
 	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
 	// , "cork error");
 
-	if( sendData(_connfd , header , header_len) < 0 ) 
-											return -1ULL;
-	if( sendFile(_connfd , _fpath) < 0 ) 	return -1ULL;
+	if( sendData(_connfd , header , header_len) < 0 ||
+		sendFile(_connfd , _fpath) < 0 ) 	
+		return -1ULL;
 
 	//opt = 0;
 	// NETERROR(
@@ -220,7 +262,20 @@ bool EventPool::mountPtr(void *_ptr, int _fd, uint32_t _type)
 	return true;
 }
 
-void EventPool::Poll(std::function<void(epoll_data_t, int)> &func)
+bool EventPool::modifyPtr(void *_ptr, int _fd, uint32_t _type)
+{
+	epoll_event ev = {
+		events : _type,
+		data : {ptr : _ptr}
+	};
+
+	NETERROR(
+		epoll_ctl(epfd, EPOLL_CTL_MOD, _fd, &ev) < 0
+	, "mod epoll error");
+	return true;
+}
+
+void EventPool::Poll(EpollFunc &func)
 {
 	size_t epfd_n = epoll_wait(epfd, events, MAX_EVENTS, -1);
 	NETERROR(epfd_n < 0, "poll error");
@@ -231,7 +286,7 @@ void EventPool::Poll(std::function<void(epoll_data_t, int)> &func)
 	}
 }
 
-void EventPool::Loop(std::function<void(epoll_data_t, int)> func)
+void EventPool::Loop(EpollFunc func)
 {
 	while (true)
 	{
