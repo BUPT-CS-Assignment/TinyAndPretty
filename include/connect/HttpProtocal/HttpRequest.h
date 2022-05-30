@@ -18,28 +18,34 @@ class HttpRequest {
 public : 
 	HttpRequest(Connection * _conn , uint8_t* str, const size_t len);
 	
-	//query form data by item key name
-	FormItem&   	 queryForm	( std::string_view _idx);
+	/* query form data by item key name */
+	FormItem&   	 queryForm	( std::string_view key );
 
-	//query parameters in url (GET only)
-	std::string_view queryParam ( std::string_view _idx) noexcept; 
+	/*
+		query parameters in url (GET only)
+		is_insen : TRUE stands for 'Case insensitive'
+	*/
+	std::string_view queryParam ( std::string_view key , bool is_insen = false ) noexcept; 
 	
-	//query header item
-	std::string_view queryHeader( std::string_view _idx) noexcept; 
+	/* 
+		query header item
+		is_insen : TRUE stands for 'Case insensitive'
+	*/
+	std::string_view queryHeader( std::string_view key , bool is_insen = false ) noexcept; 
 	
-	//fetch and construct http body to string
+	/* fetch and construct http body to string */
 	std::string 	 getBody() ;
 
-	//query url path
+	/* query url path */
 	std::string_view Path() 	const noexcept { return path;}
 	
-	//query url method
+	/* query url method */
 	std::string_view Method() 	const noexcept { return method;}
 	
-	//query http protocal version
+	/* query http protocal version */
 	std::string_view HttpVer() 	const noexcept { return version;}
 
-	//Connection
+	/* Connection */
 	std::string_view queryClientIP() const noexcept ;
 	size_t Length() const { return length; }
 };

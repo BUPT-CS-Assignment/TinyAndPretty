@@ -18,29 +18,33 @@ class StringDict {
 	Dict item;
 	size_t len = 0;
 
-	//init stringdict by two significant tokens
-	void __init__(char * , const char * , const char *);
+	/* init stringdict by two significant tokens */
+	void __init__(char * , const char * , const char *) noexcept;
 public : 
 	StringDict() = default;
-	//allow delayed construct
-	StringDict(char *str , const char *token_1 , const char *token_2) {__init__(str , token_1 , token_2);}
+	/* allow delayed construct */
+	StringDict(char* str , const char* token_1 , const char* token_2) {__init__(str , token_1 , token_2);}
 	
-	//query and fetch origin data in this dict. HttpException::NON_POS would occur when not found
-	std::string& get(std::string_view);
+	/* 
+		query and fetch origin data in this dict. 
+		is_insen : TRUE stands for 'Case insensitive'
+	   	HttpException::NON_POS would occur when not found  
+	*/
+	std::string& get(std::string_view _key, bool is_insen = false);
 	
-	//query and fetch origin data in this dict. HttpException::NON_POS would occur when not found
-	std::string& operator[] (const std::string& str) noexcept;
+	/* query and fetch origin data in this dict. HttpException::NON_POS would occur when not found  */
+	std::string& operator[] (std::string_view str) noexcept;
 	
-	//append one pair to dict in the end
-	void push(std::string _fir , std::string _sec) ;
+	/* append one pair to dict in the end */
+	void push(std::string _fir , std::string _sec) noexcept;
 	
-	//display this stringdict on stdout
+	/* display this stringdict on stdout */
 	void show();    
 	
-	//calculate total length
-	size_t length() const { return len;}
+	/* calculate total length */
+	size_t length() const { return len; }
 
-	//stringize to byte stream / string
+	/* stringize to byte stream / string */
 	size_t stringize(char *buff);
 };
 
@@ -54,26 +58,26 @@ friend class FormData;
 	std::string filename = "";
 	size_t len;
 public :
-	//constructor by byte range
+	/* constructor by byte range */
 	FormItem(uint8_t*_begin , uint8_t* _end);
 
-	//method of inverting tostring.			NOT guarantee correctness 
+	/* method of inverting tostring. NOT guarantee correctness  */
 	operator std::string() const {return std::string((char *)data.get() , len);}
 	
-	//method of inverting to filestream.	NOT guarantee correctness 
+	/* method of inverting to filestream.	NOT guarantee correctness  */
 	friend std:: fstream& operator << (std:: fstream& out , const FormItem& _this);
 	friend std::ofstream& operator << (std::ofstream& out , const FormItem& _this);
 	
-	//calculate total length
+	/* calculate total length */
 	size_t length() 				 const {return len;}
 	
-	//query form key name
+	/* query form key name */
 	std::string_view queryName() 	 const {return name;}
 	
-	//query form file name
+	/* query form file name */
 	std::string_view queryFilename() const {return filename;}
 
-	//display this form item on stdout in the way of char
+	/* display this form item on stdout in the way of char */
 	void show();
 };
 
@@ -84,7 +88,7 @@ class FormData {
 public : 
 	FormData(std::string& , uint8_t* , size_t) ;
 	
-	//query form item by key nam
+	/* query form item by key nam */
 	FormItem& queryItem(std::string_view _name);
 };
 

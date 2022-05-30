@@ -53,7 +53,7 @@ size_t preFetchLength(const char * str)
 {
 	char buff[32] = {0};
 	size_t cur = 0;
-	while ( strncmp(++str, "Content-Length: " , 16) && (*str)) ;
+	while ( strncasecmp(++str, "Content-Length: " , 16) && (*str)) ;
 	if(*str) while ( (buff[cur++] = (str + 16)[cur]) != '\r' ) ;
 
 	return cur == 0 ? -1ULL : atoll(buff);
