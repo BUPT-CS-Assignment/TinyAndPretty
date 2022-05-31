@@ -7,14 +7,20 @@ bool HttpManager::protocalConfirm()
 }
 
 
-void HttpManager::createTask(Connection* conn)
+bool HttpManager::createTask(Connection* conn)
 {
 	//get full data from socket
 	auto [raw, rlen] = wrapper->recvHttpData(conn);
+	
+	// peer soceket closed , task failure
+	if(rlen == 0) return false;
 	//execute
 	std::shared_ptr<HttpResponseBase> ret(taskExecute(conn, raw, rlen));
-
+	
+	//send back
 	wrapper->sendHttpData( conn , ret );
+
+	return true;
 }
 
 

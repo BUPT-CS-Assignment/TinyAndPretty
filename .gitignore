@@ -8,3 +8,5 @@ nohup.out
 log
 .vscode-ctags
 build
+status.txt
+status.bk

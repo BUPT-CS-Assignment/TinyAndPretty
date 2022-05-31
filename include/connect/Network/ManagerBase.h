@@ -11,7 +11,7 @@ protected :
 public:
 	void setSock(std::shared_ptr<Socket> _sock) {sock = _sock;}
 	virtual bool protocalConfirm() = 0;
-	virtual void createTask(Connection* conn) = 0;
+	virtual bool createTask(Connection* conn) = 0;
 };
 
 #endif

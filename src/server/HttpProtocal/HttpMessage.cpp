@@ -19,7 +19,6 @@ HttpRequest::HttpRequest(
 {
     IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
     size_t cur = 0;
-    std::cerr << NOW_POS << std::endl;
 
     //split url method
     method = nsplit((char *)str, " ", 1);
@@ -31,14 +30,15 @@ HttpRequest::HttpRequest(
 
     //split parameters in url 
     nsplit(NOW_POS, "?", 1);
-    if (size_t t_len = path.length(); strlen(NOW_POS) != t_len)
-    {   
+    if (size_t t_len = path.length(); 
+        strlen(NOW_POS) != t_len) {   
         path = NOW_POS;
         CUR_MOV(path , 1);
         params = std::make_unique<StringDict>(NOW_POS, "=", "&");
         cur += params->length() + 1;
-    }
+    } 
     else CUR_MOV(path, 1);
+    
     //previously check whether url path exists
     if (URLParser::getInstance().preCheck(path, method))
         throw HttpException::NON_PATH;

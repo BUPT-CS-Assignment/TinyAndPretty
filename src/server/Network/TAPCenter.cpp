@@ -56,13 +56,23 @@ void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 void TAPCenter::distributeTask(Connection* conn)
 {
 	IFDEBUG(std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n");
-	for(auto& ptr : plugins) 
-	{
-		thpool->enqueue([& , _conn = conn] { // sock also =? why must = ?=
-			if( ptr->protocalConfirm() ){
-				ptr->createTask(_conn);
-				// move ownership back
-				epool->modifyPtr(_conn , _conn->getFD() , EPOLLIN | EPOLLET | EPOLLONESHOT );
+	for(auto& ptr : plugins) {
+
+		// sock also =? why must = ?=
+		thpool->enqueue([& , _conn = conn] 
+		{ 
+			if( ptr->protocalConfirm() ) {
+
+				// create Http task and judge whether alive
+				if ( ptr->createTask(_conn) ) {
+					epool->modifyPtr(_conn , _conn->getFD() , 
+							EPOLLIN | EPOLLET | EPOLLONESHOT );
+
+				// peer socket close
+				} else  {
+					_conn->closeFD();
+					delete _conn;
+				}
 			}
 
 		});
@@ -73,29 +83,28 @@ void TAPCenter::start()
 {
 	epool->Loop([&](epoll_data_t data, int type)
 				{
-		IFDEBUG(std::cerr << "Type status : " << type << "\n");
 		// motivated by socket-fd, new connection arrive
 		if(data.fd == sock->getFD()) {
+
 			for(;;) {
 				Connection* con = sock->onConnect();
 				// handled every new connection
 				if(con == nullptr) break;
 
-				IFDEBUG(std::cerr << "Connection : " << con->getFD() << " Handshake!\n");
 				// start listening connection
 				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET | EPOLLONESHOT );
 			}
 
 		// connection timeout. close forcely
 		} else if (type & EPOLLHUP || type & EPOLLERR) {
-			Connection* conn = static_cast<Connection *>(data.ptr) ;
-			IFDEBUG( ::printf("I will try close %d" , conn->getFD()) );
+			Connection* conn = static_cast<Connection *>(data.ptr);
 			conn->closeFD();  // another strage : by time out
+			delete conn;
 
 		// data from a connection arrived
 		} else if (type == EPOLLIN) {
 			// also move ownership to work-thread
-			Connection* conn = static_cast<Connection *>(data.ptr) ;
+			Connection* conn = static_cast<Connection *>(data.ptr);
 			this->distributeTask( conn );
 
 		} });
