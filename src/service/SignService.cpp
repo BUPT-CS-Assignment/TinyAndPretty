@@ -5,16 +5,17 @@ using namespace NEDBSTD;
 using namespace UTILSTD;
 
 def_HttpEntry(SignIn, req){
-    string function(req.queryHeader("Function"));
+    string function(req.queryHeader("function"));
     if(function == ""){
         return new FileResponse{"web/signin.html" , "text/html"};
     }
-    string userid(req.queryHeader("Userid"));
+    string userid(req.queryHeader("userid"));
     CONSOLE_LOG(0,1,1,"Signin-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
     if(function != "signin"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     string passwd = req.getBody();
+    cout << req.getBody() << endl;
     User user(userid);
     int res;
     if((res = user.Signin(passwd)) == 0){
@@ -32,11 +33,11 @@ def_HttpEntry(SignIn, req){
 
 
 def_HttpEntry(SignUp, req){
-    string function(req.queryHeader("Function"));
+    string function(req.queryHeader("function"));
     if(function == ""){
         return new FileResponse{"web/signup.html" , "text/html"};
     }
-    string userid(req.queryHeader("Userid"));
+    string userid(req.queryHeader("userid"));
     CONSOLE_LOG(0,1,1,"SignUp-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
     if(function != "signup"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};

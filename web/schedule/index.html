@@ -6,6 +6,7 @@
         <meta charset="UTF-8">
         <script src="/lib/vue2.js"></script>
         <script src="/lib/axios.js"></script>
+        <script src="/main.js"></script>
     </head>
     <body onload="vm.getTable()">
         <h1>TAP TimeTable</h1>
@@ -36,9 +37,7 @@
                     </tr>
                 </table>
             </div>
-        </h4>  
-        <button type = "button" onclick="window.open('http://'+location.host+'/user/','_self')">Back</button>
-        <br>
+        </h4> 
         <hr align=center width="400px" size=2 style = "float:left">
         <br>
         <h3>
@@ -49,8 +48,8 @@
             <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
         </h3>
         <script>
-            var userid = localStorage.getItem("Userid");
-            var token = localStorage.getItem("Token");
+            var userid = localStorage.getItem("userid");
+            var token = localStorage.getItem("token");
             var ROOT = "http://" + location.host;
             var vm = new Vue({
                 el: '#timetable',
@@ -59,40 +58,28 @@
                     detail:[],
                 },
                 methods:{
-                    getTable:function(){
-                        axios.get('/user/schedule/',{
-                            headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'fetch',
-                                'Userid':userid,
-                                'Token':token
-                            }}
-                        )
-                        .then(res => {
-                            this.table = Array.from(Array(14),()=>new Int32Array(7));
-                            console.log(res);
-                            this.detail = [];
-                            this.detail.push('');
-                            res.data.detail.forEach(element => {
-                                this.detail.push(element)
-                            });
-                            res.data.basic.forEach(course => {
-                                for(var day = 0; day < course.timeCode.length; day++){
-                                    var code = course.timeCode[day] << 1;
-                                    for(var timeP =0; timeP <14; timeP++){
-                                        code >>= 1;
-                                        if(code & 0x1 == 1) this.table[timeP][day] = course.pos;
-                                    }
+                    table_init(res){
+                        this.table = Array.from(Array(14),()=>new Int32Array(7));
+                        this.detail = [];
+                        this.detail.push('');
+                        res.data.detail.forEach(element => {
+                            this.detail.push(element)
+                        });
+                        res.data.basic.forEach(course => {
+                            for(var day = 0; day < course.timeCode.length; day++){
+                                var code = course.timeCode[day] << 1;
+                                for(var timeP =0; timeP <14; timeP++){
+                                    code >>= 1;
+                                    if(code & 0x1 == 1) this.table[timeP][day] = course.pos;
                                 }
-                            });
-                            console.log(this.table);
-                        })
-                        .catch(err =>{
-                            console.log(err);
-                            if(err.response.status == 401){
-                                alert("ACCESS_DENIED");
                             }
-                        })
+                        });
+                        console.log(this.table);
+                    },
+
+                    getTable:function(){
+                        axiosGetWithToken('/user/schedule/','','fetch',
+                            this.table_init,()=>{},()=>{});
                     }
                 }
             });

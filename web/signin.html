@@ -54,9 +54,9 @@
                 axios.post('/signin',
                     this.passwd,
                     {headers:{
-                        'Content-type': 'multipart/form-data',
-                        'Function': 'signin',
-                        'Userid':id
+                        'content-type': 'multipart/form-data',
+                        'function': 'signin',
+                        'userid':id
                     }}
                 )
                 .then(res => {
@@ -66,8 +66,8 @@
                         return;
                     }
                     var token = res.headers["token"];
-                    localStorage.setItem("Userid",id);
-                    localStorage.setItem("Token",token);
+                    localStorage.setItem("userid",id);
+                    localStorage.setItem("token",token);
                     console.log(localStorage);
                     if(NEXT == "Sql"){
                         window.open(ROOT+"/sql",'_self');

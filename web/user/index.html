@@ -6,31 +6,60 @@
         <meta charset="UTF-8">
         <script src="/lib/vue2.js"></script>
         <script src="/lib/axios.js"></script>
+        <script src="/main.js"></script>
+        <link rel="stylesheet" type="text/css" href="index.css">
     </head>
-    <body onload="info.fetch()">
-        <h1>TAP User Panel</h1>
-        <h3>   
-            <div id="userinfo">
-                <form>
-                    <div style = "float:left" v-cloak>UserID : {{userid}}</div>
-                    <br>
-                    <div style = "float:left" v-cloak>Name : {{username}}</div>
-                    <br>
-                    <div style = "float:left" v-cloak>Gender : {{gender}}</div>
-                    <br>
-                    <div style = "float:left" v-cloak>School : {{school}}</div>
-                    <br>
-                    <div style = "float:left" v-cloak>Major : {{major}}</div>
-                    <br>
-                    <div style = "float:left" v-cloak>Class : {{classid}}</div>
-                </form>
-                <br>
-                <button type = "button" onclick="window.open('http://'+location.host+'/user/schedule/','_self')">Time Table</button>
-                <button type = "button" onclick="DivShow() ">Change Info</button>
-                <button type = "button" onclick="SignOut() ">Sign Out</button>
+    <body onload="vm.getTable(), info.fetch()">
+    <div id="main">
+        <div class="header">
+            <h1>Course Assistance</h1>
+            <h2 v-cloak>@ {{userid}}</h2>
+            <a onclick="SignOut() " style="user-select:none;">Sign Out</a>
+        </div>
+        <div class="container">
+            <div class="card" id="infomation" onclick="expand(this)">
+                <h2>Info.</h2>
+                <div class="content">
+                    <div class="info_panel">
+                        <div class="panel_item" v-cloak>UserID : {{userid}}</div>
+                        <div class="panel_item" v-cloak>Name : {{username}}</div>
+                        <div class="panel_item" v-cloak>Gender : {{gender}}</div>
+                        <div class="panel_item" v-cloak>School : {{school}}</div>
+                        <div class="panel_item" v-cloak>Major : {{major}}</div>
+                        <div class="panel_item" v-cloak>Class : {{classid}}</div>
+                    </div>
+                </div>
             </div>
-        </h3>
-        <br>
+            <div class="card" id="schedule" onclick="expand(this)">
+                <h2>Sche.</h2>
+                <div class="content">
+                    <div id = "timetable"> 
+                        <div v-for="(value,index) in table">
+                            <div v-if = "value[day]!=0">
+                                {{index+1}} : {{detail[value[day]].name}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="navigation" onclick="">
+                <h2>Nav.</h2>
+                <div class="content">
+                </div>
+            </div>
+        </div>
+        <div id="blur_cover" style="display:none;"></div>
+        <div class="card_expand" id="expand" style="display:none;">
+            <div class="card_expand_button">
+                <button onclick="hide()">Back</button>
+            </div>
+            <div id="card_detail">
+            </div>
+        </div>
+    </div>
+    
+        
+
         <div id="change_info" style="display:none; position:absolute;  
                                     top:15%; left:10%; width:260px; height:360px;
                                     background-color:whitesmoke;
@@ -69,25 +98,59 @@
                     <button type = "button" onclick="DivHide()">Cancel</button> 
                 </form>
 		</div>
-        <div id="cover" style="display:none;position:absolute;  
-                            top:0%; left:0%; width:100%;height:100%;
-                            background-color: black; 
-                            z-index:1001;   opacity:.36;">
-        </div> 
-        <hr align=center width="400px" size=2 style = "float:left">
-        <br>
-        <h3>
-            For More Infomation:
-            <br>
-            <button id="sql" onclick="window.open('http://'+location.host+'/sql')">TAP SQL Test</button>
-	        <button id="tap" onclick="window.open('https://github.com/NoUITeam/TinyAndPretty.git')">TAP Git Repo</button>
-            <button id="nedb" onclick="window.open('https://github.com/Jianxff/NEDB.git')">NEDB Git Repo</button>
-        </h3>
         
         <script>
             var ROOT = "http://" + location.host;
+
+            var vm = new Vue({
+                el: '#timetable',
+                data:{
+                    table:[],
+                    detail:[],
+                    day:1,
+                },
+                methods:{
+                    getTable:function(){
+                        this.table = Array.from(Array(14),()=>new Int32Array(7));
+                        this.detail = [];
+                        this.detail.push('');
+                        axiosGetWithToken('/user/schedule/','','fetch',(res)=>{    
+                            res.data.detail.forEach(element => {
+                                this.detail.push(element)
+                            });
+                            res.data.basic.forEach(course => {
+                                for(var day = 0; day < course.timeCode.length; day++){
+                                    var code = course.timeCode[day] << 1;
+                                    for(var timeP =0; timeP <14; timeP++){
+                                        code >>= 1;
+                                        if(code & 0x1 == 1) this.table[timeP][day] = course.pos;
+                                    }
+                                }
+                            });
+                        },()=>{},UserExpFuntion);
+                        console.log(this.table);
+                        console.log(this.detail);
+                    },                   
+                }
+            });
+
+            function expand(obj){
+                console.log(obj);
+                document.getElementById('expand').style.display="block";
+                document.getElementById('blur_cover').style.display="block";
+                var expand_detail = document.getElementById('card_detail');
+                if(obj.id=='schedule'){
+                    expand_detail.innerHTML = '<object type="text/html" data="/user/schedule/" width="100%" height="100%">';
+                }
+            }
+
+            function hide(){
+                document.getElementById('expand').style.display="none"
+                document.getElementById('blur_cover').style.display="none"
+            }
+
             var info = new Vue({
-                el:'#userinfo',
+                el:'#main',
                 data:{
                     userid:'',
                     username:'',
@@ -98,33 +161,14 @@
                 },
                 methods: {
                      fetch:function(){
-                        axios.get('/user/',{
-                            headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'fetch',
-                                'Token':localStorage.getItem('Token'),
-                                'Userid':localStorage.getItem('Userid')
-                            }
-                        })
-                        .then(res => {
-                            console.log(res)
+                        axiosGetWithToken('/user/','','fetch',(res)=>{
                             this.userid = res.data.id;
                             this.username = res.data.name;
                             this.gender = res.data.gender;
                             this.school = res.data.school;
                             this.major = res.data.major;
                             this.classid = res.data.class;
-                        })
-                        .catch(err =>{
-                            console.log(err);
-                            if(err.response.status == 401){
-                                alert("ACCESS_DENIED");
-                            }else{
-                                alert(err.response.status);
-                            }
-                            localStorage.setItem('Next','User');
-                            window.open(ROOT+"/signin",'_self');
-                        })
+                        },()=>{},UserExpFuntion);
                      } 
                 },
             });
@@ -150,38 +194,21 @@
                         }
                         var str = "name="+this.name+",gender="+this.gender+",school="+this.school
                                  +",major="+this.major+",class="+this.classid;
-                        axios.post('/user/',
-                            str,
-                            {headers:{
-                                'Content-type': 'multipart/form-data',
-                                'Function': 'update',
-                                'Token':localStorage.getItem('Token'),
-                                'Userid':localStorage.getItem('Userid')
-                            }},
-                        )
-                        .then(res => {
-                            console.log(res)
+                        axiosPostWithToken('/user/','','update',str,(res)=>{
                             if(res.data!="NO_ERROR"){
                                 alert(res.data);
                                 return;
                             }
                             info.fetch();
                             DivHide();
-                        })
-                        .catch(err =>{
-                            console.log(err);
-                            if(err.response.status == 401){
-                                alert("ACCESS_DENIED");
-                                window.open(ROOT+"/signin",'_self');
-                            }
-                        })
+                        },()=>{},UserExpFuntion);
                     }
                 }
             });
 
             function SignOut(){
-                localStorage.removeItem("Userid");
-                localStorage.removeItem("Token");
+                localStorage.removeItem("userid");
+                localStorage.removeItem("token");
                 localStorage.removeItem('Status');
                 alert("Signed Out");
 
@@ -198,22 +225,15 @@
                 document.getElementById("cover").style.display="none";
             }
 
-            function TimeTable(){
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("GET",ROOT + "/user/schedule/",false);
-                xhttp.setRequestHeader("Content-type", "multipart/form-data");
-                xhttp.setRequestHeader("Userid", userid);
-                xhttp.setRequestHeader("Token",token);
-                xhttp.setRequestHeader("Function", "Fetch");
-                xhttp.send();
-                if(xhttp.status==200){
-                    var rec = xhttp.responseText;
-                    console.log(rec);
-                }else if(xhttp.status == 401){
+
+            function UserExpFuntion(err){
+                if(err.response.status == 401){
                     alert("ACCESS_DENIED");
-                }else if(xhttp.status == 400){
-                    alert("BAD_REQUEST");
+                }else{
+                    alert(err.response.status);
                 }
+                localStorage.setItem('Next','User');
+                window.open(ROOT+"/signin",'_self');
             }
         </script>
     </body>

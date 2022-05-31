@@ -13,15 +13,15 @@ void SQLTestGenerate(){
 }
 
 def_HttpEntry(SqlRun, req){
-    string userid(req.queryHeader("Userid"));
-    string token(req.queryHeader("Token"));
-    string function(req.queryHeader("Function"));
+    string userid(req.queryHeader("userid"));
+    string token(req.queryHeader("token"));
+    string function(req.queryHeader("function"));
     string ans = req.getBody();
     if(function == ""){
         return new FileResponse{"web/sql/terminal.html" , "text/html"};
     }
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
-        return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
+        //return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
     }
     if(function == "authenticate"){
         HttpResponse* HResp = new HttpResponse{""};

@@ -5,6 +5,7 @@
         <title>Tiny And Pretty</title>
         <script src="/lib/vue2.js"></script>
         <script src="/lib/axios.js"></script>
+        <script src="/main.js"></script>
     </head>
     <body body onload="Authenticate(),tablegui.getList()">
         <h1>TAP SQL Terminal</h1>
@@ -122,9 +123,8 @@
             </div>
         </h4>
         <script>
-            var userid = localStorage.getItem("Userid");
-            var token = localStorage.getItem("Token");
-            var ROOT = "http://" + location.host;
+            var userid = localStorage.getItem("userid");
+            var token = localStorage.getItem("token");
 
             var sqlcmd = new Vue({
                 el:'#console',
@@ -142,16 +142,18 @@
                     Send:function(){
                         if(this.inputsql=='') return;
                         console.log(this.inputsql);
-                        axiosPostWithToken('run',this.inputsql,()=>{
+                        axiosPostWithToken('/sql','run',this.inputsql,()=>{
                             this.req = this.inputsql;
                             this.Clear();
                             this.msg = res.data.msg;
                             this.count = res.data.count;
                             this.val = res.data.retVal;
-                        },()=>{});
+                        },()=>{},SqlExpFunction);
                     },
                 }
             });
+
+            
 
             var tablegui = new Vue({
                 el:'#gui',
@@ -168,15 +170,15 @@
                 methods:{
                     getList:function(){
                         this.name='';
-                        axiosGetWithToken('list',(res)=>{
+                        axiosGetWithToken('/sql','','list',(res)=>{
                             this.tablelist = res.data.list;
                             document.getElementById("cover").style.display="none";
-                        },()=>{})
+                        },()=>{},SqlExpFunction)
                         
                     },
 
                     getValue:function(tablename){
-                        axiosGetWithToken('detail',(res)=>{
+                        axiosGetWithToken('/sql',{table:tablename},'detail',(res)=>{
                             this.name = res.data.name;
                             this.field = res.data.field.split(",");
                             this.detail = [];
@@ -188,7 +190,7 @@
                                 this.addVal.push('');
                             }
                             document.getElementById("cover").style.display="none";
-                        },()=>{},{table:tablename});
+                        },()=>{},SqlExpFunction);
                         
                     },
 
@@ -203,7 +205,7 @@
                         for(var i = 1;i<this.field.length;i++){
                             sql += this.field[i]+'='+this.detail[index][i]+ (i==this.field.length-1?'':' , ');
                         }
-                        axiosPostWithToken("update",sql,
+                        axiosPostWithToken('/sql','',"update",sql,
                             ()=>{
                                 this.$set(this.edit,index,false);
                                 this.preVal.splice(this.preVal.findIndex(element =>(element.idx == index)),1);
@@ -211,7 +213,8 @@
                             (res)=>{
                                 alert(res.data);
                                 this.cancelValue(index);
-                            }
+                            },
+                            SqlExpFunction
                         );
                     },
 
@@ -225,9 +228,9 @@
                     delValue:function(index){
                         var sql = this.name+';'+this.field[0]+'='+this.detail[index][0];
                         console.log(sql);
-                        axiosPostWithToken("delete",sql,()=>{
+                        axiosPostWithToken('/sql','',"delete",sql,()=>{
                             this.detail.splice(index,1);
-                        },()=>{});
+                        },()=>{},SqlExpFunction);
                     },
 
                     addValue:function(){
@@ -249,10 +252,10 @@
                         }
                         val = val.substring(0,val.length-1);
                         sql += field+';'+val;
-                        axiosPostWithToken("insert",sql,()=>{
+                        axiosPostWithToken('/sql','',"insert",sql,()=>{
                             this.cancelAdd();
                             this.getValue(this.name);
-                        },()=>{});
+                        },()=>{},SqlExpFunction);
                     },
 
                     cancelAdd:function(){
@@ -263,69 +266,20 @@
                 }
             });
 
-            function axiosPostWithToken(Function,Val,NoErrFuncton,ErrFunction){
-                axios.post('/sql',Val,{
-                    headers:{
-                        'Content-type': 'multipart/form-data',
-                        'Function': Function,
-                        'Token':localStorage.getItem('Token'),
-                        'Userid':localStorage.getItem('Userid')
-                    }
-                })
-                .then(res => {
-                    console.log(res);
-                    if(res.headers.msg == "NO_ERROR"){
-                        NoErrFuncton(res);
-                    }else{
-                        ErrFunction(res);
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                    if(err.status == 401){
-                        alert("ACCESS_DENIED");
-                        localStorage.setItem('Next','Sql');
-                        window.open(ROOT+"/signin",'_self');
-                    }else{
-                        alert(err.status);
-                    }
-                });
-            }
-
-            function axiosGetWithToken(Function,NoErrFuncton,ErrFunction,Param){
-                axios.get('/sql',{
-                    params:Param,
-                    headers:{
-                        'Content-type': 'multipart/form-data',
-                        'Function': Function,
-                        'Token':localStorage.getItem('Token'),
-                        'Userid':localStorage.getItem('Userid')
-                    }
-                })
-                .then(res => {
-                    console.log(res);
-                    if(res.headers.msg == "NO_ERROR"){
-                        NoErrFuncton(res);
-                    }else{
-                        ErrFunction(res);
-                    }
-                }) 
-                .catch(err => {
-                    console.log(err);
-                    if(err.response.status == 401){
-                        alert("ACCESS_DENIED");
-                        localStorage.setItem('Next','Sql');
-                        window.open(ROOT+"/signin",'_self');
-                    }else{
-                        alert(err.status);
-                    }
-                })
-            }
-
             function Authenticate(){
-                axiosGetWithToken("authenticate",()=>{
+                axiosGetWithToken('/sql','',"authenticate",()=>{
                     document.getElementById("cover").style.display="none";
-                },()=>{});
+                },()=>{},SqlExpFunction);
+            }
+
+            function SqlExpFunction(err){
+                if(err.status == 401){
+                    alert("ACCESS_DENIED");
+                    localStorage.setItem('Next','Sql');
+                    window.open(ROOT+"/signin",'_self');
+                }else{
+                    alert(err.status);
+                }
             }
         </script>
     </body>

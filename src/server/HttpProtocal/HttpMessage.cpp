@@ -15,7 +15,7 @@ std::string getGMTtime(uint32_t offset = 0);
 //
 HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : conn(_conn)
 {
-    IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl);
+    std::cerr << "---------------In HttpRequest---------------" << std::endl;
     size_t cur = 0;
     std::cerr << NOW_POS << std::endl;
     //split url method
@@ -34,6 +34,10 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         cur += params->length() + 1;
     }
     else CUR_MOV(path, 1);
+    // API Connect
+    if(path.compare(0,5,"/api/") == 0){
+        path = path.substr(4,path.length()-4);
+    }
     //previously check whether url path exists
     if (URLParser::getInstance().preCheck(path, method))
         throw HttpException::NON_PATH;
@@ -49,7 +53,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
     length = len - cur; // calculate body length
     if( !RequestLengthChecker(this , length) )
         throw HttpException::ERROR_LEN;
-    
+
     // if has body section
     if (length > 0) { 
         body = std::make_unique<uint8_t[]>(length);
@@ -57,8 +61,7 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         
         //split body to multipart/form-data
         try {   
-        std::string &type = headers->get("Content-Type");
-
+        std::string &type = headers->get("content-type");
         if (type.find("multipart/form-data") != type.npos) {   
             size_t t_pos = type.find("boundary");
             std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
@@ -68,13 +71,13 @@ HttpRequest::HttpRequest(Connection *_conn, uint8_t *str, const size_t len) : co
         } catch (const HttpException &e) { ; }
     }
 
-    IFDEBUG ( std::cerr << "---------------HttpRequest Finish---------------" << std::endl );
+    std::cerr << "---------------HttpRequest Finish---------------" << std::endl ;
 }
 
 // check whether length in header is equal to the real
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
 
-    std::string_view content_length = re->queryHeader("Content-Length");
+    std::string_view content_length = re->queryHeader("content-length");
     IFDEBUG (
         std::cerr << "In Header Length: " << content_length 
                   << "\n\tReal Length: "  << real << std::endl;
