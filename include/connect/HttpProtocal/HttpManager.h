@@ -17,7 +17,7 @@ public:
 	HttpResponseBase *taskExecute(Connection* conn, std::shared_ptr<uint8_t> raw, size_t len);
 
 	virtual bool protocalConfirm() override;
-	virtual void createTask(Connection* conn) override;
+	virtual bool createTask(Connection* conn) override;
 };
 
 #endif
