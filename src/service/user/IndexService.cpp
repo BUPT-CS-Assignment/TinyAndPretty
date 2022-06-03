@@ -13,7 +13,7 @@ def_HttpEntry(UserIndex, req){
     std::string token(req.queryHeader("token"));
     CONSOLE_LOG(0, 1, 1, "UserPanel-Req [function='%s', userid='%s', token='%s']\n", function.c_str(), userid.c_str(), token.c_str());
     if(TokenCheck(userid, token) != TOKEN_ACCESS){
-        //return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
+        return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
     }
     User user(userid);
     user.Init();

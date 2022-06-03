@@ -18,7 +18,7 @@ def_HttpEntry(ScheduleIndex,req){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     if(TokenCheck(userid,token) != TOKEN_ACCESS){
-        //return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
+        return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
     }
     User user(userid);
     user.Init();

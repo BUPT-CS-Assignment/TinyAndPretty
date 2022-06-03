@@ -15,7 +15,6 @@ def_HttpEntry(SignIn, req){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     string passwd = req.getBody();
-    cout << req.getBody() << endl;
     User user(userid);
     int res;
     if((res = user.Signin(passwd)) == 0){

@@ -73,7 +73,7 @@ Json User::getInfo(){
     errCode = __LSR__.Select("majors", "name", "id=" + majorid, count, retVal);
     J.push_back({"major",retVal.substr(retVal.find(";") + 1).c_str()});
     //class
-    J.push_back({"class",stoi(classid)});
+    J.push_back({"classid",stoi(classid)});
     return J;
 }
 
