@@ -19,7 +19,7 @@ void User::setAuth(int auth){
 }
 
 int User::Signin(string& passwd){
-    int count,length;
+    int count;
     string retVal;
     int errCode = __LSR__.Select("token", "passwd", "id=" + id, count, retVal);
     if(errCode != 0){
@@ -41,6 +41,7 @@ void User::Init(){
     int count,length;
     string retVal;
     int errCode = __LSR__.Select("users","*","id=" + id, count, retVal);
+    if(errCode != NO_ERROR) return;
     retVal = retVal.substr(retVal.find_first_of(';')+1);
     string * str = Split(retVal,',',length);
     auth = stoi(str[1]);
@@ -70,10 +71,10 @@ Json User::getInfo(){
     J.push_back({"name",name.c_str()});
     J.push_back({"gender",gender.c_str()});
     //school
-    int errCode = __LSR__.Select("schools", "name", "id=" + schoolid, count, retVal);
+    __LSR__.Select("schools", "name", "id=" + schoolid, count, retVal);
     J.push_back({"school",retVal.substr(retVal.find(";") + 1).c_str()});
     //major
-    errCode = __LSR__.Select("majors", "name", "id=" + majorid, count, retVal);
+    __LSR__.Select("majors", "name", "id=" + majorid, count, retVal);
     J.push_back({"major",retVal.substr(retVal.find(";") + 1).c_str()});
     //class
     J.push_back({"classid",stoi(classid)});
