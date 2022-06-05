@@ -37,9 +37,6 @@ def_HttpEntry(MD5Test,req);
 #include <libs/BasicUtils.hpp>
 
 /*----------------- Vue/Axios Module-----------------*/
-def_HttpEntry(Vue2,req);
-def_HttpEntry(Vue3,req);
-def_HttpEntry(Axios,req);
 
 def_HttpEntry(Main,req);
 
@@ -55,6 +52,7 @@ def_HttpEntry(SqlRun , req);
 def_HttpEntry(SqlHelp ,  req);
 
 def_HttpEntry(UserIndex,req);
+def_HttpEntry(TimetableIndex,req);
 def_HttpEntry(ScheduleIndex,req);
 
 def_HttpEntry(LogCheck,req);

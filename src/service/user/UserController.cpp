@@ -29,8 +29,11 @@ int User::Signin(string& passwd){
     if(passwd != retVal){
         return -1;
     }
+    Init();
+    if(auth < 3 && (schoolid == "0" || classid == "0")){
+        return -1;
+    }
     //info preload
-    
     return CONSOLE_LOG(0, 1, 1, "User '%s' Signed In\n", id.c_str());
 }
 

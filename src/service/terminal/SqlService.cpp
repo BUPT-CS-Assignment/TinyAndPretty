@@ -21,7 +21,7 @@ def_HttpEntry(SqlRun, req){
         return new FileResponse{"web/sql/terminal.html" , "text/html"};
     }
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
-        return new HttpResponse("ACCESS_DENIED\r\n",HTTP_STATUS_401);
+        return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
     }
     if(function == "authenticate"){
         HttpResponse* HResp = new HttpResponse{""};
@@ -46,7 +46,7 @@ def_HttpEntry(SqlRun, req){
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Get Table List
-    if(function == "list"){
+    else if(function == "list"){
         CONSOLE_LOG(0, 1, 1, "Table List Req\n");
         int errCode = __LSR__.Query("select tables;",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
@@ -67,7 +67,7 @@ def_HttpEntry(SqlRun, req){
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
     //Get Table Info
-    if(function == "detail"){
+    else if(function == "detail"){
         string tablename(req.queryParam("table"));
         int errCode = __LSR__.Select(tablename,"*","",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
@@ -84,22 +84,26 @@ def_HttpEntry(SqlRun, req){
         return JResp;
         //return new HttpResponse{to_string(errCode) + "?" + std::to_string(count) + "&" + res};
     }
-    if(function != "update" && function != "insert" && function != "delete"){
-        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
-    }
     int errCode;
     string * str = Split(ans,';',count);
     //Update Table Info
     if(function == "update"){
+        cout << str[0] <<" "<< str[2] <<" "<< str[1] << endl;
         errCode = __LSR__.Update(str[0],str[2],str[1],count);
     }
     //insert Table Info
-    if(function == "insert"){
+    else if(function == "insert"){
         errCode = __LSR__.Insert(str[0],str[1],str[2]);
     }
     //delete value
-    if(function == "delete"){
+    else if(function == "delete"){
         errCode = __LSR__.Delete(str[0],str[1],count);
+    }
+    else if(function == "deltable"){
+        errCode = __LSR__.Drop(ans);
+    }
+    else{
+        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
     delete [] str;

@@ -27,4 +27,21 @@ public:
     Json getPersonalTimeTable();
 };
 
+class Event{
+private:
+    std::string eventid;
+    std::string name;
+    std::string start;
+    std::string end;
+public:
+    
+    void setName(std::string name);
+    void setStart(std::string start);
+    void setEnd(std::string end);
+    std::string getName();
+    std::string getStart();
+    std::string getEnd();
+    Json getEvents();
+};
+
 #endif

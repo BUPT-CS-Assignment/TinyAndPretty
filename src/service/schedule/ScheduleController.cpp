@@ -39,7 +39,7 @@ SimpleJson::Object Course::getCourseInfo(string courseid){
     if(retVal == "" || count == 0 || str == nullptr){
         return SimpleJson::Object({});
     }
-    cout<<"retVal : "<<retVal<<endl;
+    //cout<<"retVal : "<<retVal<<endl;
     string *info = Split(str[1],',',length);
     __LSR__.Select("users","name","id="+info[3],count,retVal);
     string username = retVal.substr(retVal.find(';')+1);

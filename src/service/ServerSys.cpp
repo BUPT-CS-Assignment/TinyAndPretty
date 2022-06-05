@@ -60,15 +60,3 @@ void DirectoryInit(){
 def_HttpEntry(Main,req){
     return new FileResponse{"web/dist/index.html" , "text/html"};
 }
-
-def_HttpEntry(Vue2, req){
-    return new FileResponse{"lib/vue2.js" , "application/javascript"};
-}
-
-def_HttpEntry(Vue3, req){
-    return new FileResponse{"lib/vue3.js" , "application/javascript"};
-}
-
-def_HttpEntry(Axios, req){
-    return new FileResponse{"lib/axios.js" , "application/javascript"};
-}
