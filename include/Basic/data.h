@@ -5,7 +5,6 @@
 
 
 class NEDBnamespace::Index{
-    friend std::ostream& operator << (std::ostream& out, Index& index);
     friend class Table;
     friend class Row;
     friend class Memorizer;
@@ -29,6 +28,13 @@ public:
     bool    operator!=(Index&);
     bool    operator<=(Index&);
     bool    operator>=(Index&);
+    friend std::ostream& operator<< (std::ostream& out, Index& index){
+        if(index.type_ == __INT) out << index.index_.i_index;
+        else if(index.type_ == __INT64) out << index.index_.l_index;
+        else if(index.type_ == __REAL) out << index.index_.d_index;
+        else if(index.type_ == __TEXT) out << index.index_.t_index;
+        return out;
+    }
 
 };
 

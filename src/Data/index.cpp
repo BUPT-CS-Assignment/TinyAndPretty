@@ -112,13 +112,14 @@ Index& Index::operator=(Index& src){
     return *this;
 }
 
-ostream& operator << (ostream& out, Index& index){
+std::ostream& operator << (ostream& out, Index& index){
     if(index.type_ == __INT) out << index.index_.i_index;
     else if(index.type_ == __INT64) out << index.index_.l_index;
     else if(index.type_ == __REAL) out << index.index_.d_index;
     else if(index.type_ == __TEXT) out << index.index_.t_index;
     return out;
 }
+
 
 bool Index::operator<(Index& index){
     if(type_ == __INT) return index_.i_index < index.index_.i_index;

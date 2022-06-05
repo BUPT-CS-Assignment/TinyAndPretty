@@ -18,7 +18,7 @@ string InputStream::read(){
         int index = input.find(";");
         if(index == -1){
             __Input = __Input + input;
-            printf("      -> ");
+            printf("    -> ");
             getline(cin, input);
         }
         else{

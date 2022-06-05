@@ -65,7 +65,7 @@ int NEDBnamespace::__DEBUG_SET__(std::string level){
 ////////////////////////////////////////////////////////////////
 void NEDBnamespace::__MESSAGE__(){
     cout << "Welcome to NEDB terminal. Command end with ';'." << endl;
-    cout << "Server version: 22.4.30 <Stable>" << endl;
+    cout << "Server version: 22.6.5 <Stable>" << endl;
     cout << "Default resource-dir: " << DEFAULT_DIR << endl;
     cout << "Enter '.help' for viewing help infomation.\n" << endl;
 }
@@ -73,7 +73,7 @@ void NEDBnamespace::__MESSAGE__(){
 ////////////////////////////////////////////////////////////////
 
 #define __HELP_MSG__ \
-    "NEDB version: 22.4.30 <Stable>\n\
+    "NEDB version: 22.6.5 <Stable>\n\
      Data Type Support >\n\
     \t[  int     ]  ->  int\n\
     \t[  int     ]  ->  int\n\
