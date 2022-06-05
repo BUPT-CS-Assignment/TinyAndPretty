@@ -17,7 +17,7 @@ HttpRequest::HttpRequest(
     const size_t len) 
 : conn(_conn)
 {
-    std::cerr << "---------------In HttpRequest---------------" << std::endl;
+    //std::cerr << "---------------In HttpRequest---------------" << std::endl;
     size_t cur = 0;
 
     //split url method
@@ -39,6 +39,9 @@ HttpRequest::HttpRequest(
     } 
     else CUR_MOV(path, 1);
     // API Connect
+    if(path.compare(0,5,"/api/") == 0){
+        path = path.substr(4,path.length()-4);
+    }
     if(path.compare(0,5,"/api/") == 0){
         path = path.substr(4,path.length()-4);
     }
@@ -83,7 +86,7 @@ HttpRequest::HttpRequest(
         } catch (const HttpException &e) { ; }
     }
 
-    std::cerr << "---------------HttpRequest Finish---------------" << std::endl ;
+    //std::cerr << "---------------HttpRequest Finish---------------" << std::endl ;
 }
 
 /* check whether length in header is equal to the real */
@@ -361,7 +364,7 @@ EntryFunc StaticResponse = [](HttpRequest &req)
 
     //calculate absolute file-path and give back response
     std::string path(req.Path().substr(1));
-    fs::path p = fs::absolute("web/"+path);
+    fs::path p = fs::absolute("web/dist/"+path);
     if (fs::exists(p)) 
         return new FileResponse {p , estimateFileType(p)};
     else 

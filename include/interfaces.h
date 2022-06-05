@@ -46,6 +46,9 @@ def_HttpEntry(Main,req);
 /* User Service */
 def_HttpEntry(SignIn,req);
 def_HttpEntry(SignUp,req);
+
+/* Access Check */
+def_HttpEntry(AccessCheck,req);
 /* DataBase Test */
 def_HttpEntry(SqlTest,req);
 def_HttpEntry(SqlRun , req);

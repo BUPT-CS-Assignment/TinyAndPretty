@@ -4,6 +4,18 @@ using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
+def_HttpEntry(AccessCheck,req){
+    string level(req.queryHeader("function"));
+    string userid(req.queryHeader("userid"));
+    string token(req.queryHeader("token"));
+    int res = 0;
+    if(TokenCheck((level=="3"?"10000":userid),token) != TOKEN_ACCESS){
+        return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
+    }else{
+        return new HttpResponse("NO_ERROR");
+    }
+}
+
 def_HttpEntry(SignIn, req){
     string function(req.queryHeader("function"));
     if(function == ""){
@@ -19,7 +31,7 @@ def_HttpEntry(SignIn, req){
     int res;
     if((res = user.Signin(passwd)) == 0){
         HttpResponse* resp = new HttpResponse("NO_ERROR");
-        resp->appendHeader("Token",TokenSign(userid));
+        resp->appendHeader("token",TokenSign(userid));
         return resp;
     }else if(res== -1){
         return new HttpResponse{"PASSWORD_MISMATCH"};

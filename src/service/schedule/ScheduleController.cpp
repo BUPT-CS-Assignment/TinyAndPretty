@@ -93,6 +93,7 @@ Json Course::getTimeTable(){
     J.push_back({"basic",timeCode});
     J.push_back({"detail",courseInfo});
     delete[] str;
+    TempDB.Close();
     return J;
     /*
     string * field = Split(str[0],',',templ);

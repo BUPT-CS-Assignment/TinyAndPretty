@@ -58,7 +58,7 @@ void DirectoryInit(){
 }
 
 def_HttpEntry(Main,req){
-    return new FileResponse{"web/index.html" , "text/html"};
+    return new FileResponse{"web/dist/index.html" , "text/html"};
 }
 
 def_HttpEntry(Vue2, req){
