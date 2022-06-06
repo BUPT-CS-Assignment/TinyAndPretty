@@ -25,11 +25,12 @@ auto HttpAdapter::recvHttpData(Connection *conn)
 		len =  sock->recvCertainData(conn->getFD() , &data , len + 4); // 4 : size of "\r\n\r\n"
 
 	// generally handle
-	} else {
+	} else
 		len = sock->recvData(conn->getFD() , &data);
-	}
 
-	return std::make_tuple( std::shared_ptr<uint8_t>(data) , len);
+	return std::make_tuple( 
+		std::shared_ptr<uint8_t>{data} , 
+		len);
 }
 /* file type specilized check ; true for filesystem response */
 bool HttpAdapter::branchFilePathResp(
@@ -46,7 +47,12 @@ bool HttpAdapter::branchFilePathResp(
 	
 	// hanle filesystem type FileResponse
 	auto [buff, slen] = file_resp->stringizeHeader();
-	return sock->sendFileWithHeader(conn->getFD() , target.c_str() , buff.get() , slen);
+
+	return sock->sendFileWithHeader(
+		conn->getFD() , 
+		target.c_str() , 
+		buff.get() , 
+		slen);
 }
 
 void HttpAdapter::sendHttpData(

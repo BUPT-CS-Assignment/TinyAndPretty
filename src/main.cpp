@@ -3,7 +3,7 @@
 #include <connect/HttpProtocal/HttpManager.h>
 #include <service/sys/ServerSys.h>
 
-int main(int argv, char* argc[]){
+int main(int argv, const char* argc[]){
     //Time Stamp Set
     TimeStampReset();
     //Dir Init
@@ -17,5 +17,6 @@ int main(int argv, char* argc[]){
     TAPManager server;
     server.loadSubManager(std::make_unique<HttpManager>());
     server.start();
+
     return 0;
 }

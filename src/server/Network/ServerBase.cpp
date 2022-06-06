@@ -33,7 +33,7 @@ Socket::Socket()
 
 	//Set up timeout limit for receive and send
 	struct timeval recv_timeout = (timeval)RECV_TIMEOUT;
-	 NETERROR(
+	NETERROR(
 	     setsockopt(sockfd,SOL_SOCKET,SO_RCVTIMEO,&recv_timeout,sizeof(timeval)) < 0
 	 , "set timeVal error");
 
@@ -56,7 +56,7 @@ Socket::Socket()
 }
 
 /* get one valid connection */
-Connection *Socket::onConnect()
+Connection* Socket::onConnect()
 {
 	struct sockaddr_in _addr {0};
 	socklen_t _len = sizeof(_addr);
@@ -65,9 +65,14 @@ Connection *Socket::onConnect()
 	if(_connfd == -1) 
 		{errno = 0; return nullptr;}
 	else 
-		return new Connection{_connfd, _len, _addr};
+		return new Connection{_connfd, _addr};
 }
 
+/* close one invalid connection */
+void Socket::offConnect(Connection* _conn) {
+	_conn->closeFD();
+	delete _conn;
+}
 
 /* block recv with time out*/ 
 size_t Socket::recvData (
@@ -84,10 +89,6 @@ size_t Socket::recvData (
 	//loop recv and adjust buff size dynamically
 	while ( (buff_len = recv(_connfd, *data + cur, buff_size - cur, flags)) )
 	{
-	IFDEBUG (
-		std::cerr << "Recv Buff Info : FROM - " << _connfd << " " << cur  << " " << buff_len << "\n"
-				  << "\terrno : " << errno << " ## " << std::endl;
-	)
 		// handle errno occurs
 		if (buff_len == -1) {
 			if (errno == EAGAIN && !flags)	{errno = 0; break;}
@@ -163,11 +164,6 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 		if(buff_len == -1) {errno = 0; break;}
 
 		cur += buff_len;
-		IFDEBUG (
-			std::cerr << "Send Buff Info : " << _len << " " 
-					  << cur  << " " << buff_len <<"\n"
-					  << "\terrno : " << errno << " ## " << std::endl
-		);
 	}
 	return ( cur == _len ) ? cur : -1ULL;
 }
@@ -194,11 +190,6 @@ size_t Socket::sendFile(int _connfd , const char* _fpath)
 	while( ( buff_len = sendfile(_connfd , fd , (off_t *)&cur , target.st_size - cur) ) ) {
 		if(buff_len == -1) {errno = 0; break;}
 
-		IFDEBUG (
-			std::cerr << "Send FILE Info : " << target.st_size << " " 
-					  << cur  << " " << buff_len <<"\n"
-					  << "\terrno : " << errno << " ## " << std::endl
-		);
 	}
 
 	close(fd);
@@ -275,21 +266,41 @@ bool EventPool::modifyPtr(void *_ptr, int _fd, uint32_t _type)
 	return true;
 }
 
-void EventPool::Poll(EpollFunc &func)
+void EventPool::Poll(const EpollFunc& func)
 {
-	size_t epfd_n = epoll_wait(epfd, events, MAX_EVENTS, -1);
-	NETERROR(epfd_n < 0, "poll error");
+	ssize_t epfd_n = epoll_wait(epfd, events, MAX_EVENTS, -1);
 
-	for (size_t i = 0; i < epfd_n; i++)
-	{
+	if (epfd_n < 0) {
+		::printf("\n"\
+			"======================================	\n" \
+			"#          Ctrl + C Received         #	\n"	\
+			"#                                    # \n" \
+			"# EventPool terminated, Good Bye~ :p # \n" \
+			"====================================== \n"	
+		);
+
+		return;
+	}
+
+	for (ssize_t i = 0; i < epfd_n; i++) {
 		func(events[i].data, events[i].events);
 	}
 }
 
-void EventPool::Loop(EpollFunc func)
+static bool stop = false;
+
+static void terminalPoll(int id) {
+	stop = true;
+}
+
+void EventPool::Loop(const EpollFunc func)
 {
-	while (true)
-	{
-		Poll(func);
+	signal(SIGINT , terminalPoll);
+
+	for(;;) {
+		this->Poll(func);
+
+		if(stop) break;
 	}
+
 }

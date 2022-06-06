@@ -17,7 +17,8 @@ EntryFunc& URLParser::URLparse(std::string_view _url)
     UTILSTD::CONSOLE_LOG(0,1,1,"Url-Request '%s'\n", _url.data());
     try {
         return url_table.at( _url );
-    } catch(const std::out_of_range& e) {
+        
+    }   catch(const std::out_of_range& e) {
         return StaticResponse;
     }
 }

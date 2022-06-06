@@ -3,7 +3,7 @@
 
 #include <common.h>
 
-////commonly used http status code
+/* commonly used http status code */
 #define HTTP_STATUS_200 "HTTP/1.1 200 OK\r\n"
 #define HTTP_STATUS_300 "HTTP/1.1 300 Multiple Choice\r\n"
 #define HTTP_STATUS_400 "HTTP/1.1 400 Bad Request\r\n"
@@ -12,9 +12,11 @@
 #define HTTP_STATUS_404 "HTTP/1.1 404 Not Found\r\n"
 #define HTTP_STATUS_502 "HTTP/1.1 502 Bad Gateway\r\n"
 
-using Dict = std::vector<std::pair<std::string ,std::string>>;
-////implementation of K-V string-pair dictionary
+/* implementation of K-V string-pair dictionary */
 class StringDict {
+
+using Dict = std::vector<std::pair<std::string ,std::string>>;
+
 	Dict item;
 	size_t len = 0;
 
@@ -48,7 +50,7 @@ public :
 	size_t stringize(char *buff);
 };
 
-////implementation of the item in multipart/form-fata
+/* implementation of the item in multipart/form-fata */
 class FormData;
 class FormItem {
 friend class FormData;
@@ -81,7 +83,7 @@ public :
 	void show();
 };
 
-////implementation of the multipart/form-fata
+/* implementation of the multipart/form-fata */
 class FormData {
 	std::string boundary;
 	std::vector<FormItem> form;

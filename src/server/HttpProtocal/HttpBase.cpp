@@ -5,10 +5,11 @@
 
 char *nsplit(char *str, const char *token, int n);
 
-#define CUR_MOV(offset) \
-	cur += offset;      \
-	if (cur >= len)     \
-		break;
+#define CUR_MOV(offset) {\
+		cur += offset;  \
+		if (cur >= len) \
+			break;      \
+	}
 
 //Initialize. the first token is the separator between two string in one pair
 //			  the second one is between two different pairs       
@@ -28,8 +29,9 @@ void StringDict::__init__(
 		CUR_MOV(strlen(fir) + len_1); 
 
 		sec = nsplit(str + cur, token_2, len_2); 
-		item.push_back( std::make_pair(std::string{fir}, std::string{sec}) );
 		CUR_MOV(strlen(sec) + len_2);
+
+		item.push_back( std::make_pair(std::string{fir}, std::string{sec}) );
 	}
 }
 /* Query and Fetch origin data in this dict. HttpException::NON_POS would occur when not found */
@@ -58,7 +60,7 @@ void StringDict::push(std::string _fir, std::string _sec) noexcept
 /* Display this stringdict on stdout */
 void StringDict::show()
 {
-	for (auto &it : item) {
+	for (auto& it : item) {
 		std::cout << it.first << "---" << it.second << "\n";
 	}
 }
@@ -74,26 +76,28 @@ std::string& StringDict::operator[](std::string_view str) noexcept
 	}
 }
 
+#define BUFF_CPY(src , len) {\
+		strncpy(buff + cur, src , len); \
+		cur += len;\
+	}
 //stringize to byte stream / string
 size_t StringDict::stringize(char* buff)
 {
 	size_t cur = 0;
 
-	for (auto &it : item) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+	for (auto& it : item) {
 		//key string
-		strcpy(buff + cur, it.first.c_str());
-		cur += it.first.length();
-		strcpy(buff + cur, ": ");
-		cur += 2; //  2: sizeof ": "
+		BUFF_CPY(it.first.c_str() , it.first.length())
+		BUFF_CPY(": " , 2)
 
 		//value string
-		strcpy(buff + cur, it.second.c_str());
-		cur += it.second.length();
-		strcpy(buff + cur, "\r\n");
-		cur += 2;
+		BUFF_CPY(it.second.c_str() , it.second.length())
+		BUFF_CPY("\r\n" , 2)
 	}
-	strcpy(buff + cur, "\r\n");
-	cur += 2;
+	BUFF_CPY("\r\n" , 2)
+#pragma GCC diagnostic pop
 	return cur;
 }
 //Initialize. Constructor by byte range. it could be given by FormData ctor.
@@ -133,42 +137,45 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
 }
 
 //method of inverting to filestream.	NOT guarantee correctness 
-std::fstream  &operator<<(std::fstream  &out, const FormItem &_this)
+std::fstream  &operator<<(std::fstream&  out, const FormItem& _this)
 {
 	out.write((char *)(_this.data.get()), _this.len);
 	return out;
 }
-std::ofstream &operator<<(std::ofstream &out, const FormItem &_this)
+std::ofstream &operator<<(std::ofstream& out, const FormItem& _this)
 {
 	out.write((char *)(_this.data.get()), _this.len);
 	return out;
 }
 
 //initialize. arguments could be given by HttpRequest ctor.
-FormData::FormData(std::string &_boundary, uint8_t *body, size_t len) : boundary(std::move(_boundary))
+FormData::FormData(
+	std::string& _boundary, 
+	uint8_t *body, 
+	size_t len) 
+: boundary(std::move(_boundary))
 {
-	IFDEBUG(std::cerr << "String Boundary: " << boundary << " Len: " << len << "\n");
 	uint8_t *fir = nullptr;
 	
-	for (size_t cur = 0; cur < len; cur++)
-	{
+	for (size_t cur = 0; cur < len; cur++) {
 		//detected boundary in body
-		if (body[cur] == '-' && body[cur + 1] == '-' &&
-			memcmp(body + cur + 2, boundary.c_str(), boundary.length()) == 0)
-		{
-			if (fir != nullptr) //skip the first one;
-				form.emplace_back(fir, body + cur - 1);
-			cur += 4 + boundary.length(); // 4 : sizeof "--" "\r\n"
-			fir = body + cur;
-		}
+		if (memcmp(body + cur , "--" , 2)  ||
+			memcmp(body + cur + 2, boundary.c_str(), boundary.length()) )
+			continue;
+		
+		//skip the first one;
+		if (fir != nullptr) 
+			form.emplace_back(fir, body + cur - 1);
+
+		cur += 4 + boundary.length(); // 4 : sizeof "--" "\r\n"
+		fir = body + cur;
 	}
-	IFDEBUG(std::cerr << "Finish Form Data\n");
 }
 
 //query form item by key name
 FormItem& FormData::queryItem(std::string_view _name)
 {
-	for (auto &it : form) {
+	for (auto& it : form) {
 		if (it.name == _name)
 			return it;
 	}

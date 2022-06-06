@@ -2,7 +2,7 @@
 #include <connect/HttpProtocal/HttpException.h>
 #include <connect/HttpProtocal/HttpManager.h>
 
-////handle HTTP Exception
+/* handle HTTP Exception */
 HttpResponse* HttpManager::dispatchException(const HttpException &e)
 {
 	switch (e) // near future
@@ -20,7 +20,6 @@ HttpResponse* HttpManager::dispatchException(const HttpException &e)
 		return new HttpResponse{"Error occur : NON_PATH"};
 
 	case HttpException::NON_CONN:
-		IFDEBUG( std::cerr << "NON_CONN\n" );
 		return nullptr;
 
 	default:

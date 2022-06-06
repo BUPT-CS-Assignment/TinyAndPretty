@@ -68,23 +68,23 @@ HttpRequest::HttpRequest(
         throw HttpException::ERROR_LEN;
     
 
-    //if has body section...
-    if (length > 0) { 
-        body = std::make_unique<uint8_t[]>(length);
-        memcpy(body.get(), NOW_POS, length);
-        
-        try {   
-        //split body to multipart/form-data
-        std::string &type = headers->get("Content-Type" , true);
+    //if NOT has body section...
+    if (length == 0) return ;
 
-        if (type.find("multipart/form-data") != type.npos) {   
-            size_t t_pos = type.find("boundary");
-            std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
-            type = "multipart/form-data";
-            form = std::make_unique<FormData>(boundary, str + cur, length);
-        }
-        } catch (const HttpException &e) { ; }
+    body = std::make_unique<uint8_t[]>(length);
+    memcpy(body.get(), NOW_POS, length);
+    
+    try {   
+    //split body to multipart/form-data
+    std::string &type = headers->get("Content-Type" , true);
+
+    if (type.find("multipart/form-data") != type.npos) {   
+        size_t t_pos = type.find("boundary");
+        std::string boundary = type.substr(t_pos + 9); // 9 : sizeof "boundary="
+        type = "multipart/form-data";
+        form = std::make_unique<FormData>(boundary, str + cur, length);
     }
+    } catch (const HttpException &e) { ; }
 
     //std::cerr << "---------------HttpRequest Finish---------------" << std::endl ;
 }
@@ -92,7 +92,7 @@ HttpRequest::HttpRequest(
 /* check whether length in header is equal to the real */
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept{
 
-    std::string_view content_length = re->queryHeader("Content-Length" , true);
+    auto content_length = re->queryHeader("Content-Length" , true);
 
     if (content_length != "" && 
         content_length != std::to_string(real))
@@ -117,7 +117,8 @@ std::string_view HttpRequest::queryParam(std::string_view key , bool is_insen) n
 
     try {
         return params->get(key , is_insen);
-    } catch (const HttpException &e) {
+
+    }   catch (const HttpException &e) {
         return std::string_view{""};
     }
 }
@@ -128,7 +129,8 @@ std::string_view HttpRequest::queryHeader(std::string_view key , bool is_insen) 
 
     try {
         return headers->get(key , is_insen);
-    } catch (const HttpException &e) {
+
+    }   catch (const HttpException &e) {
         return std::string_view{""};
     }
 }
@@ -300,11 +302,7 @@ size_t FileResponse::stringize(uint8_t **buff)
     }
     body.close();
     body_len = cur - body_len;
-    
-    IFDEBUG (
-        std::cerr << "* File Info : \n\vBuff_size : " << buff_size 
-                  << " File Size : " << body_len << "\n"
-    );
+
     return cur;
 }
 

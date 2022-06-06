@@ -16,7 +16,7 @@ class HttpRequest {
 
 	size_t length ;
 public : 
-	HttpRequest(Connection * _conn , uint8_t* str, const size_t len);
+	HttpRequest(Connection* _conn , uint8_t* str, const size_t len);
 	
 	/* query form data by item key name */
 	FormItem&   	 queryForm	( std::string_view key );

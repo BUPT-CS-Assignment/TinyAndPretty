@@ -19,8 +19,7 @@ public:
 	std::unique_ptr<ThreadPool> thpool;
 	std::vector<std::unique_ptr<ManagerBase>> plugins;
 
-	static auto getInstance()
-	{
+	static auto getInstance() {
 		static std::shared_ptr<TAPCenter> ptr {new TAPCenter};
 		return ptr;
 	}
@@ -34,7 +33,7 @@ TAPCenter::TAPCenter()
 	epool  = std::make_unique<EventPool>();
 	thpool = std::make_unique<ThreadPool>(CONFIG_THREADS_MAXIMUM);
 
-	epool->mountFD(sock->getFD(), EPOLLIN );
+	epool->mountFD(sock->getFD(), EPOLLIN);
 }
 
 TAPManager::TAPManager()
@@ -55,26 +54,20 @@ void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 
 void TAPCenter::distributeTask(Connection* conn)
 {
-	IFDEBUG(std::cerr << "\n*FD IN : \t" << conn->getFD() << "\n");
 	for(auto& ptr : plugins) {
 
 		// sock also =? why must = ?=
 		thpool->enqueue([& , _conn = conn] 
 		{ 
-			if( ptr->protocalConfirm() ) {
+			if( !ptr->protocalConfirm() ) return ;
 
-				// create Http task and judge whether alive
-				if ( ptr->createTask(_conn) ) {
-					epool->modifyPtr(_conn , _conn->getFD() , 
-							EPOLLIN | EPOLLET | EPOLLONESHOT );
-
-				// peer socket close
-				} else  {
-					_conn->closeFD();
-					delete _conn;
-				}
-			}
-
+			// create Http task and judge whether it's alive
+			if ( ptr->createTask(_conn) ) 
+				epool->modifyPtr(_conn , _conn->getFD() , 
+						EPOLLIN | EPOLLET | EPOLLONESHOT ); 
+			// peer socket close
+			else 
+				sock->offConnect(_conn);
 		});
 	}
 }
@@ -87,25 +80,26 @@ void TAPCenter::start()
 		if(data.fd == sock->getFD()) {
 
 			for(;;) {
-				Connection* con = sock->onConnect();
 				// handled every new connection
-				if(con == nullptr) break;
+				Connection* conn = sock->onConnect();
+				if(conn == nullptr) break;
 
 				// start listening connection
-				epool->mountPtr(con , con->getFD() , EPOLLIN | EPOLLET | EPOLLONESHOT );
+				epool->mountPtr(conn , conn->getFD() , 
+						EPOLLIN | EPOLLET | EPOLLONESHOT );
 			}
 
 		// connection timeout. close forcely
 		} else if (type & EPOLLHUP || type & EPOLLERR) {
 			Connection* conn = static_cast<Connection *>(data.ptr);
-			conn->closeFD();  // another strage : by time out
-			delete conn;
+			sock->offConnect(conn); // another strage : by time out
 
 		// data from a connection arrived
 		} else if (type == EPOLLIN) {
 			// also move ownership to work-thread
 			Connection* conn = static_cast<Connection *>(data.ptr);
-			this->distributeTask( conn );
+			this->distributeTask(conn);
 
-		} });
+		} 
+	});
 }

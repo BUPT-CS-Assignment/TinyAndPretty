@@ -12,24 +12,22 @@
 #include "ServerConfig.h"
 
 class Connection {
-    bool close_flag;
     int connfd;
-    socklen_t len;
-    struct sockaddr_in client_addr;
-public:
-    Connection(int _connfd , socklen_t _len ,struct sockaddr_in _addr) 
-            : close_flag(false) ,  connfd(_connfd) , len(_len) , client_addr(_addr){}
 
-    int  getFD()        const {return connfd;}
-    bool getCloseFlag() const {return close_flag;}
-    void setCloseFlag()       {close_flag = true;}
-    void closeFD()            {close(connfd);}
-    const char*getAddr()const {return inet_ntoa(client_addr.sin_addr);}
+    struct sockaddr_in clientAddr;
+public:
+    Connection(int _connfd , struct sockaddr_in _addr) 
+            : connfd(_connfd) , clientAddr(_addr) {}
+
+    int  getFD()    const {return connfd;}
+    void closeFD()  {close(connfd);}
+    const char*getAddr() const 
+        {return inet_ntoa(clientAddr.sin_addr);}
 };
 
 /* unix socket */
 class Socket {
-    int sockfd ;
+    int sockfd;
 
     struct sockaddr_in address;
 public : 
@@ -54,23 +52,25 @@ public :
     // send file (FULL path needed) with header
     size_t sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *header ,  size_t header_len);
     
-    // get one connection in TCP socket
+    // handle one connection in TCP socket
     Connection* onConnect();
+    void offConnect(Connection* _conn);
 };
 
-using EpollFunc = std::function<void(epoll_data_t , int)>;
 /* unix event pool based on epoll */
 class EventPool{
     int epfd;
 
     struct epoll_event events[MAX_EVENTS];
+
+using EpollFunc = std::function<void(epoll_data_t , int)>;
 public:
     EventPool();
     bool mountFD(int fd , uint32_t type);
     bool mountPtr(void *ptr , int fd, uint32_t type);
     bool modifyPtr(void *ptr , int fd, uint32_t type);
-    void Poll( EpollFunc &func );
-    void Loop( EpollFunc  func );
+    void Poll( const EpollFunc& func );
+    void Loop( const EpollFunc func );
 };
 
 #define NETERROR(cond , tar) {if((cond)) {perror( tar );exit(EXIT_FAILURE);}}
