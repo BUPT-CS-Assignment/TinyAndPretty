@@ -1,6 +1,7 @@
 #include <connect/Network/ServerBase.h>
 #include <sys/sendfile.h>
 #include <netinet/tcp.h>
+#include <sys/timerfd.h>
 #include <sys/signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,7 +11,7 @@
 Socket::Socket()
 {
 	// Initialize socket port
-	sockfd = socket(PROTO_FAMILT, SOCK_TYPE, 0);
+	sockfd = ::socket(PROTO_FAMILT, SOCK_TYPE, 0);
 	NETERROR(sockfd < 0, "init socket error ");
 
 // Set up host address
@@ -27,29 +28,47 @@ Socket::Socket()
 #ifdef ADDR_REUSE
 	int addr_reuse = ADDR_REUSE;
 	NETERROR(
-		setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &addr_reuse, sizeof(int)) < 0
+		::setsockopt(
+			sockfd, 
+			SOL_SOCKET, 
+			SO_REUSEADDR, 
+			&addr_reuse, 
+			sizeof(int)) < 0
 	, "set address reuse");
 #endif
 
 	//Set up timeout limit for receive and send
 	struct timeval recv_timeout = (timeval)RECV_TIMEOUT;
 	NETERROR(
-	     setsockopt(sockfd,SOL_SOCKET,SO_RCVTIMEO,&recv_timeout,sizeof(timeval)) < 0
+	    ::setsockopt(
+			sockfd,
+			SOL_SOCKET,
+			SO_RCVTIMEO,
+			&recv_timeout
+			,sizeof(timeval)) < 0
 	 , "set timeVal error");
 
 	struct timeval send_timeout = (timeval)SEND_TIMEOUT;
 	NETERROR(
-	    setsockopt(sockfd,SOL_SOCKET,SO_SNDTIMEO,&send_timeout,sizeof(timeval)) < 0
+	    ::setsockopt(
+			sockfd,
+			SOL_SOCKET,
+			SO_SNDTIMEO,
+			&send_timeout,
+			sizeof(timeval)) < 0
 	, "set timeVal error");
 
 	// Bind port to socket file
 	NETERROR(
-		bind(sockfd, (sockaddr *)(&address), sizeof(address)) < 0
+		::bind(
+			sockfd, 
+			(sockaddr *)(&address), 
+			sizeof(address)) < 0
 	, "bind error");
 
 	// Set up max capacity of listening queue
 	NETERROR(
-		listen(sockfd, LISTEN_Q_MAX) < 0
+		::listen(sockfd, LISTEN_Q_MAX) < 0
 	, "listen error");
 
 	::printf("Successfully Listen on %d\n" , PORT);
@@ -60,7 +79,7 @@ Connection* Socket::onConnect()
 {
 	struct sockaddr_in _addr {0};
 	socklen_t _len = sizeof(_addr);
-	int _connfd = accept(sockfd, (sockaddr *)&_addr, &_len);
+	int _connfd = ::accept(sockfd, (sockaddr *)&_addr, &_len);
 
 	if(_connfd == -1) 
 		{errno = 0; return nullptr;}
@@ -85,13 +104,14 @@ size_t Socket::recvData (
 	size_t  cur 	  = 0;
 	ssize_t buff_len  = 0;
 
-	*data = static_cast<uint8_t *>( calloc(1 , buff_size) );
+	*data = static_cast<uint8_t *>( ::calloc(1 , buff_size) );
 	//loop recv and adjust buff size dynamically
-	while ( (buff_len = recv(_connfd, *data + cur, buff_size - cur, flags)) )
+	while ( (buff_len = ::recv(_connfd, *data + cur, buff_size - cur, flags)) )
 	{
 		// handle errno occurs
 		if (buff_len == -1) {
-			if (errno == EAGAIN && !flags)	{errno = 0; break;}
+			if (errno == EAGAIN && !flags)	
+										{errno = 0; break;}
 			else if (errno == EINTR)	{errno = 0; continue;}
 			else						{errno = 0; break;}
 		}
@@ -107,8 +127,8 @@ size_t Socket::recvData (
 				break;
 
 			} else { 
-				*data = static_cast<uint8_t *>( realloc(*data, buff_size) ); // 2^N
-				memset(*data + cur, 0, buff_size >> 1);
+				*data = static_cast<uint8_t *>( ::realloc(*data, buff_size) ); // 2^N
+				::memset(*data + cur, 0, buff_size >> 1);
 			}
 		}
 	}
@@ -118,17 +138,20 @@ size_t Socket::recvData (
 /* block recv but don't flush buffer */
 size_t Socket::recvPeekData(int _connfd , uint8_t **data)
 {
-	return recvData(_connfd , data , MSG_PEEK | MSG_DONTWAIT);
+	return this->recvData(_connfd , data , MSG_PEEK | MSG_DONTWAIT);
 }
 
 /* non-block recv */
 size_t Socket::recvNonBlockData(int _connfd , uint8_t **data)
 {
-	return recvData(_connfd , data , MSG_DONTWAIT);
+	return this->recvData(_connfd , data , MSG_DONTWAIT);
 }
 
 /* non-block recv with absolutely length */
-size_t Socket::recvCertainData(int _connfd , uint8_t **data , size_t _len)
+size_t Socket::recvCertainData(
+	int _connfd , 
+	uint8_t **data , 
+	size_t _len)
 {
 	//initial temporary length var
 	size_t  cur 	  = 0;
@@ -138,10 +161,6 @@ size_t Socket::recvCertainData(int _connfd , uint8_t **data , size_t _len)
 
 	while ((buff_len = recv(_connfd , *data + cur , _len - cur , MSG_DONTWAIT | MSG_WAITALL))) 
 	{
-	IFDEBUG (
-		std::cerr << "Cer Recv Buff Info : " << _len << " " << cur  << " " << buff_len << "\n"
-				  << "\terrno : " << errno << " ## " << std::endl;
-	)
 		if (buff_len == -1) {
 			if (cur == _len) 	 { errno = 0; break; } // successfully recv
 			if (errno == EAGAIN) { errno = 0; continue; } 
@@ -160,7 +179,7 @@ size_t Socket::sendData(int _connfd , uint8_t* buff , size_t _len) // stupid ver
 	size_t  cur      = 0;
 	
 	//loop send
-	while( ( buff_len = send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
+	while( ( buff_len = ::send(_connfd , buff + cur, _len - cur, MSG_NOSIGNAL ) ) ) {
 		if(buff_len == -1) {errno = 0; break;}
 
 		cur += buff_len;
@@ -177,22 +196,22 @@ size_t Socket::sendFile(int _connfd , const char* _fpath)
 {
 	struct stat target {0};
 	//check whether file exists and get it size
-	if( stat(_fpath , &target) < 0 ) {errno = 0; return 0;}
+	if( ::stat(_fpath , &target) < 0 ) {errno = 0; return 0;}
 
 	//initial temporary length var and open valid file
-	int     fd  	 = open(_fpath , O_RDONLY);
+	int     fd  	 = ::open(_fpath , O_RDONLY);
 	ssize_t cur 	 = 0;
 	ssize_t buff_len = 0;
 
-	signal(SIGPIPE , handlePipe);
+	::signal(SIGPIPE , handlePipe);
 
 	//loop send
-	while( ( buff_len = sendfile(_connfd , fd , (off_t *)&cur , target.st_size - cur) ) ) {
+	while( ( buff_len = ::sendfile(_connfd , fd , (off_t *)&cur , target.st_size - cur) ) ) {
 		if(buff_len == -1) {errno = 0; break;}
 
 	}
 
-	close(fd);
+	::close(fd);
 	return ( cur == target.st_size ) ? cur : -1ULL;
 }
 
@@ -204,8 +223,8 @@ size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *he
 	// 	setsockopt(sockfd, SOL_TCP, TCP_CORK, &opt, sizeof (opt)) < 0
 	// , "cork error");
 
-	if( sendData(_connfd , header , header_len) < 0 ||
-		sendFile(_connfd , _fpath) < 0 ) 	
+	if( this->sendData(_connfd , header , header_len) < 0 ||
+		this->sendFile(_connfd , _fpath) < 0 ) 	
 		return -1ULL;
 
 	//opt = 0;
@@ -218,57 +237,57 @@ size_t Socket::sendFileWithHeader(int _connfd , const char* _fpath , uint8_t *he
 
 Socket::~Socket()
 {
-	close(sockfd);
+	::close(sockfd);
 }
 
-EventPool::EventPool()
+EventPool::EventPool() : 
+	epfd( ::epoll_create(0x1ADC) )
 {
-	epfd = epoll_create(0x1ADC);
 	NETERROR(epfd < 0, "create epoll error");
 }
 
-bool EventPool::mountFD(int _fd, uint32_t _type)
+bool EventPool::mountEvent(const EventChannel&& echannel)
 {
-	epoll_event ev = {
-		events : _type,
-		data : {fd : _fd}
+	struct epoll_event ev = {
+		events : echannel.type ,
+		data : {ptr : new EventChannel {echannel} }
 	};
 
-	NETERROR(
-		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0 
+	NETERROR (
+		::epoll_ctl(epfd, EPOLL_CTL_ADD, echannel.fd, &ev) < 0
 	, "add epoll error");
 	return true;
 }
 
-bool EventPool::mountPtr(void *_ptr, int _fd, uint32_t _type)
+bool EventPool::modifyEvent(const EventChannel&& echannel)
 {
-	epoll_event ev = {
-		events : _type,
-		data : {ptr : _ptr}
+	struct epoll_event ev = {
+		events : echannel.type,
+		data : {ptr : new EventChannel {echannel} }
 	};
 
-	NETERROR(
-		epoll_ctl(epfd, EPOLL_CTL_ADD, _fd, &ev) < 0
-	, "add epoll error");
-	return true;
-}
-
-bool EventPool::modifyPtr(void *_ptr, int _fd, uint32_t _type)
-{
-	epoll_event ev = {
-		events : _type,
-		data : {ptr : _ptr}
-	};
-
-	NETERROR(
-		epoll_ctl(epfd, EPOLL_CTL_MOD, _fd, &ev) < 0
+	NETERROR (
+		::epoll_ctl(epfd, EPOLL_CTL_MOD, echannel.fd, &ev) < 0
 	, "mod epoll error");
 	return true;
 }
 
+bool EventPool::removeEvent(const EventChannel* eptr)
+{
+	if (::fcntl(eptr->fd, F_GETFD) != -1 || errno != EBADF) 
+		{errno = 0; return false;}
+
+	delete eptr;
+
+	return true;	
+}
+
+
+
+
 void EventPool::Poll(const EpollFunc& func)
 {
-	ssize_t epfd_n = epoll_wait(epfd, events, MAX_EVENTS, -1);
+	ssize_t epfd_n = ::epoll_wait(epfd, events, MAX_EVENTS, -1);
 
 	if (epfd_n < 0) {
 		::printf("\n"\
@@ -283,7 +302,10 @@ void EventPool::Poll(const EpollFunc& func)
 	}
 
 	for (ssize_t i = 0; i < epfd_n; i++) {
-		func(events[i].data, events[i].events);
+		auto echannel = static_cast<EventChannel*>(events[i].data.ptr);
+		echannel->type = events[i].events;
+
+		func( echannel );
 	}
 }
 
@@ -295,9 +317,9 @@ static void terminalPoll(int id) {
 
 void EventPool::Loop(const EpollFunc func)
 {
-	signal(SIGINT , terminalPoll);
+	::signal(SIGINT , terminalPoll);
 
-	for(;;) {
+	while(true) {
 		this->Poll(func);
 
 		if(stop) break;

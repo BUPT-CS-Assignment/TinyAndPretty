@@ -8,10 +8,18 @@
 #include <netinet/in.h>
 
 #include <functional>
-
+#include <set>
 #include "ServerConfig.h"
 
-class Connection {
+struct EventChannel {
+    const int magic_n;
+    const int fd ;
+    void* ptr ;
+    uint32_t type;
+};
+
+class Connection 
+{
     int connfd;
 
     struct sockaddr_in clientAddr;
@@ -25,11 +33,11 @@ public:
         {return inet_ntoa(clientAddr.sin_addr);}
 };
 
-/* unix socket */
-class Socket {
-    int sockfd;
 
-    struct sockaddr_in address;
+
+/* unix socket */
+class Socket 
+{
 public : 
     Socket();
     ~Socket();
@@ -41,7 +49,7 @@ public :
     size_t recvData(int _connfd , uint8_t **data ,int flags = 0,size_t _buff_size = BUFF_INIT_SIZE);
     // block recv but don't flush buffer 
     size_t recvPeekData(int _connfd , uint8_t **data);
-    /* non-block recv */
+    // non-block recv 
     size_t recvNonBlockData(int _connfd , uint8_t **data);
 
     size_t recvCertainData(int _connfd , uint8_t **data , size_t len);
@@ -55,25 +63,37 @@ public :
     // handle one connection in TCP socket
     Connection* onConnect();
     void offConnect(Connection* _conn);
+
+private :
+    int sockfd;
+
+    struct sockaddr_in address;
 };
 
+
 /* unix event pool based on epoll */
-class EventPool{
+class EventPool
+{
+    using EpollFunc = std::function<void(EventChannel*)>;
+public:
+    EventPool();
+    bool mountEvent (const EventChannel&& echannel);
+    bool modifyEvent(const EventChannel&& echannel);
+
+    bool mountTimerEvent(void *ptr , const bool isPeriodic = false);
+
+    bool removeEvent(const EventChannel* eptr);
+    void Poll( const EpollFunc& func );
+    void Loop( const EpollFunc  func );
+
+private : 
     int epfd;
 
     struct epoll_event events[MAX_EVENTS];
-
-using EpollFunc = std::function<void(epoll_data_t , int)>;
-public:
-    EventPool();
-    bool mountFD(int fd , uint32_t type);
-    bool mountPtr(void *ptr , int fd, uint32_t type);
-    bool modifyPtr(void *ptr , int fd, uint32_t type);
-    void Poll( const EpollFunc& func );
-    void Loop( const EpollFunc func );
 };
 
-#define NETERROR(cond , tar) {if((cond)) {perror( tar );exit(EXIT_FAILURE);}}
-
+#define NETERROR(cond , tar) do {\
+        if((cond)) {perror( tar );exit(EXIT_FAILURE);}\
+    } while (0)
 
 #endif

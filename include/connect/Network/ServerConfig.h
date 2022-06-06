@@ -12,6 +12,8 @@
 #define BUFF_INIT_SIZE  CONFIG_BUFF_INIT_SIZE
 #define BUFF_MAX_SIZE   CONFIG_BUFF_MAX_SIZE // (1024*1024*128) bytes
 
+#define MAX_TOKEN		16
+
 #ifdef CONFIG_IPV4
 #define IPV_4           AF_INET
 #define PROTO_FAMILT 	AF_INET
@@ -24,5 +26,9 @@
 #ifdef CONFIG_ADDR_REUSE
 #define ADDR_REUSE      1
 #endif
+
+#define SOCK_MAGICNUM 0x00
+#define HTTP_MAGICNUM 0xAA
+#define TIME_MAGICNUM 0xBB
 
 #endif

@@ -1,9 +1,9 @@
 #include <connect/HttpProtocal/HttpManager.h>
 #include <connect/Network/URLParser.h>
 /* Judge by clip */ 
-bool HttpManager::protocalConfirm() 
+bool HttpManager::protocalConfirm(const int magic_n) 
 {
-	return true;//currently only itself , so return true default
+	return (magic_n == HTTP_MAGICNUM);
 }
 
 

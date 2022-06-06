@@ -32,6 +32,7 @@ auto HttpAdapter::recvHttpData(Connection *conn)
 		std::shared_ptr<uint8_t>{data} , 
 		len);
 }
+
 /* file type specilized check ; true for filesystem response */
 bool HttpAdapter::branchFilePathResp(
 	Connection *conn , 

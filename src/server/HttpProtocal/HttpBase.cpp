@@ -5,11 +5,11 @@
 
 char *nsplit(char *str, const char *token, int n);
 
-#define CUR_MOV(offset) {\
+#define CUR_MOV(offset) do {\
 		cur += offset;  \
 		if (cur >= len) \
-			break;      \
-	}
+			return ;      \
+	} while (0)
 
 //Initialize. the first token is the separator between two string in one pair
 //			  the second one is between two different pairs       
@@ -38,6 +38,7 @@ void StringDict::__init__(
 std::string& StringDict::get(std::string_view key , bool is_insen)
 {
 	for (auto& it : item) {
+
 		if(
 			std::equal(
 				it.first.begin() , it.first.end() , 
@@ -47,6 +48,7 @@ std::string& StringDict::get(std::string_view key , bool is_insen)
 						std::tolower(a) == std::tolower(b);
 			})
 		)	return it.second;
+
 	}
 	throw HttpException::NON_POS;
 }
@@ -76,10 +78,10 @@ std::string& StringDict::operator[](std::string_view str) noexcept
 	}
 }
 
-#define BUFF_CPY(src , len) {\
+#define BUFF_CPY(src , len) do {\
 		strncpy(buff + cur, src , len); \
 		cur += len;\
-	}
+	} while (0)
 //stringize to byte stream / string
 size_t StringDict::stringize(char* buff)
 {
@@ -89,14 +91,14 @@ size_t StringDict::stringize(char* buff)
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
 	for (auto& it : item) {
 		//key string
-		BUFF_CPY(it.first.c_str() , it.first.length())
-		BUFF_CPY(": " , 2)
+		BUFF_CPY(it.first.c_str() , it.first.length());
+		BUFF_CPY(": " , 2);
 
 		//value string
-		BUFF_CPY(it.second.c_str() , it.second.length())
-		BUFF_CPY("\r\n" , 2)
+		BUFF_CPY(it.second.c_str() , it.second.length());
+		BUFF_CPY("\r\n" , 2);
 	}
-	BUFF_CPY("\r\n" , 2)
+	BUFF_CPY("\r\n" , 2);
 #pragma GCC diagnostic pop
 	return cur;
 }

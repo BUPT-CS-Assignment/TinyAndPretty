@@ -19,12 +19,12 @@ public:
 	std::unique_ptr<ThreadPool> thpool;
 	std::vector<std::unique_ptr<ManagerBase>> plugins;
 
+	void start();
+	void distributeTask(EventChannel *eptr);
 	static auto getInstance() {
 		static std::shared_ptr<TAPCenter> ptr {new TAPCenter};
 		return ptr;
 	}
-	void start();
-	void distributeTask(Connection* conn);
 };
 
 TAPCenter::TAPCenter()
@@ -33,7 +33,12 @@ TAPCenter::TAPCenter()
 	epool  = std::make_unique<EventPool>();
 	thpool = std::make_unique<ThreadPool>(CONFIG_THREADS_MAXIMUM);
 
-	epool->mountFD(sock->getFD(), EPOLLIN);
+	epool->mountEvent( {
+		SOCK_MAGICNUM , 
+		sock->getFD() ,
+		nullptr ,  
+		EPOLLIN
+	} );
 }
 
 TAPManager::TAPManager()
@@ -52,32 +57,42 @@ void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 	ptr->plugins.emplace_back(std::move(sub));
 }
 
-void TAPCenter::distributeTask(Connection* conn)
+void TAPCenter::distributeTask(EventChannel *eptr)
 {
 	for(auto& ptr : plugins) {
 
 		// sock also =? why must = ?=
-		thpool->enqueue([& , _conn = conn] 
+		thpool->enqueue([& , _eptr = eptr] 
 		{ 
-			if( !ptr->protocalConfirm() ) return ;
+			if( !ptr->protocalConfirm(_eptr->magic_n) ) return ;
+			auto conn = static_cast<Connection *>(_eptr->ptr);
 
 			// create Http task and judge whether it's alive
-			if ( ptr->createTask(_conn) ) 
-				epool->modifyPtr(_conn , _conn->getFD() , 
-						EPOLLIN | EPOLLET | EPOLLONESHOT ); 
+			if ( ptr->createTask(conn) ) 
+				epool->modifyEvent( {
+					_eptr->magic_n,
+					conn->getFD(),
+					conn,
+					EPOLLIN | EPOLLET | EPOLLONESHOT
+				} ); 
 			// peer socket close
-			else 
-				sock->offConnect(_conn);
+			else {
+				sock->offConnect(conn);
+				// NEED TEST!!!
+				epool->removeEvent(_eptr);
+			}
+				
 		});
 	}
 }
 
 void TAPCenter::start()
 {
-	epool->Loop([&](epoll_data_t data, int type)
+	epool->Loop([&](EventChannel* event)
 				{
+		auto type = event->type;
 		// motivated by socket-fd, new connection arrive
-		if(data.fd == sock->getFD()) {
+		if(event->magic_n == SOCK_MAGICNUM) {
 
 			for(;;) {
 				// handled every new connection
@@ -85,20 +100,24 @@ void TAPCenter::start()
 				if(conn == nullptr) break;
 
 				// start listening connection
-				epool->mountPtr(conn , conn->getFD() , 
-						EPOLLIN | EPOLLET | EPOLLONESHOT );
+				epool->mountEvent( {
+					HTTP_MAGICNUM, 
+					conn->getFD(),
+					conn,
+					EPOLLIN | EPOLLET | EPOLLONESHOT
+				} );
 			}
 
 		// connection timeout. close forcely
-		} else if (type & EPOLLHUP || type & EPOLLERR) {
-			Connection* conn = static_cast<Connection *>(data.ptr);
+		} else if (type & EPOLLHUP || type & EPOLLERR || type & EPOLLRDHUP) {
+			auto conn = static_cast<Connection *>(event->ptr);
 			sock->offConnect(conn); // another strage : by time out
+			epool->removeEvent(event);
 
 		// data from a connection arrived
 		} else if (type == EPOLLIN) {
 			// also move ownership to work-thread
-			Connection* conn = static_cast<Connection *>(data.ptr);
-			this->distributeTask(conn);
+			this->distributeTask(event);
 
 		} 
 	});
