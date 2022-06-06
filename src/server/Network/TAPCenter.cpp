@@ -91,6 +91,7 @@ void TAPCenter::start()
 	epool->Loop([&](EventChannel* event)
 				{
 		auto type = event->type;
+		std::cerr <<  "NIGHT : " << event->magic_n << "\n";
 		// motivated by socket-fd, new connection arrive
 		if(event->magic_n == SOCK_MAGICNUM) {
 

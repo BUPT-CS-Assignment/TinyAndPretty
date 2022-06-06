@@ -282,8 +282,26 @@ bool EventPool::removeEvent(const EventChannel* eptr)
 	return true;	
 }
 
+int EventPool::createTimerFD(int64_t msec) {
+	int timerfd = ::timerfd_create(CLOCK_REALTIME , TFD_NONBLOCK);
 
+	NETERROR (timerfd < 0 , " create timer error");
 
+	struct itimerspec new_value = {
+		{ msec / 1000 , (msec % 1000) * 1000000 },
+		{ msec / 1000 , (msec % 1000) * 1000000 }
+	};
+
+	NETERROR (
+		::timerfd_settime(
+			timerfd , 
+			0 , 
+			&new_value , 
+			nullptr) < 0
+	, "timer set error");
+
+	return timerfd;
+}
 
 void EventPool::Poll(const EpollFunc& func)
 {

@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 
 #include <functional>
-#include <set>
+#include <chrono>
 #include "ServerConfig.h"
 
 struct EventChannel {
@@ -77,10 +77,19 @@ class EventPool
     using EpollFunc = std::function<void(EventChannel*)>;
 public:
     EventPool();
+    /*
+    const int magic_n;
+    const int fd ;
+    void* ptr ;
+    uint32_t type;    
+     */
     bool mountEvent (const EventChannel&& echannel);
     bool modifyEvent(const EventChannel&& echannel);
 
-    bool mountTimerEvent(void *ptr , const bool isPeriodic = false);
+    template<typename Val , typename Scala>
+    bool mountTimerEvent(
+        const EventChannel&& echannel ,
+        std::chrono::duration<Val , Scala> timeval);
 
     bool removeEvent(const EventChannel* eptr);
     void Poll( const EpollFunc& func );
@@ -90,10 +99,34 @@ private :
     int epfd;
 
     struct epoll_event events[MAX_EVENTS];
+
+    int createTimerFD(int64_t nsec);
 };
 
 #define NETERROR(cond , tar) do {\
         if((cond)) {perror( tar );exit(EXIT_FAILURE);}\
     } while (0)
+
+
+template<typename Val , typename Scala>
+bool EventPool::mountTimerEvent(
+    const EventChannel&& echannel ,
+    std::chrono::duration<Val , Scala> timeval) 
+{
+    auto duration = 
+        std::chrono::duration_cast<
+            std::chrono::duration<int64_t , std::milli>
+        >(timeval);
+    auto tfd = this->createTimerFD(duration.count());
+    
+    this->mountEvent({
+        echannel.magic_n , 
+        tfd ,
+        echannel.ptr ,
+        echannel.type
+    });
+    return true;
+}
+
 
 #endif
