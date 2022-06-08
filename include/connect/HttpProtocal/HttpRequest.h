@@ -46,7 +46,10 @@ public :
 	std::string_view HttpVer() 	const noexcept { return version;}
 
 	/* Connection */
+	auto getConnection() { return conn; }
 	std::string_view queryClientIP() const noexcept ;
+
+
 	size_t Length() const { return length; }
 };
 #endif

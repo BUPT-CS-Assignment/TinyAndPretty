@@ -78,16 +78,16 @@ class EventPool
 public:
     EventPool();
     /*
-    const int magic_n;
-    const int fd ;
-    void* ptr ;
-    uint32_t type;    
+        const int magic_n;
+        const int fd ;
+        void* ptr ;
+        uint32_t type;    
      */
     bool mountEvent (const EventChannel&& echannel);
     bool modifyEvent(const EventChannel&& echannel);
 
     template<typename Val , typename Scala>
-    bool mountTimerEvent(
+    int  createTimerEvent(
         const EventChannel&& echannel ,
         std::chrono::duration<Val , Scala> timeval);
 
@@ -109,7 +109,7 @@ private :
 
 
 template<typename Val , typename Scala>
-bool EventPool::mountTimerEvent(
+int EventPool::createTimerEvent(
     const EventChannel&& echannel ,
     std::chrono::duration<Val , Scala> timeval) 
 {
@@ -119,13 +119,15 @@ bool EventPool::mountTimerEvent(
         >(timeval);
     auto tfd = this->createTimerFD(duration.count());
     
+
     this->mountEvent({
         echannel.magic_n , 
         tfd ,
         echannel.ptr ,
         echannel.type
     });
-    return true;
+
+    return tfd;
 }
 
 

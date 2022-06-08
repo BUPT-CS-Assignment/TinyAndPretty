@@ -10,7 +10,7 @@ class TAPManager{
 public:
 	TAPManager();
 	void start();
-	void loadSubManager( std::unique_ptr<ManagerBase> sub);
+	void loadSubManager( std::unique_ptr<ManagerBase> sub );
 private:
 	std::shared_ptr<TAPCenter> ptr;
 };

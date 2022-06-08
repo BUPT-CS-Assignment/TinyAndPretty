@@ -104,3 +104,8 @@ def_HttpEntry(LogCheck,req){
     return new FileResponse{".server/log","text/html"};
 }
 
+def_HttpEntry(CometTest , req) {
+    Timer::createComet(req);
+
+    return nullptr;
+}

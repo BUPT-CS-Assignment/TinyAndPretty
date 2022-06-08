@@ -21,6 +21,9 @@ using namespace SimpleJson;
 #define def_HttpEntry(name , request) extern HttpResponseBase* (name)(HttpRequest &request) 
 
 
+/*------------------- Timer Module -------------------*/
+#include <connect/Timer/Timer.h>
+
 /*---------------- Hello-world Module ----------------*/
 def_HttpEntry(Link_Start , request);
 def_HttpEntry(Lent_Book , req);
@@ -57,5 +60,7 @@ def_HttpEntry(ScheduleIndex,req);
 
 def_HttpEntry(LogCheck,req);
 
+
+def_HttpEntry(CometTest , req);
 
 #endif

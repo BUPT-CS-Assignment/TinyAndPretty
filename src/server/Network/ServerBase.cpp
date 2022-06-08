@@ -157,9 +157,9 @@ size_t Socket::recvCertainData(
 	size_t  cur 	  = 0;
 	ssize_t buff_len  = 0;
 
-	*data = static_cast<uint8_t *>( calloc(1 , _len + 1) );
+	*data = static_cast<uint8_t *>( ::calloc(1 , _len + 1) );
 
-	while ((buff_len = recv(_connfd , *data + cur , _len - cur , MSG_DONTWAIT | MSG_WAITALL))) 
+	while ((buff_len = ::recv(_connfd , *data + cur , _len - cur , MSG_DONTWAIT | MSG_WAITALL))) 
 	{
 		if (buff_len == -1) {
 			if (cur == _len) 	 { errno = 0; break; } // successfully recv
@@ -284,11 +284,10 @@ bool EventPool::removeEvent(const EventChannel* eptr)
 
 int EventPool::createTimerFD(int64_t msec) {
 	int timerfd = ::timerfd_create(CLOCK_REALTIME , TFD_NONBLOCK);
-
 	NETERROR (timerfd < 0 , " create timer error");
 
 	struct itimerspec new_value = {
-		{ msec / 1000 , (msec % 1000) * 1000000 },
+		{ msec / 1000 , (msec % 1000) * 1000000 } , 
 		{ msec / 1000 , (msec % 1000) * 1000000 }
 	};
 

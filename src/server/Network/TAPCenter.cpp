@@ -15,7 +15,7 @@ private:
 
 public:
 	std::shared_ptr<Socket> sock;
-	std::unique_ptr<EventPool> epool;
+	std::shared_ptr<EventPool> epool;
 	std::unique_ptr<ThreadPool> thpool;
 	std::vector<std::unique_ptr<ManagerBase>> plugins;
 
@@ -30,7 +30,7 @@ public:
 TAPCenter::TAPCenter()
 {
 	sock   = std::make_shared<Socket>();
-	epool  = std::make_unique<EventPool>();
+	epool  = std::make_shared<EventPool>();
 	thpool = std::make_unique<ThreadPool>(CONFIG_THREADS_MAXIMUM);
 
 	epool->mountEvent( {
@@ -54,6 +54,7 @@ void TAPManager::start()
 void TAPManager::loadSubManager(std::unique_ptr<ManagerBase> sub)
 {
 	sub->setSock(ptr->sock);
+	sub->setEpool(ptr->epool);
 	ptr->plugins.emplace_back(std::move(sub));
 }
 
