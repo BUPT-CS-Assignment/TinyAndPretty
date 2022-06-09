@@ -161,7 +161,7 @@ void Row::update_value(int pos, string value){
                 return;
             case __INT64:
                 try{
-                    *(int*)content_[pos] = stoll(value);
+                    *(long long*)content_[pos] = stoll(value);
                 }
                 catch(out_of_range& e){
                     throw TYPE_INT64_OVERFLOW;
