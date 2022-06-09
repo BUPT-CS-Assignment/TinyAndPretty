@@ -1,10 +1,10 @@
-#include <service/user/UserControl.h>
-#include <service/sys/ServerSys.h>
+#include <service/User.h>
+#include <service/TAPSystem.h>
 using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
-def_HttpEntry(UserIndex, req){
+def_HttpEntry(API_User, req){
     string function(req.queryHeader("function"));
     if(function == ""){
         return new FileResponse{"web/user/index.html" , "text/html"};

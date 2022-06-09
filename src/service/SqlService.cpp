@@ -1,4 +1,4 @@
-#include <service/sys/ServerSys.h>
+#include <service/TAPSystem.h>
 using namespace NEDBSTD;
 using namespace UTILSTD;
 using namespace std;
@@ -12,7 +12,7 @@ void SQLTestGenerate(){
     DataBaseTestSQL += "delete from database_test where id>40 and id<160;select * from database_test;";
 }
 
-def_HttpEntry(SqlRun, req){
+def_HttpEntry(API_SQL, req){
     string userid(req.queryHeader("userid"));
     string token(req.queryHeader("token"));
     string function(req.queryHeader("function"));
@@ -114,12 +114,12 @@ def_HttpEntry(SqlRun, req){
 }
 
 // EXAMPLE 2.2 FileResponse也支持从fstream发送文件，（目前仅存在与短连接）
-def_HttpEntry(SqlHelp, req){
+def_HttpEntry(API_SQL_Help, req){
     return new FileResponse{"web/sql/help.html" , "text/html"};
 }
 
 static int id;
-def_HttpEntry(SqlTest, req){
+def_HttpEntry(API_SQL_Test, req){
     id++;
     int count;
     string res;

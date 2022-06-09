@@ -44,19 +44,19 @@ def_HttpEntry(MD5Test,req);
 def_HttpEntry(Main,req);
 
 /* User Service */
-def_HttpEntry(SignIn,req);
-def_HttpEntry(SignUp,req);
+def_HttpEntry(API_Signin,req);
+def_HttpEntry(API_Signup,req);
 
 /* Access Check */
-def_HttpEntry(AccessCheck,req);
+def_HttpEntry(API_Access,req);
 /* DataBase Test */
-def_HttpEntry(SqlTest,req);
-def_HttpEntry(SqlRun , req);
-def_HttpEntry(SqlHelp ,  req);
+def_HttpEntry(API_SQL_Test,req);
+def_HttpEntry(API_SQL , req);
+def_HttpEntry(API_SQL_Help ,  req);
 
-def_HttpEntry(UserIndex,req);
-def_HttpEntry(TimetableIndex,req);
-def_HttpEntry(ScheduleIndex,req);
+def_HttpEntry(API_User,req);
+def_HttpEntry(API_Timetable,req);
+def_HttpEntry(API_Event,req);
 
 def_HttpEntry(LogCheck,req);
 

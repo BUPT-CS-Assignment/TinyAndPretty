@@ -1,5 +1,5 @@
-#include <service/sys/ServerSys.h>
-#include <service/user/UserControl.h>
+#include <service/TAPSystem.h>
+#include <service/User.h>
 
 using namespace std;
 using namespace NEDBSTD;

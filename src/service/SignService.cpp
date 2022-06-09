@@ -1,10 +1,10 @@
-#include <service/user/UserControl.h>
-#include <service/sys/ServerSys.h>
+#include <service/User.h>
+#include <service/TAPSystem.h>
 using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
-def_HttpEntry(AccessCheck,req){
+def_HttpEntry(API_Access,req){
     string level(req.queryHeader("function"));
     string userid(req.queryHeader("userid"));
     string token(req.queryHeader("token"));
@@ -16,7 +16,7 @@ def_HttpEntry(AccessCheck,req){
     }
 }
 
-def_HttpEntry(SignIn, req){
+def_HttpEntry(API_Signin, req){
     string function(req.queryHeader("function"));
     if(function == ""){
         return new FileResponse{"web/signin.html" , "text/html"};
@@ -43,13 +43,13 @@ def_HttpEntry(SignIn, req){
 }
 
 
-def_HttpEntry(SignUp, req){
+def_HttpEntry(API_Signup, req){
     string function(req.queryHeader("function"));
     if(function == ""){
         return new FileResponse{"web/signup.html" , "text/html"};
     }
     string userid(req.queryHeader("userid"));
-    CONSOLE_LOG(0,1,1,"SignUp-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
+    CONSOLE_LOG(0,1,1,"API_Signup-Req [function='%s', userid='%s']\n", function.c_str(),userid.c_str());
     if(function != "signup"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
