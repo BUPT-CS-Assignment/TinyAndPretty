@@ -113,7 +113,7 @@ void Executor::execute_command(){
                 }
                 else{
                     parm_check(parser_->statement_, __INT);
-                    if(!db_->setDefaultPageSize(stoi(parser_->statement_))){
+                    if(db_->setDefaultPageSize(stoi(parser_->statement_)) != NO_ERROR){
                         throw SIZE_NOT_ALLOWED;
                     }
                 }
