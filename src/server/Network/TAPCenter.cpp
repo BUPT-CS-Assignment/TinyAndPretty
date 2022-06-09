@@ -31,7 +31,8 @@ TAPCenter::TAPCenter()
 {
 	sock   = std::make_shared<Socket>();
 	epool  = std::make_shared<EventPool>();
-	thpool = std::make_unique<ThreadPool>(CONFIG_THREADS_MAXIMUM);
+	thpool = std::make_unique<ThreadPool>
+				(CONFIG_THREADS_MAXIMUM);
 
 	epool->mountEvent( {
 		SOCK_MAGICNUM , 
@@ -67,12 +68,12 @@ void TAPCenter::distributeTask(EventChannel *eptr)
 		{ 
 			if( !ptr->protocalConfirm(_eptr->magic_n) ) return ;
 			auto conn = static_cast<Connection *>(_eptr->ptr);
-
+			//std::cerr << "Conn : " << conn->getFD() << "\n";
 			// create Http task and judge whether it's alive
 			if ( ptr->createTask(conn) ) 
 				epool->modifyEvent( {
 					_eptr->magic_n,
-					conn->getFD(),
+					_eptr->fd,
 					conn,
 					EPOLLIN | EPOLLET | EPOLLONESHOT
 				} ); 
@@ -92,7 +93,7 @@ void TAPCenter::start()
 	epool->Loop([&](EventChannel* event)
 				{
 		auto type = event->type;
-		std::cerr <<  "NIGHT : " << event->magic_n << "\n";
+		//std::cerr <<  "MagincNum : " << event->magic_n  << "\tFileD : " << event->fd << "\n";
 		// motivated by socket-fd, new connection arrive
 		if(event->magic_n == SOCK_MAGICNUM) {
 

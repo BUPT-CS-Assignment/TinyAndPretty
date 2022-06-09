@@ -109,3 +109,9 @@ def_HttpEntry(CometTest , req) {
 
     return nullptr;
 }
+
+def_HttpEntry(CometBroad , req) {
+    Timer::launchBroadCast(new HttpResponse {"Hello , everyone\n"});
+
+    return new HttpResponse {"Successful launch"};
+}

@@ -32,13 +32,13 @@ TimerManager::TimerManager()
 
 void TimerManager::listenConnect(Connection *conn)
 {
-	std::chrono::seconds t{5};
+
 	int tfd = epool->createTimerEvent({
 		TIME_MAGICNUM ,
 		0 ,
 		conn ,
-		EPOLLIN | EPOLLET
-	} , t);
+		EPOLLIN | EPOLLET | EPOLLONESHOT
+	} , std::chrono::seconds{20});
 
 	connPool.emplace(conn , tfd);
 }
@@ -48,6 +48,8 @@ void TimerManager::broadCast(Rep_T reps)
 
 	for(auto [conn , tfd] : connPool) {
 		wrapper->sendHttpData(conn , reps);
+
+		::close(tfd);
 	}
 
 	connPool.clear();
@@ -56,10 +58,14 @@ void TimerManager::broadCast(Rep_T reps)
 
 bool TimerManager::createTask(Connection* conn)
 {
+	//std::cerr << "Timer Hit : " << connPool[conn] << std::endl;
+	if(connPool[conn] == 0) return false;
+	
+	::close(connPool[conn]);
 
 	wrapper->sendHttpData(conn , heart_q);
 
 	connPool.erase(conn);
 
-	return true;
+	return false;
 }

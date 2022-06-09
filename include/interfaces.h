@@ -62,5 +62,6 @@ def_HttpEntry(LogCheck,req);
 
 
 def_HttpEntry(CometTest , req);
+def_HttpEntry(CometBroad , req);
 
 #endif
