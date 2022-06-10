@@ -5,7 +5,7 @@
 
 #include <shared_mutex>
 
-#define INIT_RATIO 60
+#define INIT_RATIO 1
 
 namespace ct = std::chrono;
 

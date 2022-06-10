@@ -1,6 +1,6 @@
 #include <service/ClockSys.h>
 
-def_HttpEntry(ClockSys , req) {
+def_HttpEntry(API_Clock , req) {
 
 	Json j; // used for response
 	std::string_view action { req.queryParam("action") };

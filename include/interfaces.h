@@ -61,6 +61,6 @@ def_HttpEntry(API_Event,req);
 def_HttpEntry(LogCheck,req);
 
 
-def_HttpEntry(ClockSys , req);
+def_HttpEntry(API_Clock , req);
 
 #endif

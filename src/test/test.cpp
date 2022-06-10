@@ -38,13 +38,13 @@ def_HttpEntry(Lent_Book , req){
 
 
 // EXAMPLE 2.3 FileResponse建议使用c++17的std::filesystem
-def_HttpEntry(Icon , req){
-    fs::path p {"utils/favicon.ico"};
-    if(fs::exists(p))
-        return new FileResponse{p , "image/png"};
-    else 
-        return new HttpResponse{"404\nNOT FOUND" , HTTP_STATUS_404};        
-}
+// def_HttpEntry(Icon , req){
+//     fs::path p {"utils/favicon.ico"};
+//     if(fs::exists(p))
+//         return new FileResponse{p , "image/png"};
+//     else 
+//         return new HttpResponse{"404\nNOT FOUND" , HTTP_STATUS_404};        
+// }
 
 // EXAMPLE 3.1 JsonResponse返回一个json格式的数据
 //                 Apifox里有一个相关测试
