@@ -29,9 +29,8 @@ void StringDict::__init__(
 		CUR_MOV(strlen(fir) + len_1); 
 
 		sec = nsplit(str + cur, token_2, len_2); 
-		CUR_MOV(strlen(sec) + len_2);
-
 		item.push_back( std::make_pair(std::string{fir}, std::string{sec}) );
+		CUR_MOV(strlen(sec) + len_2);
 	}
 }
 /* Query and Fetch origin data in this dict. HttpException::NON_POS would occur when not found */

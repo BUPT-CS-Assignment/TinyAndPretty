@@ -61,7 +61,6 @@ def_HttpEntry(API_Event,req);
 def_HttpEntry(LogCheck,req);
 
 
-def_HttpEntry(CometTest , req);
-def_HttpEntry(CometBroad , req);
+def_HttpEntry(ClockSys , req);
 
 #endif
