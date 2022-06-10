@@ -5,6 +5,8 @@
 
 /* commonly used http status code */
 #define HTTP_STATUS_200 "HTTP/1.1 200 OK\r\n"
+#define HTTP_STATUS_202 "HTTP/1.1 202 Accepted\r\n"
+#define HTTP_STATUS_204 "HTTP/1.1 204 No Content\r\n"
 #define HTTP_STATUS_300 "HTTP/1.1 300 Multiple Choice\r\n"
 #define HTTP_STATUS_400 "HTTP/1.1 400 Bad Request\r\n"
 #define HTTP_STATUS_401 "HTTP/1.1 401 Unauthorized\r\n"

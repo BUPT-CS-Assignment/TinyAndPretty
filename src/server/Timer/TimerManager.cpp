@@ -23,25 +23,38 @@ TimerManager::TimerManager()
 		std::abort();
 	}
 
+	Json j; 
+	j.push_back({"code" , -1});
+	j.push_back({"msg" , "60s pass by....HeartBeat Packet"});
 
-	heart_q = std::shared_ptr<HttpResponse> 
-				{ new HttpResponse{"60s HB"} };
+	heart_q = Rep_T { new JsonResponse{j, HTTP_STATUS_202} };
 	wrapper = std::make_unique<HttpAdapter>(sock);
 	myself  = this;
 }
 
-void TimerManager::listenConnect(Connection *conn)
+bool TimerManager::listenConnect(Connection *conn)
 {
+	if (connPool.count(conn) != 0) return false;
 
 	int tfd = epool->createTimerEvent({
 		TIME_MAGICNUM ,
 		0 ,
 		conn ,
 		EPOLLIN | EPOLLET | EPOLLONESHOT
-	} , std::chrono::seconds{20});
+	} , std::chrono::seconds{HEART_TIMEOUT});
 
 	connPool.emplace(conn , tfd);
+
+	return true;
 }
+
+void TimerManager::modifyHeartResp(Rep_T new_heartq)
+{
+	heart_q.reset();
+
+	heart_q = new_heartq;
+}
+
 
 void TimerManager::broadCast(Rep_T reps)
 {

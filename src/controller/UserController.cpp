@@ -1,5 +1,5 @@
-#include <service/user/User.h>
-#include <service/sys/TAPSystem.h>
+#include <service/User.h>
+#include <service/TAPSystem.h>
 using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;

@@ -5,28 +5,9 @@
 // 2. router.conf
 // 3. test.cpp (your own .cpp)
 
-void stringConcat(std::string& tar){;}  //recursion ending
-template<typename T , typename... Args>
-void stringConcat(std::string& tar , T value , Args... args){
-	tar += std::string{value};
-	stringConcat(tar , args...);
-}
-
 // EXAMPLE 1.0 HttpRequest 的一些基本使用,默认以text/html，参数为std::string
 def_HttpEntry(Link_Start , request){
-    std::string t {};
-
-    stringConcat( t ,
-    "<body><h1>Hello ! Dear Friend ,</h1>" ,
-    "<button type = \"button\" onclick=\"window.open('http://'+location.host+'/signin')\">Click To Sign In To TAP Panel</button><br>",
-    "<h3>I know you comes from ...",request.queryClientIP(),"!</h3> " // 查询客户IP
-    "<h3>And also you comes by ...",request.HttpVer()," <-With-> ",request.Method(),"!</h3> ", // 查询http版本和请求方法
-    "<h3>What's more, you have ...",request.queryHeader("Content-Length"),"bytes !</h3> ");   // 根据key查询http header；
-
-    stringConcat(t , 
-    "<h1>Wow ! It seems that you Bring me a PRESENT</h1>",
-    "<h3> There are",request.Length(),"gifts for me ,thank you! : ) </h3> " ,
-    "<h3>Let me see... </h3>");
+    std::string t;
     try {   // multipart/from-data的使用 ： 根据key查找，支持fstream和string
         std::string ans = request.queryForm("Key");
         t += ans;
@@ -46,12 +27,7 @@ def_HttpEntry(Link_Start , request){
         default: break;
         }
     }
-
-    stringConcat(t , 
-    "<h1>Look up! There are patameters following you!</h1>",
-    "<h3> It is : id = " ,request.queryParam("id") , " </h3> " ,// 查询url参数。若没有为""(空串)
-    "<a href=\"https://github.com/NoUITeam/TinyAndPretty\">Click ME for more info! </a></body>");
-    return new HttpResponse{t};
+   return new HttpResponse{t};
 }
 
 
@@ -105,9 +81,15 @@ def_HttpEntry(LogCheck,req){
 }
 
 def_HttpEntry(CometTest , req) {
-    Timer::createComet(req);
+    //Timer::createComet(req);
+    std::string ans {};
+    
+    auto table = Timer::getVirtualTime();
+    for(auto i : table) {
+        ans += std::to_string(i) += " ";
+    }
 
-    return nullptr;
+    return new HttpResponse{ans};
 }
 
 def_HttpEntry(CometBroad , req) {
