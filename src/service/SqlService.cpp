@@ -3,30 +3,13 @@ using namespace NEDBSTD;
 using namespace UTILSTD;
 using namespace std;
 
-std::string DataBaseTestSQL = "";
-void SQLTestGenerate(){
-
-    for(int i = 1; i <= 100; i++){
-        DataBaseTestSQL += "insert into database_test values (" + std::to_string(i) + ",0xff);";
-    }
-    DataBaseTestSQL += "delete from database_test where id>40 and id<160;select * from database_test;";
-}
-
 def_HttpEntry(API_SQL, req){
     string userid(req.queryHeader("userid"));
     string token(req.queryHeader("token"));
     string function(req.queryHeader("function"));
     string ans = req.getBody();
-    if(function == ""){
-        return new FileResponse{"web/sql/terminal.html" , "text/html"};
-    }
     if(TokenCheck("10000",token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
-    }
-    if(function == "authenticate"){
-        HttpResponse* HResp = new HttpResponse{""};
-        HResp->appendHeader("msg","NO_ERROR");
-        return HResp;
     }
     int count;
     string res;
@@ -68,17 +51,19 @@ def_HttpEntry(API_SQL, req){
     }
     //Get Table Info
     else if(function == "detail"){
-        string tablename(req.queryParam("table"));
+        string tablename = ans;
+        CONSOLE_LOG(0, 1, 1, "Table Detail Req: %s\n",ans.c_str());
         int errCode = __LSR__.Select(tablename,"*","",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
         J.push_back({"name",tablename.c_str()});
+        string fields = res.substr(0,res.find_first_of(";"));
+        J.push_back({"field",fields.c_str()});
+        string data = "";
         if(errCode==NO_ERROR){
-            string fields = res.substr(0,res.find_first_of(";"));
-            string data = res.substr(res.find_first_of(";")+1);
-            J.push_back({"field",fields.c_str()});
-            J.push_back({"data",data.c_str()});
+            data = res.substr(res.find_first_of(";")+1);
         }
+        J.push_back({"data",data.c_str()});
         JsonResponse* JResp = new JsonResponse{J};
         JResp->appendHeader("msg",NEexceptionName[errCode]);
         return JResp;
@@ -99,7 +84,7 @@ def_HttpEntry(API_SQL, req){
     else if(function == "delete"){
         errCode = __LSR__.Delete(str[0],str[1],count);
     }
-    else if(function == "deltable"){
+    else if(function == "drop"){
         errCode = __LSR__.Drop(ans);
     }
     else{
@@ -118,6 +103,13 @@ def_HttpEntry(API_SQL_Help, req){
     return new FileResponse{"web/sql/help.html" , "text/html"};
 }
 
+std::string DataBaseTestSQL = "";
+void SQLTestGenerate(){
+    for(int i = 1; i <= 100; i++){
+        DataBaseTestSQL += "insert into database_test values (" + std::to_string(i) + ",0xff);";
+    }
+    DataBaseTestSQL += "delete from database_test where id>40 and id<160;select * from database_test;";
+}
 static int id;
 def_HttpEntry(API_SQL_Test, req){
     id++;

@@ -7,41 +7,32 @@
 #define SET_TIME(code,timenum) ({code |= (1 << (timenum-1));})
 #define WEEK_CHECK(weeks,week) ({(weeks >> (week-1)) & 0x1;})
 
-std::string TimeTableFetch(std::string schoolid,std::string classid,std::string userid);
-std::string PersonalTimeTableFetch(std::string classid, std::string userid);
-
 class Course{
 private:
-    std::string schoolid;
-    std::string classid;
-    std::string userid;
+    std::string id;
+    std::string name;
+    int time;
+    std::string professor;
+    std::string location;
+    std::string room;
 public:
-    Course(std::string id);
-    void setSchool(std::string id);
-    void setClass(std::string id);
-    std::string getSchool();
-    std::string getClass();
-    std::string getUser();
-    SimpleJson::Object getCourseInfo(std::string courseid);
-    Json getTimeTable();
-    Json getPersonalTimeTable();
+    Course(std::string id = "0");
+    int Query();
+    SimpleJson::Object Format();
 };
 
 class Event{
 private:
-    std::string eventid;
+    std::string id;
     std::string name;
     std::string start;
     std::string end;
+    std::string location;
+    std::string describe;
 public:
-    
-    void setName(std::string name);
-    void setStart(std::string start);
-    void setEnd(std::string end);
-    std::string getName();
-    std::string getStart();
-    std::string getEnd();
-    Json getEvents();
+    Event(std::string id="0");
+    int Parse(std::string detail);
+    SimpleJson::Object Format();
 };
 
 #endif

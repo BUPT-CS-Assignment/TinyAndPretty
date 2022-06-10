@@ -6,7 +6,7 @@
 #define USER_ADMIN 0
 #define USER_SCHOOL 1
 #define USER_CLASS 2
-#define USER_PERSON 3
+#define USER_COMMON 3
 
 class User{
 private:
@@ -15,26 +15,22 @@ private:
     int auth;
     std::string gender;
     std::string majorid;
+    std::string majorName;
     std::string schoolid;
+    std::string schoolName;
     std::string classid;
 public:
     User(std::string id);
-    void Init();
-    std::string getID();
-    int getAuth();
-    std::string getGender();
-    std::string getName();
-    std::string getSchool();
-    std::string getMajor();
-    std::string getClass();
-    void setAuth(int auth);
-    int Signin(std::string& passwd);
-    int Signup(std::string& passwd);
-    Json getInfo();
-    int setInfo(std::string& value);
+    int     Query();
+    Json    Format();
+    int     Signin(std::string& passwd);
+    int     Signup(std::string& passwd);
+    int     Update(std::string& value);
+    Json    getEvents();
+    int     addEvent(std::string& value);
+    int     delEvent(std::string& id);
+    Json    getTimeTable();
 
 };
-
-
 
 #endif

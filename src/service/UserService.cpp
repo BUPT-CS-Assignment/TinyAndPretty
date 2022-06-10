@@ -16,12 +16,12 @@ def_HttpEntry(API_User, req){
         return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
     }
     User user(userid);
-    user.Init();
     if(function != "fetch" && function != "update"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
     }
     if(function == "fetch"){
-        Json j = user.getInfo();
+        user.Query();
+        Json j = user.Format();
         //CONSOLE_LOG(0,1,1,"User Info '%s'",j.stringize());
         JsonResponse *JResp = new JsonResponse{j};
         JResp->appendHeader("msg","NO_ERROR");
@@ -29,7 +29,7 @@ def_HttpEntry(API_User, req){
     }
     else if(function == "update"){
         std::string body = req.getBody();
-        int errCode = user.setInfo(body);
+        int errCode = user.Update(body);
         HttpResponse* HResp = new HttpResponse{""};
         HResp->appendHeader("msg",NEexceptionName[errCode]);
         return HResp;

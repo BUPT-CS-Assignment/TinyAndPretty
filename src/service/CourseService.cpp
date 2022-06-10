@@ -11,7 +11,6 @@ def_HttpEntry(API_Timetable,req){
     std::string token(req.queryHeader("token"));
     std::string function(req.queryHeader("function"));
     std::string body = req.getBody();
-    CONSOLE_LOG(0,1,1,"Table-Req [function='%s', userid='%s', token='%s']\n", function.c_str(),userid.c_str(),token.c_str());
     if(function != "fetch"){
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN",HTTP_STATUS_400};
     }
@@ -19,11 +18,13 @@ def_HttpEntry(API_Timetable,req){
         return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
     }
     User user(userid);
-    user.Init();
-    Course course(userid);
-    course.setClass(user.getClass());
-    course.setSchool(user.getSchool());
-    Json j = course.getTimeTable();
+    int errCode = user.Query();
+    if( errCode != NO_ERROR){
+        HttpResponse* HResp = new HttpResponse{""};
+        HResp->appendHeader("msg",NEexceptionName[errCode]);
+        return HResp;
+    }
+    Json j = user.getTimeTable();
     //CONSOLE_LOG(0,1,1,"User Info '%s'",j.stringize());
     JsonResponse *JResp = new JsonResponse{j};
     JResp->appendHeader("msg","NO_ERROR");
@@ -34,5 +35,4 @@ def_HttpEntry(API_Timetable,req){
     //     HResp->appendHeader("msg",NEexceptionName[errCode]);
     //     return HResp;
     // }
-
 }
