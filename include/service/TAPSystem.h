@@ -4,7 +4,7 @@
 #include <interfaces.h>
 
 
-extern NEDBSTD::NEDB __LSR__;   //系统资源数据库
+extern NEDBSTD::NEDB __DATABASE;   //系统资源数据库
 extern std::string PROJECT_DIR; //项目路径
 extern std::string SYS_DIR;     //系统路径
 extern std::string USER_DIR;    //用户路径

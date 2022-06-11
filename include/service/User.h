@@ -20,15 +20,22 @@ private:
     std::string schoolName;
     std::string classid;
 public:
-    User(std::string id);
+    User(std::string id = "0");
     int     Query();
     Json    Format();
     int     Signin(std::string& passwd);
     int     Signup(std::string& passwd);
     int     Update(std::string& value);
+    int     AddNew(std::string& detail);
+
+    int     CourseAlloc(std::string& detail);
+
+    //Event Service
     Json    getEvents();
     int     addEvent(std::string& value);
     int     delEvent(std::string& id);
+
+    //TimeTable Service
     Json    getTimeTable();
 
 };

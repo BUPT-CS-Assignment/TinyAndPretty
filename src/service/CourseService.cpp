@@ -5,6 +5,42 @@ using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
+def_HttpEntry(API_Course,req){
+    string userid(req.queryHeader("userid"));
+    string token(req.queryHeader("token"));
+    string function(req.queryHeader("function"));
+    string body = req.getBody();
+    if(TokenCheck(userid,token) != TOKEN_ACCESS){
+        return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
+    }
+    int errCode;
+    if(function == "new"){
+        if(userid != "10000")   return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
+        Course course;
+        int index = body.find_first_of(";");
+        string str = body.substr(0,index);
+        body = body.substr(index+1);
+        errCode = course.AddNew(str,body);
+
+    }else if(function == "delete"){
+        if(userid != "10000")   return new HttpResponse("ACCESS_DENIED",HTTP_STATUS_401);
+        Course course(body);
+        errCode = course.Remove();
+    }
+    else if(function == "addWork"){
+        Course course(string(req.queryParam("id")));
+        errCode = course.AddWork(body);
+
+    }else if(function == "addExam"){
+        Course course(string(req.queryParam("id")));
+        errCode = course.AddExam(body);
+    }
+
+    HttpResponse* HResp = new HttpResponse{""};
+    HResp->appendHeader("msg",NEexceptionName[errCode]);
+    return HResp;
+}
+
 
 def_HttpEntry(API_Timetable,req){
     std::string userid(req.queryHeader("userid"));

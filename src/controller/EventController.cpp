@@ -31,7 +31,7 @@ int Event::Parse(string detail){
     //Get Location Name
     int count;
     string retVal;
-    __LSR__.Select("landmark","name","id="+info[4],count,retVal);
+    __DATABASE.Select("landmark","name","id="+info[4],count,retVal);
     this->location = retVal.substr(retVal.find(';')+1);
 
     //Describe

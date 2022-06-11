@@ -14,7 +14,7 @@ User::User(string id){
 int User::Signin(string& passwd){
     int count;
     string retVal;
-    int errCode = __LSR__.Select("token", "passwd", "id=" + id, count, retVal);
+    int errCode = __DATABASE.Select("token", "passwd", "id=" + id, count, retVal);
     if(errCode != 0){
         return CONSOLE_LOG(errCode, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode].c_str());
     }
@@ -31,24 +31,24 @@ int User::Signin(string& passwd){
 }
 
 int User::Signup(string& passwd){
-    int errCode1 = __LSR__.Insert("token", "", id + "," + passwd + ",0");
+    int errCode1 = __DATABASE.Insert("token", "", id + "," + passwd + ",0");
     if(errCode1 != NO_ERROR){
         return CONSOLE_LOG(errCode1, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode1].c_str());
     }
-    int errCode2 = __LSR__.Insert("users", "id,auth", id + "," + to_string(auth));
+    int errCode2 = __DATABASE.Insert("users", "id,auth", id + "," + to_string(auth));
     return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", id);
 }
 
 
 int User::Update(string& value){
     int count;
-    return __LSR__.Update("users", value, "id=" + id, count);
+    return __DATABASE.Update("users", value, "id=" + id, count);
 }
 
 int User::Query(){
     int count,length;
     string retVal;
-    int errCode = __LSR__.Select("users","*","id=" + id, count, retVal);
+    int errCode = __DATABASE.Select("users","*","id=" + id, count, retVal);
     if(errCode != NO_ERROR){
         return errCode;
     }
@@ -66,11 +66,11 @@ int User::Query(){
     classid = str[6];
     delete [] str;
     //School Name
-    __LSR__.Select("schools", "name", "id=" + schoolid, count, retVal);
+    __DATABASE.Select("schools", "name", "id=" + schoolid, count, retVal);
     schoolName = retVal.substr(retVal.find(";") + 1);
     
     //Major Name
-    __LSR__.Select("majors", "name", "id=" + majorid, count, retVal);
+    __DATABASE.Select("majors", "name", "id=" + majorid, count, retVal);
     majorName = "major",retVal.substr(retVal.find(";") + 1);
 
     return NO_ERROR;
@@ -92,17 +92,16 @@ Json User::Format(){
 Json User::getTimeTable(){
     int count;
     string retVal;
-    NEDB TempDB(USER_DIR + "/" + schoolid + "/" + classid);
-    TempDB.Mount("timetable");
-    int errCode = TempDB.Select("timetable","*","",count,retVal);
-    TempDB.Close();
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
+    _DB.Mount("timetable");
+    int errCode = _DB.Select("timetable","*","",count,retVal);
+    _DB.Close();
     int length;
     Json J;
     string * str = Split(retVal,';',length);
 
     if(errCode != NO_ERROR|| retVal == "" || str == nullptr){
         delete [] str;
-        
         return J;
     }
     int length_temp;
@@ -132,10 +131,10 @@ Json User::getTimeTable(){
 Json User::getEvents(){
     int count;
     string retVal;
-    NEDB TempDB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
-    TempDB.Mount("event");
-    int errCode = TempDB.Select("event","*","",count,retVal);
-    TempDB.Close();
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
+    _DB.Mount("event");
+    int errCode = _DB.Select("event","*","",count,retVal);
+    _DB.Close();
 
     //Manage Info
     int length;
@@ -158,18 +157,40 @@ Json User::getEvents(){
 }
 
 int User::addEvent(std::string& value){
-    NEDB TempDB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
-    TempDB.Mount("event");
-    int res = TempDB.Insert("event","",value);
-    TempDB.Close();
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
+    _DB.Mount("event");
+    int res = _DB.Insert("event","",value);
+    _DB.Close();
     return res;
 }
 
 int User::delEvent(std::string& id){
-    NEDB TempDB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
-    TempDB.Mount("event");
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
+    _DB.Mount("event");
     int count;
-    int res = TempDB.Delete("event","id="+id,count);
-    TempDB.Close();
+    int res = _DB.Delete("event","id="+id,count);
+    _DB.Close();
     return res;
+}
+
+int User::AddNew(std::string& detail){
+    int errCode,len;
+    errCode = __DATABASE.Insert("users","",detail);
+    if(errCode != NO_ERROR) return errCode;
+    string* str = Split(detail,',',len);
+    if(len != 7) return PARAM_NUM_MISMATCH;
+    this->id = str[0];
+    this->auth = stoi(str[1]);
+    this->name = str[2];
+    this->gender = str[3];
+    this->schoolid = str[4];
+    this->majorid = str[5];
+    this->classid = str[6];
+    __DATABASE.Insert("token","",id+","+"123"+","+str[1]);
+    NEDB _DB(USER_DIR + "/" +schoolid + "/" + classid + "/" + id);
+    errCode = _DB.DirInit();
+    if(errCode != NO_ERROR) return errCode;
+    errCode = _DB.Create("event","id int,name text,start int64,end int64,loc int,info text");
+    _DB.Close();
+    return errCode;
 }

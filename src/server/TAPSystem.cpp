@@ -5,7 +5,7 @@ using namespace std;
 using namespace NEDBSTD;
 using namespace BTREESTD;
 
-NEDB __LSR__("/");
+NEDB __DATABASE("/");
 string PROJECT_DIR = "/";
 string SYS_DIR = "/";
 string USER_DIR = "/";
@@ -34,19 +34,19 @@ int ServicePreload(){
     NEDB_SETTING(32, 400, 50, 5);
     NEDB_DEBUG(2);
     NEDB_TIME_FLAG(true);
-    __LSR__.SetDir(SYS_DIR.c_str());
-    if(__LSR__.DirInit() != 0){
+    __DATABASE.SetDir(SYS_DIR.c_str());
+    if(__DATABASE.DirInit() != 0){
         return UTILSTD::CONSOLE_LOG(3, 1, 1, "Dir Error\n");
     }
     int num;
-    __LSR__.MountAll(num);
-    if(__LSR__.Open(SYS_DIR + "/token/token") == NO_ERROR) num++;
-    if(__LSR__.Open(SYS_DIR + "/test/database_test") == NO_ERROR) num++;
-    if(__LSR__.Open(SRC_DIR + "/major/majors") == NO_ERROR) num++;
-    if(__LSR__.Open(SRC_DIR + "/school/schools") == NO_ERROR) num++;
-    if(__LSR__.Open(SRC_DIR + "/map/landmark") == NO_ERROR) num++;
-    if(__LSR__.Open(SRC_DIR + "/course/courses") == NO_ERROR) num++;
-    if(__LSR__.Open(USER_DIR + "/users") == NO_ERROR) num++;
+    __DATABASE.MountAll(num);
+    if(__DATABASE.Open(SYS_DIR + "/token/token") == NO_ERROR) num++;
+    if(__DATABASE.Open(SYS_DIR + "/test/database_test") == NO_ERROR) num++;
+    if(__DATABASE.Open(SRC_DIR + "/major/majors") == NO_ERROR) num++;
+    if(__DATABASE.Open(SRC_DIR + "/school/schools") == NO_ERROR) num++;
+    if(__DATABASE.Open(SRC_DIR + "/map/landmark") == NO_ERROR) num++;
+    if(__DATABASE.Open(SRC_DIR + "/course/courses") == NO_ERROR) num++;
+    if(__DATABASE.Open(USER_DIR + "/users") == NO_ERROR) num++;
     return UTILSTD::CONSOLE_LOG(0, 1, 1, " %d Table Mounted\n", num);
 }
 

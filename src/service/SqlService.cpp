@@ -17,7 +17,7 @@ def_HttpEntry(API_SQL, req){
     if(function == "run"){
         CONSOLE_LOG(0, 1, 1, "SQL-Request '%s'\n", ans.c_str());
         const char* sql = ans.c_str();
-        int errCode = __LSR__.Query(sql, count, res);
+        int errCode = __DATABASE.Query(sql, count, res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
         //J.push_back({"msg",NEexceptionName[errCode].c_str()});
@@ -31,7 +31,7 @@ def_HttpEntry(API_SQL, req){
     //Get Table List
     else if(function == "list"){
         CONSOLE_LOG(0, 1, 1, "Table List Req\n");
-        int errCode = __LSR__.Query("select tables;",count,res);
+        int errCode = __DATABASE.Query("select tables;",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
         int length;
@@ -53,7 +53,7 @@ def_HttpEntry(API_SQL, req){
     else if(function == "detail"){
         string tablename = ans;
         CONSOLE_LOG(0, 1, 1, "Table Detail Req: %s\n",ans.c_str());
-        int errCode = __LSR__.Select(tablename,"*","",count,res);
+        int errCode = __DATABASE.Select(tablename,"*","",count,res);
         CONSOLE_LOG(0, 1, 1, "Query OK Return Code %d\n", errCode);
         Json J;
         J.push_back({"name",tablename.c_str()});
@@ -74,18 +74,18 @@ def_HttpEntry(API_SQL, req){
     //Update Table Info
     if(function == "update"){
         cout << str[0] <<" "<< str[2] <<" "<< str[1] << endl;
-        errCode = __LSR__.Update(str[0],str[2],str[1],count);
+        errCode = __DATABASE.Update(str[0],str[2],str[1],count);
     }
     //insert Table Info
     else if(function == "insert"){
-        errCode = __LSR__.Insert(str[0],str[1],str[2]);
+        errCode = __DATABASE.Insert(str[0],str[1],str[2]);
     }
     //delete value
     else if(function == "delete"){
-        errCode = __LSR__.Delete(str[0],str[1],count);
+        errCode = __DATABASE.Delete(str[0],str[1],count);
     }
     else if(function == "drop"){
-        errCode = __LSR__.Drop(ans);
+        errCode = __DATABASE.Drop(ans);
     }
     else{
         return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
@@ -116,11 +116,11 @@ def_HttpEntry(API_SQL_Test, req){
     int count;
     string res;
     CONSOLE_LOG(0, 1, 1, "Warning : DataBase Test %d Start\n", id);
-    int errCode = __LSR__.Query("drop table database_test;", count, res);
+    int errCode = __DATABASE.Query("drop table database_test;", count, res);
     CONSOLE_LOG(0, 1, 1, "Dropping table... Warning : Query %d OK return Code %d\n", id, errCode);
-    errCode = __LSR__.Query("create table database_test(id int,name text);", count, res);
+    errCode = __DATABASE.Query("create table database_test(id int,name text);", count, res);
     CONSOLE_LOG(0, 1, 1, "Creating table... Warning : Query %d OK return Code %d\n", id, errCode);
-    errCode = __LSR__.Query(DataBaseTestSQL.c_str(), count, res);
+    errCode = __DATABASE.Query(DataBaseTestSQL.c_str(), count, res);
     CONSOLE_LOG(0, 1, 1, "Testing... Warning : Query %d OK return Code %d\n", id, errCode);
     return new HttpResponse{std::to_string(errCode)};
 

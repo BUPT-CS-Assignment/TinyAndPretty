@@ -11,14 +11,16 @@ class Course{
 private:
     std::string id;
     std::string name;
-    int time;
-    std::string professor;
-    std::string location;
-    std::string room;
+    std::string time;
+    std::string intro;
 public:
     Course(std::string id = "0");
     int Query();
     SimpleJson::Object Format();
+    int AddNew(std::string& detail,std::string& intro);
+    int Remove();
+    int AddWork(std::string& detail);
+    int AddExam(std::string& detail);
 };
 
 class Event{

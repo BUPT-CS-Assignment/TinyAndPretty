@@ -54,6 +54,8 @@ def_HttpEntry(API_SQL_Test,req);
 def_HttpEntry(API_SQL , req);
 def_HttpEntry(API_SQL_Help ,  req);
 
+def_HttpEntry(API_Course, req);
+
 def_HttpEntry(API_User,req);
 def_HttpEntry(API_Timetable,req);
 def_HttpEntry(API_Event,req);

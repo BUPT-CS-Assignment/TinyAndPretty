@@ -6,23 +6,26 @@ using namespace UTILSTD;
 
 def_HttpEntry(API_User, req){
     string function(req.queryHeader("function"));
-    if(function == ""){
-        return new FileResponse{"web/user/index.html" , "text/html"};
-    }
     string userid(req.queryHeader("userid"));
-    std::string token(req.queryHeader("token"));
-    CONSOLE_LOG(0, 1, 1, "UserPanel-Req [function='%s', userid='%s', token='%s']\n", function.c_str(), userid.c_str(), token.c_str());
+    string token(req.queryHeader("token"));
+    string body(req.getBody());
+    CONSOLE_LOG(0, 1, 1, "UserAPI Called [function='%s', userid='%s']\n", function.c_str(), userid.c_str());
     if(TokenCheck(userid, token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
     }
-    User user(userid);
-    if(function != "fetch" && function != "update"){
-        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
+    if(function == "new"){
+        if(userid != "10000") return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
+        User user;
+        int errCode = user.AddNew(body);
+        HttpResponse* HResp = new HttpResponse{""};
+        HResp->appendHeader("msg",NEexceptionName[errCode]);
+        return HResp;
     }
+
+    User user(userid);
     if(function == "fetch"){
         user.Query();
         Json j = user.Format();
-        //CONSOLE_LOG(0,1,1,"User Info '%s'",j.stringize());
         JsonResponse *JResp = new JsonResponse{j};
         JResp->appendHeader("msg","NO_ERROR");
         return JResp;
@@ -34,4 +37,5 @@ def_HttpEntry(API_User, req){
         HResp->appendHeader("msg",NEexceptionName[errCode]);
         return HResp;
     }
+    return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
 }

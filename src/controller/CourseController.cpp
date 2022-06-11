@@ -9,47 +9,35 @@ Course::Course(string id){
 }
 
 int Course::Query(){
-    int count;
+    int count,len;
     string retVal;
-    int res = __LSR__.Select("courses","*","id=" + id,count,retVal) != NO_ERROR;
-    if(res != NO_ERROR){
-        return res;
-    }
-    int length;
-    string *str = Split(retVal,';',length);
+    int res = __DATABASE.Select("courses","*","id=" + id,count,retVal) != NO_ERROR;
+    if(res != NO_ERROR) return res;
+    string *str = Split(retVal,';',len);
     if(retVal == "" || count == 0 || str == nullptr){
         delete [] str;
         return PARAM_FORM_ERROR;
     }
-    string *info = Split(str[1],',',length);
+    string *info = Split(str[1],',',len);
     delete [] str;
-    if(length != 6){
-        return PARAM_FORM_ERROR;
-    }
+    if(len != 3)    return PARAM_FORM_ERROR;
 
     /* Fill Details */
-    //Name
     this->name = info[1];
-
-    //Time
-    try{
-        this->time = stoi(info[2]);
-    }catch(exception &e){
-        delete [] info;
-        return TYPE_INT_MISMATCH;
-    }
-    //Get Professor Name
-    __LSR__.Select("users","name","id="+info[3],count,retVal);
-    this->professor = retVal.substr(retVal.find(';')+1);
-
-    //Get Location Name
-    __LSR__.Select("landmark","name","id="+info[4],count,retVal);
-    this->location = retVal.substr(retVal.find(';')+1);
-
-    //Room
-    this->room = info[5];
-
+    this->time = info[2];
     delete [] info;
+    ifstream ifs((SRC_DIR + "/course/" + this->id + "/intro.txt").c_str());
+    if(!ifs.is_open()){
+        intro = "null";
+    }else{
+        ifs >> noskipws;
+        unsigned char c; this->intro = "";
+        while(!ifs.eof()){
+            ifs >> c;
+            this->intro += c;
+        }
+    }
+
     return NO_ERROR;
 }
 
@@ -57,74 +45,63 @@ SimpleJson::Object Course::Format(){
     SimpleJson::Object J({
         {"id",id.c_str()},
         {"name",name.c_str()},
-        {"time",time},
-        {"prof",professor.c_str()},
-        {"loc",location.c_str()},
-        {"room",room.c_str()}
+        {"time",stoi(time)},
+        {"intro",intro.c_str()},
     });
     return J;
 }
 
+int Course::AddNew(string& detail,string& intro){
+    //System DataBase
+    int errCode = __DATABASE.Insert("courses","",detail);
+    if(errCode != NO_ERROR) return errCode;
 
-// Json Course::getTimeTable(){
-//     int count;
-//     string retVal;
-//     NEDB TempDB(USER_DIR + "/" + schoolid + "/" + classid);
-//     TempDB.Mount("timetable");
-//     int errCode = TempDB.Select("timetable","*","",count,retVal);
-//     int length;
-//     Json J;
-//     string * str = Split(retVal,';',length);
-//     //fields ; a ; b ;
-//     //fields: id,mon,tue,wed,thur,fri
-//     if(retVal == "" || str == nullptr){
-//         TempDB.Close();
-//         return J;
-//     }
-//     int length_temp;
-//     vector<SimpleJson::Object> courseInfo;
-//     vector<SimpleJson::Object> timeCode;
-//     for(int i = 1;i < length;i++){
-//         string * info = Split(str[i],',',length_temp);
-//         SimpleJson::Object obj = getCourseInfo(info[0]);
-//         int daycode[6];
-//         for(int j=1;j<=5;j++){
-//             daycode[j]=stoi(info[j]);
-//         }
-//         vector<int> code(daycode+1,daycode+6);
-//         timeCode.push_back(SimpleJson::Object({{"pos",i},{"timeCode",code}}));
-//         //tempJson.push_back({"daycode",code});
-//         courseInfo.push_back(obj);
-//         delete[] info;
-//     }
-//     J.push_back({"basic",timeCode});
-//     J.push_back({"detail",courseInfo});
-//     delete[] str;
-//     TempDB.Close();
-//     return J;
-//     /*
-//     string * field = Split(str[0],',',templ);
-//     for(int i = 1; i < length; i++){
-//         int l;
-//         string * classes = Split(str[i],',',l);
-//         cout<<"Push Back Success 0"<<endl;
-//         for(int j = 1; j < l; j++){
-//             string classinfo = "";
-//             if(classes[j]!="0"){
-//                 classinfo = getCourseInfo(classes[j]).stringize();
-//             }
-//             CONSOLE_LOG(0,1,1,"Class Info '%s'\n",classinfo.c_str());
-//             J.push_back({field[j].c_str(),classinfo.c_str()});
-//             cout<<"Push Back Success 1"<<endl;
-//         }
-//         delete[] classes;
-//     }
-//     TempDB.Close();
-//     delete[] str;
-//     delete[] field;
-//     return J;
-//     */
-// }
+    string dir = SRC_DIR + "/course/" + detail.substr(0,detail.find_first_of(",")) + "/";
+    
+    //Homework
+    NEDB _DB(dir);
+    if(_DB.DirInit() != NO_ERROR) return DIR_ERROR;
+    errCode = _DB.Create("exam","id int,school int,name text,start int,len int,location int,room int");
+    if(errCode != NO_ERROR) return errCode;
+    _DB.SetDir(dir + "/professor");
+    _DB.DirInit();
+    _DB.Close();
+    
+    //Introduction
+    ofstream ofs(dir + "/intro.txt",ios::trunc|ios::out);
+    ofs << intro;
+    ofs.close();
+
+    return errCode;
+}
+
+int Course::Remove(){
+    int count;
+    int errCode = __DATABASE.Delete("course","id="+this->id,count);
+    if(errCode != NO_ERROR) return errCode;
+    string dir = SRC_DIR + "/course/" + this->id;
+    if(rmdir(dir.c_str()) != 0) return DIR_ERROR;
+    return NO_ERROR;
+}
+
+int Course::AddWork(string& detail){
+    string dir = SRC_DIR + "/course/" + id;
+    NEDB _DB(dir);
+    _DB.Mount("homework");
+    int errCode = _DB.Insert("homework","",detail);
+    _DB.Close();
+    return errCode;
+}
+
+int Course::AddExam(string& detail){
+    string dir = SRC_DIR + "/course/" + id;
+    NEDB _DB(dir);
+    _DB.Mount("exam");
+    int errCode = _DB.Insert("exam","",detail);
+    _DB.Close();
+    return errCode;
+}
+
 
 /*
 
