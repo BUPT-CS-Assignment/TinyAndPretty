@@ -79,6 +79,7 @@ bool TimerManager::createTask(Connection* conn)
 	wrapper->sendHttpData(conn , heart_q);
 
 	connPool.erase(conn);
+	std::cerr << "Timer Finish HB : " << std::endl;
 
 	return false;
 }
