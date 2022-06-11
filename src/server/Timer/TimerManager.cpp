@@ -44,7 +44,7 @@ bool TimerManager::listenConnect(Connection *conn)
 	} , std::chrono::seconds{HEART_TIMEOUT});
 
 	connPool.emplace(conn , tfd);
-
+	::printf("Mount : %d\n" , tfd);
 	return true;
 }
 
@@ -71,7 +71,7 @@ void TimerManager::broadCast(Rep_T reps)
 
 bool TimerManager::createTask(Connection* conn)
 {
-	//std::cerr << "Timer Hit : " << connPool[conn] << std::endl;
+	std::cerr << "Timer Hit : " << connPool[conn] << std::endl;
 	if(connPool[conn] == 0) return false;
 	
 	::close(connPool[conn]);
