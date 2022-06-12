@@ -65,4 +65,5 @@ def_HttpEntry(LogCheck,req);
 
 def_HttpEntry(API_Clock , req);
 
+def_HttpEntry(MapTest ,req);
 #endif

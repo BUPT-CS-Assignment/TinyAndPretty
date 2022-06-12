@@ -63,10 +63,10 @@ void TAPCenter::distributeTask(EventChannel *eptr)
 {
 	for(auto& ptr : plugins) {
 
+		if( !ptr->protocalConfirm(eptr->magic_n) ) continue ;
 		// sock also =? why must = ?=
 		thpool->enqueue([& , _eptr = eptr] 
 		{ 
-			if( !ptr->protocalConfirm(_eptr->magic_n) ) return ;
 			auto conn = static_cast<Connection *>(_eptr->ptr);
 			//std::cerr << "Conn : " << conn->getFD() << "\n";
 			// create Http task and judge whether it's alive
