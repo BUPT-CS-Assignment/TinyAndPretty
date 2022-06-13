@@ -52,6 +52,7 @@ int ServicePreload(){
 
 void DirectoryInit(){
     PROJECT_DIR = get_current_dir_name();
+    PROJECT_DIR = PROJECT_DIR.substr(0,PROJECT_DIR.find("/TAP")+4);
     USER_DIR = PROJECT_DIR + "/data/user";
     SRC_DIR = PROJECT_DIR + "/data/src";
     SYS_DIR = PROJECT_DIR + "/data/sys";

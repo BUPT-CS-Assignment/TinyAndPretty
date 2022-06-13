@@ -250,7 +250,7 @@ FileResponse::FileResponse(fs::path _filepath , const std::string _type) : HttpR
 {
     //convert to adsulute filepath
     filepath = fs::absolute(_filepath);
-    IFDEBUG(std::cerr << "* FILE PATH : " << filepath << "\n");
+    std::cerr << "* FILE PATH : " << filepath << "\n";
     //set file size in body
     body_len = fs::file_size(filepath);
     IFDEBUG(std::cerr << "* FILE SIZE : " << body_len << "\n");
