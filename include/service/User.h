@@ -3,13 +3,13 @@
 #include <common.h>
 #include <interfaces.h>
 
-#define USER_ADMIN 0
-#define USER_SCHOOL 1
-#define USER_CLASS 2
-#define USER_COMMON 3
+#define USER_ADMIN 3
+#define USER_SCHOOL 2
+#define USER_CLASS 1
+#define USER_COMMON 0
 
 class User{
-private:
+protected:
     std::string id;
     std::string name;
     int auth;
@@ -19,16 +19,16 @@ private:
     std::string schoolid;
     std::string schoolName;
     std::string classid;
-public:
+    public:
     User(std::string id = "0");
-    int     Query();
+    int     Query(bool detail_name = true);
     Json    Format();
     int     Signin(std::string& passwd);
     int     Signup(std::string& passwd);
     int     Update(std::string& value);
     int     AddNew(std::string& detail);
 
-    int     CourseAlloc(std::string& detail);
+
 
     //Event Service
     Json    getEvents();
@@ -37,7 +37,16 @@ public:
 
     //TimeTable Service
     Json    getTimeTable();
+};
+
+class Professor:public User{
+public:
+    Professor(std::string id = ""):User(id){};
+    int CourseAlloc(std::string& courseid, std::string& detail);
+    int AddHomework(std::string& detail);
+    int DelHomework(std::string& detail);
 
 };
+
 
 #endif

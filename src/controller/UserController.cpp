@@ -45,17 +45,17 @@ int User::Update(string& value){
     return __DATABASE.Update("users", value, "id=" + id, count);
 }
 
-int User::Query(){
-    int count,length;
+int User::Query(bool d_name){
+    int count, length;
     string retVal;
-    int errCode = __DATABASE.Select("users","*","id=" + id, count, retVal);
+    int errCode = __DATABASE.Select("users", "*", "id=" + id, count, retVal);
     if(errCode != NO_ERROR){
         return errCode;
     }
-    retVal = retVal.substr(retVal.find_first_of(';')+1);
-    string * str = Split(retVal,',',length);
+    retVal = retVal.substr(retVal.find_first_of(';') + 1);
+    string* str = Split(retVal, ',', length);
     if(length != 7){
-        delete [] str;
+        delete[] str;
         return PARAM_FORM_ERROR;
     }
     auth = stoi(str[1]);
@@ -64,15 +64,16 @@ int User::Query(){
     schoolid = str[4];
     majorid = str[5];
     classid = str[6];
-    delete [] str;
-    //School Name
-    __DATABASE.Select("schools", "name", "id=" + schoolid, count, retVal);
-    schoolName = retVal.substr(retVal.find(";") + 1);
-    
-    //Major Name
-    __DATABASE.Select("majors", "name", "id=" + majorid, count, retVal);
-    majorName = "major",retVal.substr(retVal.find(";") + 1);
+    delete[] str;
+    if(d_name){
+        //School Name
+        __DATABASE.Select("schools", "name", "id=" + schoolid, count, retVal);
+        schoolName = retVal.substr(retVal.find(";") + 1);
 
+        //Major Name
+        __DATABASE.Select("majors", "name", "id=" + majorid, count, retVal);
+        majorName = "major", retVal.substr(retVal.find(";") + 1);
+    }
     return NO_ERROR;
 }
 
@@ -94,29 +95,29 @@ Json User::getTimeTable(){
     string retVal;
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
     _DB.Mount("timetable");
-    int errCode = _DB.Select("timetable","*","",count,retVal);
+    int errCode = _DB.Select("timetable", "*", "", count, retVal);
     _DB.Close();
     int length;
     Json J;
-    string * str = Split(retVal,';',length);
+    string* str = Split(retVal, ';', length);
 
-    if(errCode != NO_ERROR|| retVal == "" || str == nullptr){
-        delete [] str;
+    if(errCode != NO_ERROR || retVal == "" || str == nullptr){
+        delete[] str;
         return J;
     }
     int length_temp;
     vector<SimpleJson::Object> courseInfo;
     vector<SimpleJson::Object> timeCode;
-    for(int i = 1;i < length;i++){
-        string * info = Split(str[i],',',length_temp);
+    for(int i = 1; i < length; i++){
+        string* info = Split(str[i], ',', length_temp);
         Course course(info[0]);
         course.Query();
         SimpleJson::Object obj = course.Format();
         int daycode[6];
-        for(int j=1;j<=5;j++){
-            daycode[j]=stoi(info[j]);
+        for(int j = 1; j <= 5; j++){
+            daycode[j] = stoi(info[j]);
         }
-        vector<int> code(daycode+1,daycode+6);
+        vector<int> code(daycode + 1, daycode + 6);
         timeCode.push_back(SimpleJson::Object({{"pos",i},{"timeCode",code}}));
         //tempJson.push_back({"daycode",code});
         courseInfo.push_back(obj);
@@ -133,19 +134,19 @@ Json User::getEvents(){
     string retVal;
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
     _DB.Mount("event");
-    int errCode = _DB.Select("event","*","",count,retVal);
+    int errCode = _DB.Select("event", "*", "", count, retVal);
     _DB.Close();
 
     //Manage Info
     int length;
     Json J;
-    string * str = Split(retVal,';',length);
+    string* str = Split(retVal, ';', length);
     if(errCode != NO_ERROR || retVal == "" || str == nullptr){
-        delete [] str;
+        delete[] str;
         return J;
     }
     vector<SimpleJson::Object> events;
-    for(int i = 1;i < length;i++){
+    for(int i = 1; i < length; i++){
         Event event;
         event.Parse(str[i]);
         events.push_back(event.Format());
@@ -159,7 +160,7 @@ Json User::getEvents(){
 int User::addEvent(std::string& value){
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
     _DB.Mount("event");
-    int res = _DB.Insert("event","",value);
+    int res = _DB.Insert("event", "", value);
     _DB.Close();
     return res;
 }
@@ -168,16 +169,16 @@ int User::delEvent(std::string& id){
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
     _DB.Mount("event");
     int count;
-    int res = _DB.Delete("event","id="+id,count);
+    int res = _DB.Delete("event", "id=" + id, count);
     _DB.Close();
     return res;
 }
 
 int User::AddNew(std::string& detail){
-    int errCode,len;
-    errCode = __DATABASE.Insert("users","",detail);
+    int errCode, len;
+    errCode = __DATABASE.Insert("users", "", detail);
     if(errCode != NO_ERROR) return errCode;
-    string* str = Split(detail,',',len);
+    string* str = Split(detail, ',', len);
     if(len != 7) return PARAM_NUM_MISMATCH;
     this->id = str[0];
     this->auth = stoi(str[1]);
@@ -186,11 +187,27 @@ int User::AddNew(std::string& detail){
     this->schoolid = str[4];
     this->majorid = str[5];
     this->classid = str[6];
-    __DATABASE.Insert("token","",id+","+"123"+","+str[1]);
-    NEDB _DB(USER_DIR + "/" +schoolid + "/" + classid + "/" + id);
+    __DATABASE.Insert("token", "", id + "," + "123" + "," + str[1]);
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
     errCode = _DB.DirInit();
     if(errCode != NO_ERROR) return errCode;
-    errCode = _DB.Create("event","id int,name text,start int64,end int64,loc int,info text");
+    errCode = _DB.Create("event", "id int,name text,start int64,end int64,loc int,info text");
+    if(this->auth == USER_SCHOOL){
+        _DB.Create("timetable", "id int,mon int,tue int,wed int,thur int,fri int");
+    }
     _DB.Close();
+    return errCode;
+}
+
+int Professor::CourseAlloc(string& courseid, string& detail){
+    string dir = SRC_DIR + "/course/" + courseid + "/" + this->id + "/";
+    int errCode;
+    NEDB _DB(dir);
+    errCode = _DB.DirInit();
+    if(errCode != NO_ERROR) return errCode;
+    errCode = _DB.Create("homework", "id int,name text,class int,start int64,end int64");
+    if(errCode != NO_ERROR) return errCode;
+    _DB.SetDir(USER_DIR + "/" + schoolid + "/0/" + this->id + "/");
+    errCode = _DB.Insert("timetable", "", courseid + "," + detail);
     return errCode;
 }

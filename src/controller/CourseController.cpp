@@ -63,8 +63,6 @@ int Course::AddNew(string& detail,string& intro){
     if(_DB.DirInit() != NO_ERROR) return DIR_ERROR;
     errCode = _DB.Create("exam","id int,school int,name text,start int,len int,location int,room int");
     if(errCode != NO_ERROR) return errCode;
-    _DB.SetDir(dir + "/professor");
-    _DB.DirInit();
     _DB.Close();
     
     //Introduction

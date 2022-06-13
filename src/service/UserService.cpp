@@ -13,13 +13,26 @@ def_HttpEntry(API_User, req){
     if(TokenCheck(userid, token) != TOKEN_ACCESS){
         return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
     }
+    HttpResponse* HResp = new HttpResponse{""};
+
     if(function == "new"){
         if(userid != "10000") return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
         User user;
         int errCode = user.AddNew(body);
-        HttpResponse* HResp = new HttpResponse{""};
         HResp->appendHeader("msg",NEexceptionName[errCode]);
         return HResp;
+    }else if(function == "alloc"){
+        if(userid != "10000") return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
+        Professor prof(string(req.queryParam("user")));
+        int errCode = prof.Query(false);
+        if(errCode != NO_ERROR){
+            HResp->appendHeader("msg",NEexceptionName[errCode]);
+            return HResp;
+        }
+        string course(req.queryParam("course"));
+        errCode = prof.CourseAlloc(course,body);
+        HResp->appendHeader("msg",NEexceptionName[errCode]);
+            return HResp;
     }
 
     User user(userid);
@@ -33,7 +46,6 @@ def_HttpEntry(API_User, req){
     else if(function == "update"){
         std::string body = req.getBody();
         int errCode = user.Update(body);
-        HttpResponse* HResp = new HttpResponse{""};
         HResp->appendHeader("msg",NEexceptionName[errCode]);
         return HResp;
     }
