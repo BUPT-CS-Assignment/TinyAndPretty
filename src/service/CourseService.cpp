@@ -27,6 +27,20 @@ def_HttpEntry(API_Course,req){
         Course course(body);
         errCode = course.Remove();
     }
+    else if(function == "list"){
+        if(userid != "10000") return new HttpResponse("ACCESS_DENIED\r\n", HTTP_STATUS_401);
+        string ret;int count,len;
+        int errCode = __DATABASE.Select("courses","id,name","",count,ret);
+        Json J;
+        if(errCode == NO_ERROR){
+            string str = ret.substr(ret.find_first_of(';')+1);
+            J.push_back({"list",str});
+        }
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg",NEexceptionName[errCode]);
+        return JResp;
+        return new JsonResponse{J};        
+    }
     else if(function == "addWork"){
         Course course(string(req.queryParam("id")));
         errCode = course.AddWork(body);
