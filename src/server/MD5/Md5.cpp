@@ -1,5 +1,5 @@
 #include <libs/md5.h>
-
+#include <iostream>
 std::string md5(std::string f){
     uint8_t final[17];
     md5_process(f, final);
@@ -27,10 +27,11 @@ int md5_process(std::string f, uint8_t(&finalData)[17]){
     uint8_t* fileBuff = (uint8_t*)malloc(fileLen_Byte);
     // std::cout << "fileLen: " << fileLen_Byte << std::endl;
     memcpy(fileBuff, f.c_str(), fileLen_Byte);
-    for(int i = 0; i < fileLen_Byte / 64; i++){
-        memset(buff, 0, 64);
-        memcpy(&buff[0], &fileBuff[i * 64], 64); //这段唯一用处是大小端转换，可以优化
-        md5_calculate(seq, buff);
+    for (unsigned int i = 0; i < fileLen_Byte / 64; i++) {
+      memset(buff, 0, 64);
+      memcpy(&buff[0], &fileBuff[i * 64],
+             64); //这段唯一用处是大小端转换，可以优化
+      md5_calculate(seq, buff);
     }
     /*补位*/
     memset(buff, 0, 64);
@@ -146,4 +147,82 @@ int md5_calculate(uint32_t(&seq)[4], const uint32_t buff[]){
     C += c;
     D += d;
     return 0;
+}
+
+string md5(fstream &f) {
+  uint8_t final[17];
+  md5_process(f, final);
+  string output;
+  for (int i = 0; i < 16; i++) {
+    char temp[3];
+    sprintf(temp, "%02x", final[i]);
+    output.append(temp);
+  }
+  return output;
+}
+
+int md5_process(fstream &f, uint8_t (&finalData)[17]) {
+  uint32_t seq[] = {0x67452301, 0xefcdab89, 0x98badcfe,
+                    0x10325476}; //默认为小端
+
+  uint32_t fileLen_Byte;
+  uint32_t fileLen_Bit[2];
+
+  uint8_t complementaryBuff[65];
+  uint32_t buff[16];
+
+  fileLen_Byte = get_file_len(f);
+  // printf("len:%d\n",fileLen_Byte);
+  uint8_t *fileBuff = (uint8_t *)malloc(fileLen_Byte);
+  // std::cout << "fileLen: " << fileLen_Byte << std::endl;
+  // memcpy(fileBuff, f.c_str(), fileLen_Byte);
+  f.read((char *)fileBuff, fileLen_Byte); //
+  for (unsigned int i = 0; i < fileLen_Byte / 64; i++) {
+    memset(buff, 0, 64);
+    memcpy(&buff[0], &fileBuff[i * 64],
+           64); //这段唯一用处是大小端转换
+    md5_calculate(seq, buff);
+  }
+  /*补位*/
+  memset(buff, 0, 64);
+  memset(complementaryBuff, 0, 64);
+  memcpy(complementaryBuff, &fileBuff[fileLen_Byte - (fileLen_Byte % 64)],
+         fileLen_Byte % 64); //注意可能的string传参问题
+  complementaryBuff[fileLen_Byte % 64] = 128; //补1
+  memcpy(&buff[0], &complementaryBuff[0],
+         64); //这样子memcpy就能大小端转换了吗？
+  /*判断是不是还得填空位*/
+  if ((fileLen_Byte % 64) > 55) { // 64 - 1 - 8 = 55，但我这个还需要减1吗？
+    md5_calculate(seq, buff);
+    memset(buff, 0, 64);
+  }
+
+  fileLen_Bit[1] = fileLen_Byte / 0x20000000;
+  fileLen_Bit[0] = (fileLen_Byte % 0x20000000) * 8;
+  memcpy(&buff[14], fileLen_Bit, 8);
+  //   printf("\n");
+  //   for (int i = 0; i < 16; i++) {
+  //     printf("%x", buff[i]);
+  //   }
+  // printf("\n");
+  // printf("pre:%x %x %x %x\n", A, B, C, D);
+  md5_calculate(seq, buff);
+  // printf("trd:%x %x %x %x\n", A, B, C, D);
+
+  //至此计算一已经完成，此时A、B、C、D已经产生了所有的值，把他交给finalData即可
+  // DEBUG：输出，应该没问题
+  memcpy(&finalData[0], &seq, 16); //高低位倒序赋值
+  free(fileBuff);
+  return 0;
+}
+
+int get_file_len(fstream &f) {
+  if (f.is_open() == false) { // 文件打开失败
+    cout << "Open file fail!" << std::endl;
+    return -1;
+  }
+  f.seekg(0, ios_base::end);
+  int size = f.tellg();
+  f.seekg(0, ios_base::beg);
+  return size;
 }

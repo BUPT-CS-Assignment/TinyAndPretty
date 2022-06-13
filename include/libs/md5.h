@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <fstream>
+using namespace std;
 
 #define F(x, y, z) ((x & y) | (~x & z))
 #define G(x, y, z) ((x & z) | (y & ~z))
@@ -21,3 +23,7 @@
 int md5_process(std::string f, uint8_t (&final)[17]);
 int md5_calculate(uint32_t (&seq)[4], const uint32_t buff[]);
 std::string md5(std::string f);
+
+int get_file_len(fstream &f);
+int md5_process(fstream &f, uint8_t (&final)[17]);
+std::string md5(fstream &f);
