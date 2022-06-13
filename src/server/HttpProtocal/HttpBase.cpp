@@ -109,7 +109,16 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
 	nsplit((char *)_begin, "\r\n\r\n", 4);
 	headers = std::make_unique<StringDict>((char *)_begin, ": ", "\r\n");
 	
-	std::string &disposition = headers->get("Content-Disposition" , true);
+	std::string& disposition = headers->get("Content-Disposition" , true);
+
+	//split the filename* info
+	if (size_t t_pos = disposition.find("filename*"); 
+		t_pos != disposition.npos )
+	{
+		// filename = disposition.substr(t_pos + 9); // 9 : sizeof "filename="
+		// filename = filename.substr(1, filename.length() - 2); // erase ""
+		disposition = disposition.substr(0, t_pos - 2); // 2 : sizeof "; "
+	}
 
 	//split the filename info
 	if (size_t t_pos = disposition.find("filename"); 

@@ -362,8 +362,9 @@ EntryFunc StaticResponse = [](HttpRequest &req)
         return new HttpResponse {"Bad Method , GET Only!"};
 
     //calculate absolute file-path and give back response
-    std::string path(req.Path().substr(1));
+    std::string path {req.Path().substr(1)};
     fs::path p = fs::absolute("web/dist/"+path);
+
     if (fs::exists(p)) 
         return new FileResponse {p , estimateFileType(p)};
     else 
