@@ -89,6 +89,10 @@ Connection* Socket::onConnect()
 
 /* close one invalid connection */
 void Socket::offConnect(Connection* _conn) {
+
+	if (::fcntl(_conn->getFD(), F_GETFD) == -1 || errno == EBADF) 
+		{errno = 0; return ;}
+
 	_conn->closeFD();
 	delete _conn;
 }
@@ -274,6 +278,7 @@ bool EventPool::modifyEvent(const EventChannel&& echannel)
 
 bool EventPool::removeEvent(const EventChannel* eptr)
 {
+
 	if (::fcntl(eptr->fd, F_GETFD) != -1 || errno != EBADF) 
 		{errno = 0; return false;}
 

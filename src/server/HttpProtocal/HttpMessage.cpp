@@ -160,6 +160,7 @@ void HttpResponseBase::setDefaultHeaders()
     headers->push("Server", "TINY&PRETTY-1.4");
     headers->push("Connection", "keep-alive");
     headers->push("Keep-Alive", "timeout=120");
+    headers->push("Access-Control-Allow-Origin" , "*");
 }
 
 HttpResponseBase::HttpResponseBase(const std::string &_status) : status(std::move(_status))
