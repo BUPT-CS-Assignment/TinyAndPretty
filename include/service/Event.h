@@ -23,7 +23,7 @@ public:
     int AddWork(std::string& prof,std::string& classid,std::string& detail);
     Json getWork(std::string& prof,std::string& classid);
     int AddExam(std::string& detail);
-    Json getExam(std::string& school);
+    Json getExam(std::string& school,bool all = false);
     string getName(){return name;}
     string getTime(){return time;}
 };

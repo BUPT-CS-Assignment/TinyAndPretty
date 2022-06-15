@@ -364,11 +364,14 @@ EntryFunc StaticResponse = [](HttpRequest &req)
     //calculate absolute file-path and give back response
     std::string path {req.Path().substr(1)};
     fs::path p = fs::absolute("data/src/"+path);
+    std::string filename = path.substr(path.find_last_of('/')+1);
 
     if (fs::exists(p)){
         FileResponse* FResp = new FileResponse{p , estimateFileType(p)};
-        if (p.extension() == ".gz")
+        FResp->appendHeader("filename",filename);
+        if (p.extension() == ".gz"){
             FResp->appendHeader("Content-Encoding" ,"gzip");
+        }
         return FResp;
     }else 
         return new HttpResponse {"404 NOT FOUND" , HTTP_STATUS_404};

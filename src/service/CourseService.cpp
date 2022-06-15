@@ -79,7 +79,23 @@ def_HttpEntry(API_Course, req){
         errCode = course.AddExam(body);
     }else if(function == "getexam"){
         Course course(string(req.queryParam("courseid")));
-        string school(req.queryParam("schoolid"));
+        Json J;
+        if(userid == "10000"){
+            J = course.getExam(userid,true);    
+        }else{
+            string classid(req.queryParam("classid"));
+            string schoolid;
+            if(classid!="0"){
+                Class c(classid); c.Query();
+                schoolid = c.getSchool();
+            }else{
+                schoolid = string(req.queryParam("schoolid"));
+            }
+            J = course.getExam(schoolid);
+        }
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg","NO_ERROR");
+        return JResp;
 
     }
     else if(function == "files"){

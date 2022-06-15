@@ -134,7 +134,7 @@ int Course::AddExam(string& detail){
     NEDB _DB(dir);
     if(_DB.Mount("exam") == FILE_NOT_FOUND){
         _DB.SetDefaultPageSize(400);
-        _DB.Create("exam", "id int,name text,start int,end int,loc int,room int");
+        _DB.Create("exam", "id int,name text,start int64,end int64,loc int,room int");
     }
     _DB.Close();
 
@@ -144,12 +144,18 @@ int Course::AddExam(string& detail){
     return errCode;
 }
 
-Json Course::getExam(string& school){
+Json Course::getExam(string& school,bool all){
     string dir = SRC_DIR + "/course/" + id;
     NEDB _DB(dir);
     Json J;
     int count, len, length; string ret, retVal;
-    int errCode = _DB.Select("exam", "*", "id > " + id + "0000 and id < " + id + "9999", count, ret);
+    int errCode;
+    _DB.Mount("exam");
+    if(all){
+        errCode = _DB.Select("exam","*","",count,ret);
+    }else{
+        errCode = _DB.Select("exam", "*", "id > " + school + "0000 and id < " + school + "9999", count, ret);
+    }
     if(count == 0) return J;
     ret = ret.substr(ret.find_first_of(';') + 1);
     string* str = Split(ret, ';', len);

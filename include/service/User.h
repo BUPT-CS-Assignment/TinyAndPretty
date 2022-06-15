@@ -54,9 +54,11 @@ class Class{
 private:
     std::string id;
     std::string schoolid;
-    int Query();
+    
 public:
     Class(std::string classid);
+    int Query();
+    std::string getSchool(){return schoolid;}
     int getMemberNum();
     Json getTimeTable(string schoolid="",string prof="");
     Json getList();
