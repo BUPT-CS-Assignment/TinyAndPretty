@@ -25,9 +25,10 @@ def_HttpEntry(API_Clock , req) {
 				{"year"  , t_table[0]} ,
 				{"mon"   , t_table[1]} ,
 				{"day"   , t_table[2]} ,
-				{"hour"  , t_table[3]} ,
-				{"min"   , t_table[4]} ,
-				{"sec"   , t_table[5]} 
+				{"week"  , t_table[3]} ,
+				{"hour"  , t_table[4]} ,
+				{"min"   , t_table[5]} ,
+				{"sec"   , t_table[6]} 
 			}});
 
 		return new JsonResponse{j};
