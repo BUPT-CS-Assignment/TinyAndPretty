@@ -74,9 +74,22 @@ def_HttpEntry(API_Course, req){
         return JResp;
 
     }
-    else if(function == "exam"){
-        Course course(string(req.queryParam("id")));
+    else if(function == "addexam"){
+        Course course(string(req.queryParam("courseid")));
         errCode = course.AddExam(body);
+    }else if(function == "getexam"){
+        Course course(string(req.queryParam("courseid")));
+        string school(req.queryParam("schoolid"));
+
+    }
+    else if(function == "files"){
+        CONSOLE_LOG(0,1,1,"Get Files\n");
+        Course course(string(req.queryParam("courseid")));
+        string prof(req.queryParam("prof"));
+        Json J = course.getFile(prof);
+        JsonResponse* JResp = new JsonResponse{J};
+        JResp->appendHeader("msg","NO_ERROR");        
+        return JResp;
     }
     else if(function == "delete"){
         if(userid != "10000")   return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);

@@ -29,14 +29,17 @@ def_HttpEntry(FileUpload , req) {
 def_HttpEntry(API_File , req) {
     std::string filepath(req.queryForm("filepath"));
     std::string filename(req.queryForm("filename"));
-    if(filename.length()==0){
-        filename = std::string(req.queryForm("file").queryFilename());
-    }
+    string type(req.queryForm("type"));
+    string basic_name(req.queryForm("file").queryFilename());
+    basic_name = basic_name.substr(basic_name.find_last_of("."));
+    filename = filename + basic_name;
     std::string userid(req.queryHeader("userid"));
-    std::string path = SRC_DIR + "/course/" + filepath + userid + "/";
+
+    std::string path = SRC_DIR + "/course/" + filepath + userid +"/";
+    if(type == "1") path = path + "/res/";
     NEDB _DB(path);
     _DB.DirInit();
-    //filename = md5(filename);
+    
     UTILSTD::CONSOLE_LOG(0,1,1,"FULL PATH: %s\n",path.c_str()); 
 
 	std::ofstream file {path+filename , ios::binary | ios::out};

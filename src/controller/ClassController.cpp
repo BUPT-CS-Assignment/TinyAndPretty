@@ -150,18 +150,10 @@ int Class::AddNew(string school){
 }
 
 int Class::getMemberNum(){
-    Query();
-    string path = USER_DIR+"/"+schoolid+"/"+id+"/";
-    DIR *pDir;
-    struct dirent* ptr;
-    cout << path << endl;
-    if(!(pDir = opendir(path.c_str()))) return 0;
-    int num = 0;
-    while((ptr=readdir(pDir))!=0){
-        if(strcmp(ptr->d_name,".")!=0 && strcmp(ptr->d_name,"..")!=0)
-           num++;
-    }
-    closedir(pDir);
-    return num;
-
+    NEDB DB(USER_DIR);
+    
+    if(DB.Mount("users") != NO_ERROR) return 0;
+    int count;string ret;
+    DB.Select("users","id","class = "+this->id,count,ret);
+    return count;
 }
