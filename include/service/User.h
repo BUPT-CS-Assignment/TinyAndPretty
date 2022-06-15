@@ -19,16 +19,16 @@ protected:
     std::string schoolid;
     std::string schoolName;
     std::string classid;
-    public:
+public:
     User(std::string id = "0");
+    std::string getSchool(){return schoolid;}
+    std::string getName(){return name;}
     int     Query(bool detail_name = true);
     Json    Format();
     int     Signin(std::string& passwd);
     int     Signup(std::string& passwd);
     int     Update(std::string& value);
     int     AddNew(std::string& detail);
-
-
 
     //Event Service
     Json    getEvents();
@@ -42,9 +42,23 @@ protected:
 class Professor:public User{
 public:
     Professor(std::string id = ""):User(id){};
-    int CourseAlloc(std::string& courseid, std::string& detail);
     int AddHomework(std::string& detail);
     int DelHomework(std::string& detail);
+
+};
+
+class Class{
+private:
+    std::string id;
+    std::string schoolid;
+    int Query();
+public:
+    Class(std::string classid);
+    int getMemberNum();
+    Json getTimeTable(string schoolid="",string prof="");
+    Json getList();
+    int AddNew(std::string school);
+    int AddCourse(std::string& courseid,std::string& prof,std::string& detail);
 
 };
 

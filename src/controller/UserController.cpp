@@ -23,7 +23,7 @@ int User::Signin(string& passwd){
         return -1;
     }
     Query();
-    if(auth < 3 && (schoolid == "0" || classid == "0")){
+    if(auth < USER_SCHOOL && (schoolid == "0" || classid == "0")){
         return -2;
     }
     //info preload
@@ -38,7 +38,6 @@ int User::Signup(string& passwd){
     int errCode2 = __DATABASE.Insert("users", "id,auth", id + "," + to_string(auth));
     return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", id);
 }
-
 
 int User::Update(string& value){
     int count;
@@ -72,7 +71,7 @@ int User::Query(bool d_name){
 
         //Major Name
         __DATABASE.Select("majors", "name", "id=" + majorid, count, retVal);
-        majorName = "major", retVal.substr(retVal.find(";") + 1);
+        majorName = retVal.substr(retVal.find(";") + 1);
     }
     return NO_ERROR;
 }
@@ -84,49 +83,22 @@ Json User::Format(){
     J.push_back({"name",name});
     J.push_back({"email","test@noui.cloud"});
     J.push_back({"gender",gender});
+    J.push_back({"schoolid",schoolid});
     J.push_back({"school",schoolName});
+    J.push_back({"majorid",majorid});
     J.push_back({"major",majorName});
     J.push_back({"classid",classid});
     return J;
 }
 
 Json User::getTimeTable(){
-    int count;
-    string retVal;
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
-    _DB.Mount("timetable");
-    int errCode = _DB.Select("timetable", "*", "", count, retVal);
-    _DB.Close();
-    int length;
-    Json J;
-    string* str = Split(retVal, ';', length);
-
-    if(errCode != NO_ERROR || retVal == "" || str == nullptr){
-        delete[] str;
-        return J;
+    Class c(classid);
+    if(auth == USER_SCHOOL){
+        return c.getTimeTable(schoolid,id);
+    }else{
+        return c.getTimeTable(schoolid);
     }
-    int length_temp;
-    vector<SimpleJson::Object> courseInfo;
-    vector<SimpleJson::Object> timeCode;
-    for(int i = 1; i < length; i++){
-        string* info = Split(str[i], ',', length_temp);
-        Course course(info[0]);
-        course.Query();
-        SimpleJson::Object obj = course.Format();
-        int daycode[6];
-        for(int j = 1; j <= 5; j++){
-            daycode[j] = stoi(info[j]);
-        }
-        vector<int> code(daycode + 1, daycode + 6);
-        timeCode.push_back(SimpleJson::Object({{"pos",i},{"timeCode",code}}));
-        //tempJson.push_back({"daycode",code});
-        courseInfo.push_back(obj);
-        delete[] info;
-    }
-    J.push_back({"basic",timeCode});
-    J.push_back({"detail",courseInfo});
-    delete[] str;
-    return J;
+    
 }
 
 Json User::getEvents(){
@@ -196,18 +168,5 @@ int User::AddNew(std::string& detail){
         _DB.Create("timetable", "id int,mon int,tue int,wed int,thur int,fri int");
     }
     _DB.Close();
-    return errCode;
-}
-
-int Professor::CourseAlloc(string& courseid, string& detail){
-    string dir = SRC_DIR + "/course/" + courseid + "/" + this->id + "/";
-    int errCode;
-    NEDB _DB(dir);
-    errCode = _DB.DirInit();
-    if(errCode != NO_ERROR) return errCode;
-    errCode = _DB.Create("homework", "id int,name text,class int,start int64,end int64");
-    if(errCode != NO_ERROR) return errCode;
-    _DB.SetDir(USER_DIR + "/" + schoolid + "/0/" + this->id + "/");
-    errCode = _DB.Insert("timetable", "", courseid + "," + detail);
     return errCode;
 }

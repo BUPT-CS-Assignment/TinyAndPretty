@@ -15,12 +15,15 @@ private:
     std::string intro;
 public:
     Course(std::string id = "0");
-    int Query();
+    int Query(bool intro = true);
     SimpleJson::Object Format();
     int AddNew(std::string& detail,std::string& intro);
     int Remove();
-    int AddWork(std::string& detail);
+    int AddWork(std::string& prof,std::string& classid,std::string& detail);
+    Json getWork(std::string& prof,std::string& classid);
     int AddExam(std::string& detail);
+    string getName(){return name;}
+    string getTime(){return time;}
 };
 
 class Event{

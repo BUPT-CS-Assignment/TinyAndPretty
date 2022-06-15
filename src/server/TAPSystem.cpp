@@ -44,6 +44,7 @@ int ServicePreload(){
     if(__DATABASE.Open(SYS_DIR + "/test/database_test") == NO_ERROR) num++;
     if(__DATABASE.Open(SRC_DIR + "/major/majors") == NO_ERROR) num++;
     if(__DATABASE.Open(SRC_DIR + "/school/schools") == NO_ERROR) num++;
+    if(__DATABASE.Open(SRC_DIR + "/school/classes") == NO_ERROR) num++;
     if(__DATABASE.Open(SRC_DIR + "/map/landmark") == NO_ERROR) num++;
     if(__DATABASE.Open(SRC_DIR + "/course/courses") == NO_ERROR) num++;
     if(__DATABASE.Open(USER_DIR + "/users") == NO_ERROR) num++;
