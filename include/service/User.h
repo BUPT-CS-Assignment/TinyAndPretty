@@ -36,6 +36,8 @@ public:
     int     addEvent(std::string& value);
     int     delEvent(std::string& id);
 
+    //Resource
+
     //TimeTable Service
     Json    getTimeTable();
 };

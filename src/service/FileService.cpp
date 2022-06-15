@@ -26,10 +26,12 @@ def_HttpEntry(FileUpload , req) {
 	return new HttpResponse {"Upload and Zip Success"};
 }
 
-def_HttpEntry(API_Work , req) {
-	std::string filename(req.queryForm("file").queryFilename());
+def_HttpEntry(API_File , req) {
     std::string filepath(req.queryForm("filepath"));
-    //string filename(req.queryForm("filename"));
+    std::string filename(req.queryForm("filename"));
+    if(filename.length()==0){
+        filename = std::string(req.queryForm("file").queryFilename());
+    }
     std::string userid(req.queryHeader("userid"));
     std::string path = SRC_DIR + "/course/" + filepath + userid + "/";
     NEDB _DB(path);
@@ -46,5 +48,4 @@ def_HttpEntry(API_Work , req) {
     HttpResponse* HResp = new HttpResponse{"Upload and Zip Success"};
     HResp->appendHeader("msg","NO_ERROR");
     return HResp;
-
 }

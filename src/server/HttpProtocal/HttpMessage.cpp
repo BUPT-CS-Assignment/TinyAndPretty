@@ -363,10 +363,12 @@ EntryFunc StaticResponse = [](HttpRequest &req)
 
     //calculate absolute file-path and give back response
     std::string path {req.Path().substr(1)};
-    fs::path p = fs::absolute("web/dist/"+path);
+    fs::path p = fs::absolute("data/src/"+path);
 
-    if (fs::exists(p)) 
-        return new FileResponse {p , estimateFileType(p)};
-    else 
+    if (fs::exists(p)){
+        FileResponse* FResp = new FileResponse{p , estimateFileType(p)};
+        // FResp->appendHeader()
+        return FResp;
+    }else 
         return new HttpResponse {"404 NOT FOUND" , HTTP_STATUS_404};
 };

@@ -32,7 +32,6 @@ Json Class::getTimeTable(string schoolid,string prof){
     }else{
         _DB.SetDir(USER_DIR+"/"+schoolid+"/0/"+prof);   _DB.Mount("timetable");
         _DB.Select("timetable", "*", "", count, retVal);
-        cout << retVal << endl;
     }
     _DB.Close();
     
@@ -98,34 +97,41 @@ int Class::AddCourse(std::string& courseid,std::string& prof,std::string& detail
         return DATA_NOT_FOUND;
     }
     Query();
-    NEDB _DB(USER_DIR + "/"+schoolid);
+    string dir = USER_DIR + "/"+schoolid;
+    NEDB _DB(dir);
     errCode = _DB.Mount("timetable");
     if(errCode == FILE_NOT_FOUND){    
         _DB.DirInit();
         _DB.SetDefaultPageSize(800);
         _DB.Create("timetable","id int64,class int,course int,prof int,D1 int,D2 int,D3 int,D4 int,D5 int,loc int,room int");
     }
-    time_t t; time(&t);
-    string info = to_string(t)+","+this->id+","+courseid+","+prof+","+detail;
-    errCode = _DB.Insert("timetable","",info);
     _DB.Close();
+    time_t t; time(&t);
+    string info (to_string(t)+","+this->id+","+courseid+","+prof+","+detail);
+    NEDB _DB2(dir); _DB2.Mount("timetable");
+    errCode = _DB2.Insert("timetable","",info);
+    _DB2.Close();
     
     User user(prof);
     user.Query();
-    NEDB DB(USER_DIR+"/"+user.getSchool()+"/0/"+prof);
+    string dir2 = USER_DIR+"/"+user.getSchool()+"/0/"+prof;
+    NEDB DB(dir2);
     errCode = DB.Mount("timetable");
     if(errCode == FILE_NOT_FOUND){    
         DB.DirInit();
         DB.SetDefaultPageSize(800);
         DB.Create("timetable","id int64,class int,course int,prof int,D1 int,D2 int,D3 int,D4 int,D5 int,loc int,room int");
     }
-    errCode = DB.Insert("timetable","",info);
+    DB.Close();
+
+    NEDB DB2(dir2); DB2.Mount("timetable");
+    errCode = DB2.Insert("timetable","",info);
 
     if(errCode == NO_ERROR){
-        DB.SetDir(SRC_DIR + "/course/"+courseid + "/"+prof);
-        DB.DirInit();
+        DB2.SetDir(SRC_DIR + "/course/"+courseid + "/"+prof);
+        DB2.DirInit();
     }
-    DB.Close();
+    DB2.Close();
     return errCode;
 }
 

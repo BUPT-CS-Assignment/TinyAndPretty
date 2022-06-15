@@ -91,13 +91,16 @@ int Course::AddWork(string& prof,string& classid,string& detail){
         _DB.DirInit();
         _DB.Create("homework","start int64,end int64,name text");
     }
-    int errCode = _DB.Insert("homework","",detail);
+    _DB.Close();
+
+    NEDB DB(dir); DB.Mount("homework");
+    int errCode = DB.Insert("homework","",detail);
     if(errCode == NO_ERROR){
         string id = detail.substr(0,detail.find_first_of(','));
-        _DB.SetDir(dir +"/"+id);
-        _DB.DirInit();
+        DB.SetDir(dir +"/"+id);
+        DB.DirInit();
     }
-    _DB.Close();
+    DB.Close();
     return errCode;
 }
 
@@ -132,8 +135,11 @@ int Course::AddExam(string& detail){
         _DB.SetDefaultPageSize(400);
         _DB.Create("exam","id int,school int,name text,start int,len int,location int,room int");
     }
-    int errCode = _DB.Insert("exam","",detail);
     _DB.Close();
+
+    NEDB DB(dir);
+    int errCode = DB.Insert("exam","",detail);
+    DB.Close();
     return errCode;
 }
 

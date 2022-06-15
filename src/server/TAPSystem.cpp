@@ -61,5 +61,5 @@ void DirectoryInit(){
 }
 
 def_HttpEntry(Main,req){
-    return new FileResponse{"web/dist/index.html" , "text/html"};
+    return new FileResponse{"data/src/index.html" , "text/html"};
 }

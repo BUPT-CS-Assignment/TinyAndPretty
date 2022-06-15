@@ -139,15 +139,23 @@ int User::addEvent(std::string& value){
     if(value[value.find_first_of(',')] == '0'){
         if(auth < USER_CLASS) return SYSTEM_ERROR;
     }
-
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
+    string dir = USER_DIR + "/" + schoolid + "/" + classid;
+    NEDB _DB(dir);
+    int count;string ret;
     if(_DB.Mount("event") == FILE_NOT_FOUND){
         _DB.DirInit();
         _DB.SetDefaultPageSize(2000);
-        _DB.Create("event", "id int64,start int64,end int64,loc int,name text,info longtext");
+        _DB.Create("event","id int64,start int64,end int64,loc int,name text,info longtext"); 
     }
-    int errCode = _DB.Insert("event", "", value);
     _DB.Close();
+
+    
+    NEDB DB(dir);
+    DB.Mount("event");
+    int errCode = DB.Insert("event","",value);
+    //  _DB.Insert("event", "", info);
+    cout << NEexceptionName[errCode] << endl;
+    DB.Close();
     return errCode;
 }
 
