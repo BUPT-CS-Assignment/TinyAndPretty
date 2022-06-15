@@ -5,19 +5,60 @@
 thread_local Point2D _s , _e;
 thread_local EvalueMode emode;
 
+using Path2D = std::vector<Point2D>;
+using XTC_MAP   = Point2D (*)[XTC_MAX_WIDTH];
+using SHAHE_MAP = Point2D (*)[SHAHE_MAX_WIDTH];
+
+template<typename T>
+struct __SIZE_SWITCHER__  {
+static constexpr int height = 
+	std::is_same<T , SHAHE_MAP>::value ? SHAHE_MAX_HEIGHT :
+	std::is_same<T , XTC_MAP  >::value ? XTC_MAX_HEIGHT   :
+	0;
+static constexpr int width = 
+	std::is_same<T , SHAHE_MAP>::value ? SHAHE_MAX_WIDTH :
+	std::is_same<T , XTC_MAP  >::value ? XTC_MAX_WIDTH   :
+	0;
+};
+
+template<typename T>
+struct __WALKING_SWITCHER__  {
+static constexpr void* value = 
+	std::is_same<T , SHAHE_MAP>::value ? (void*)shahe_walking :
+	std::is_same<T , XTC_MAP  >::value ? (void *)xtc_walking   :
+	nullptr;
+};
+template<typename T>
+struct __WALKING_BUSY_SWITCHER__  {
+static constexpr void* value = 
+	std::is_same<T , SHAHE_MAP>::value ? (void*)shahe_walking_busy :
+	std::is_same<T , XTC_MAP  >::value ? (void*)xtc_walking_busy   :
+	nullptr;
+};
+template<typename T>
+struct __BIKING_SWITCHER__  {
+static constexpr void* value = 
+	std::is_same<T , SHAHE_MAP>::value ? (void*)shahe_biking :
+	std::is_same<T , XTC_MAP  >::value ? (void*)xtc_biking   :
+	nullptr;
+};
+
+
+/* -------------------------------------------------------------------*/
+template<typename T>
 static int CostFunc(const int ex , const int ey)
 {
-	switch (emode)
-	{
+	switch (emode) {
 	
 	case SHORT_PATH: 
 		return 1;
 	case SHORT_TIME:
-		return (shahe_walking_busy[ex][ey]);
-
+		return ( static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>
+					(__WALKING_BUSY_SWITCHER__<T>::value)[ex][ey]);
+	
 	case SHORT_BIKE:
-		return (!shahe_biking[ex][ey] ? 1 :
-			   !shahe_walking[ex][ey] ? 3 : INF);
+		return (! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>(__BIKING_SWITCHER__<T>::value)[ex][ey]) ? 1 :
+			   ! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>(__WALKING_SWITCHER__<T>::value)[ex][ey]) ? 5 : INF);
 
 	default: break;
 	}
@@ -25,25 +66,29 @@ static int CostFunc(const int ex , const int ey)
 	return INF;
 }
 
-/* TRUE stands for inactive , because of 'continue' */
+template<typename T>
 static bool ActiveFunc(const int ex , const int ey)
 {
-	if (ex < 0 || ex >= MAX_HEIGHT) return true;
-	if (ey < 0 || ey >= MAX_WIDTH)  return true;
+	auto constexpr MAXN_WIDTH = __SIZE_SWITCHER__<T>::width;
+	auto constexpr MAXN_HEIGHT = __SIZE_SWITCHER__<T>::height;
 
-	switch (emode)
-	{
+	if (ex < 0 || ex >= MAXN_HEIGHT) return true;
+	if (ey < 0 || ey >= MAXN_WIDTH ) return true;
+
+	switch (emode) {
 	
 	case SHORT_PATH: 
 	case SHORT_TIME:
-		return (shahe_walking[ex][ey]);
+		return (static_cast<int (*)[MAXN_WIDTH]>(__WALKING_SWITCHER__<T>::value)[ex][ey]);
+
 	case SHORT_BIKE:
-		return (shahe_walking[ex][ey] && shahe_biking[ex][ey]);
+		return ((static_cast<int (*)[MAXN_WIDTH]>(__WALKING_SWITCHER__<T>::value)[ex][ey]) && 
+				(static_cast<int (*)[MAXN_WIDTH]>(__BIKING_SWITCHER__<T>::value)[ex][ey]));
 
 	default: break;
 	}
-	return true;
 
+	return true;
 }
 
 #define diss(i , j) (abs(_e.x - i) + abs(_e.y - j))
@@ -54,10 +99,10 @@ bool operator == (const Point2D& a , const Point2D& b) {
 	return ((a.x == b.x) && (a.y == b.y));
 }
 
-using Path2D = std::vector<Point2D>;
 
+template<typename T>
 static void drawPath(
-	Point2D (*kmap)[MAX_WIDTH], 
+	T kmap , 
 	Path2D& __pans) 
 {
 	__pans.push_back(_e);
@@ -68,25 +113,27 @@ static void drawPath(
 			now->parent->parent->x - now->parent->x != now->parent->x - now->x ||
 			now->parent->parent->y - now->parent->y != now->parent->y - now->y )
 		)	{__pans.push_back( *(now->parent) );
-			//::printf("   -> %d : %d\n", now->parent->x,now->parent->y);
+			::printf("   -> %d : %d\n", now->parent->x,now->parent->y);
 		}
 
 	}
 	__pans.push_back(_s);
 	std::reverse(__pans.begin() , __pans.end());
 }
-
-
+template<typename T>
 static void Astar(
-	Point2D (*kmap)[MAX_WIDTH] , 
+	T kmap , 
 	Path2D& _pans1 , 
 	Path2D& _pans2) 
 {
 	size_t ans_cnt = 0;
 	std::priority_queue<Point2D> que;
 
-	int dis[MAX_HEIGHT][MAX_WIDTH] {INF};
-
+	int dis
+	[__SIZE_SWITCHER__<T>::height]
+	[__SIZE_SWITCHER__<T>::width] 
+	{INF};
+	
 	dis[_s.x][_s.y] = kmap[_s.x][_s.y].dis = 0;
 	que.push(kmap[_s.x][_s.y]);
 
@@ -99,14 +146,15 @@ static void Astar(
 		for (size_t i = 0 ; i < 4 ; i ++) {
 			int ex = now.x + dx[i] , ey = now.y + dy[i];
 
-			if(ActiveFunc(ex , ey)) continue;
-			int cost = now.dis + CostFunc(ex , ey);
+			//::printf("       %d , %d = %d\n" , ex , ey , shahe_walking[ex][ey]);
+			if(ActiveFunc<T>(ex , ey)) continue;
+			int cost = now.dis + CostFunc<T>(ex , ey);
 
 			if (ex == _e.x && ey == _e.y && 
-				kmap[ex][ey].dis >= cost ) {
+				kmap[ex][ey].dis >= cost )  {
 				kmap[ex][ey].parent = &kmap[now.x][now.y];
 				dis[ex][ey] = kmap[ex][ey].dis = cost;
-				drawPath(kmap , (ans_cnt == 0) ? _pans1 : _pans2);
+				drawPath<T>(kmap , (ans_cnt == 0) ? _pans1 : _pans2);
 				ans_cnt++; continue;
 			}
 
@@ -119,10 +167,13 @@ static void Astar(
 	}
 }
 
-
+template<typename T>
 std::pair<Path2D , Path2D >
 AstarAnalyse(const Path2D& pset)
 {
+	constexpr auto MAX_HEIGHT = __SIZE_SWITCHER__<T>::height;
+	constexpr auto MAX_WIDTH  = __SIZE_SWITCHER__<T>::width;
+
 	auto kmap = new Point2D[MAX_HEIGHT][MAX_WIDTH];
 
 	for(int i = 0 ; i < MAX_HEIGHT ; i ++) for(int j = 0 ; j < MAX_WIDTH ; j++)
@@ -132,7 +183,7 @@ AstarAnalyse(const Path2D& pset)
 
 
 	Path2D pans1 , pans2;
-	Astar(kmap , pans1 , pans2);
+	Astar<T>(kmap , pans1 , pans2);
 
 	delete[] kmap;
 
@@ -161,6 +212,27 @@ static Json init_func() {
 	return list;
 }
 
+#define DONE_MAP(type, i1, i2)                              \
+	do {                                                    \
+		auto [p1, p2] = AstarAnalyse<type>(s);         \
+                                                            \
+		std::vector<Object> ans1;                           \
+		for (const auto &it : p1) {                         \
+			ans1.push_back({{"x", it.y}, {"y", it.x}});     \
+			printf("1 >> %d , %d\n", it.y, it.x);           \
+		}                                                   \
+		j.push_back({"path" #i1, ans1});                    \
+                                                            \
+		if (p2.size() > 0) {                                \
+			std::vector<Object> ans2;                       \
+			for (const auto &it : p2) {                     \
+				ans2.push_back({{"x", it.y}, {"y", it.x}}); \
+				printf("2 >> %d , %d\n", it.y, it.x);       \
+			}                                               \
+			j.push_back({"path" #i2, ans2});                \
+		}                                                   \
+                                                            \
+	} while (0)
 
 def_HttpEntry(MapTest , req) {
 
@@ -173,50 +245,73 @@ def_HttpEntry(MapTest , req) {
 
 	} else if (action[0] == 'r') {
 		Json j;
+		int mmap1 = std::stoi(req.queryParam("m1").data());
+		int mmap2 = std::stoi(req.queryParam("m2").data());
 		int pos1x = std::stoi(req.queryParam("x1").data());
 		int pos1y = std::stoi(req.queryParam("y1").data());
 		int pos2x = std::stoi(req.queryParam("x2").data());
 		int pos2y = std::stoi(req.queryParam("y2").data());
 
-		if 		(action[1] == 's') emode = SHORT_PATH;
-		else if	(action[1] == 't') emode = SHORT_TIME;
-		else if	(action[1] == 'b') emode = SHORT_BIKE;
-		else {
-			j.push_back({"code" , 1});
-			j.push_back({"msg" ,"Bad Params\n"});
-			return new JsonResponse {j};
+		{		
+			if 		(action[1] == 's') emode = SHORT_PATH;
+			else if	(action[1] == 't') emode = SHORT_TIME;
+			else if	(action[1] == 'b') emode = SHORT_BIKE;
+			else {
+				j.push_back({"code" , 1});
+				j.push_back({"msg" ,"Bad Params\n"});
+				return new JsonResponse {j};
+			}
 		}
 
 		j.push_back({"code" ,0});
 		j.push_back({"msg" ,"Calc Successfully!"});
 
-		Path2D s;
-		s.push_back({pos1y , pos1x}); // start
-		s.push_back({pos2y , pos2x}); // end
-		// s.push_back({24 , 24}); // start
-		// s.push_back({18 , 33}); // end
-		auto [p1 , p2] = AstarAnalyse(s);
-		std::vector <Object> ans1; 
-		for (const auto& it : p1) {
-			ans1.push_back({
-				{"x" , it.y} ,
-				{"y" , it.x}
-			});
-			printf("1 >> %d , %d\n" ,it.y , it.x);
-		}		
-		j.push_back({"path1" ,ans1});
+		std::cerr << mmap1 << "-" << mmap2 << "\n";
 
-		if ( p2.size() > 0 ){
-			std::vector <Object> ans2; 
-			for (const auto& it : p2) {
-				ans2.push_back({
-					{"x" , it.y} ,
-					{"y" , it.x}
-				});
-				printf("2 >> %d , %d\n" ,it.y , it.x);
-			}		
-			j.push_back({"path2" ,ans2});
+		if (mmap1 == mmap2) {
+			Path2D s;
+			s.push_back({pos1y , pos1x}); // start
+			s.push_back({pos2y , pos2x}); // end
+
+			// start and end both at SH_MAP
+			if (mmap1 == SH) {
+				DONE_MAP(SHAHE_MAP , 1, 2);
+
+			// start and end both at XTC_MAP
+			} else if (mmap1 == XTC) {
+				DONE_MAP(XTC_MAP , 1, 2);				
+			}
+
+		} else {
+
+			if (mmap1 == SH) {
+				Path2D s;
+				s.push_back({pos1y , pos1x});
+				s.push_back({25 , 0});
+				DONE_MAP(SHAHE_MAP , 1, 2);
+			} else if (mmap1 == XTC) {
+				Path2D s;
+				s.push_back({pos1y , pos1x});
+				s.push_back({58 , 0});
+				DONE_MAP(XTC_MAP , 1, 2);				
+			}
+
+			if (mmap2 == SH) {
+				Path2D s;
+				s.push_back({25 , 0});
+				s.push_back({pos2y , pos2x});
+				DONE_MAP(SHAHE_MAP , 3, 4);
+			} else if (mmap2 == XTC) {
+				Path2D s;
+				s.push_back({58 , 0});
+				s.push_back({pos2y , pos2x});
+				DONE_MAP(XTC_MAP , 3, 4);				
+			}
+
+
 		}
+
+
 
 		return new JsonResponse {j};
 	}
