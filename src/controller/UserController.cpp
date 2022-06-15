@@ -5,7 +5,6 @@ using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
-
 User::User(string id){
     this->id = id;
     auth = USER_COMMON;
@@ -37,6 +36,12 @@ int User::Signup(string& passwd){
     }
     int errCode2 = __DATABASE.Insert("users", "id,auth", id + "," + to_string(auth));
     return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", id);
+}
+
+int User::ChangePwd(std::string& pwd){
+    int count;
+    return __DATABASE.Update("token","passwd = "+pwd,"id = "+id,count);
+
 }
 
 int User::Update(string& value){
@@ -94,51 +99,60 @@ Json User::Format(){
 Json User::getTimeTable(){
     Class c(classid);
     if(auth == USER_SCHOOL){
-        return c.getTimeTable(schoolid,id);
-    }else{
+        return c.getTimeTable(schoolid, id);
+    }
+    else{
         return c.getTimeTable(schoolid);
     }
-    
+
 }
 
 Json User::getEvents(){
-    int count;
-    string retVal;
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
+    int count, temp;
+    string ret, RET;
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
     _DB.Mount("event");
-    int errCode = _DB.Select("event", "*", "", count, retVal);
-    _DB.Close();
-
+    string condition = "id > " + id + "000 and id <" + id + "999";
+    int errCode = _DB.Select("event", "*", condition, count, ret);
+    _DB.Select("event", "*", "id < 10000", temp, RET);
     //Manage Info
-    int length;
+    int length, len;
     Json J;
-    string* str = Split(retVal, ';', length);
-    if(errCode != NO_ERROR || retVal == "" || str == nullptr){
-        delete[] str;
-        return J;
-    }
+    if(count == 0 && temp == 0) return J;
+    string* str = Split(ret, ';', length), * STR = Split(RET, ';', len);
     vector<SimpleJson::Object> events;
-    for(int i = 1; i < length; i++){
-        Event event;
-        event.Parse(str[i]);
+    for(int i = 1; count > 0 && i < length; i++){
+        Event event;    event.Parse(str[i]);
+        events.push_back(event.Format());
+    }
+    for(int j = 1; temp > 0 && j < len; j++){
+        Event event;    event.Parse(STR[j]);
         events.push_back(event.Format());
     }
     J.push_back({"events",events});
 
-    delete[] str;
+    delete[] str; delete[] STR;
     return J;
 }
 
 int User::addEvent(std::string& value){
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
-    _DB.Mount("event");
-    int res = _DB.Insert("event", "", value);
+    if(value[value.find_first_of(',')] == '0'){
+        if(auth < USER_CLASS) return SYSTEM_ERROR;
+    }
+
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
+    if(_DB.Mount("event") == FILE_NOT_FOUND){
+        _DB.DirInit();
+        _DB.SetDefaultPageSize(2000);
+        _DB.Create("event", "id int64,start int64,end int64,loc int,name text,info longtext");
+    }
+    int errCode = _DB.Insert("event", "", value);
     _DB.Close();
-    return res;
+    return errCode;
 }
 
 int User::delEvent(std::string& id){
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
+    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
     _DB.Mount("event");
     int count;
     int res = _DB.Delete("event", "id=" + id, count);
@@ -150,23 +164,9 @@ int User::AddNew(std::string& detail){
     int errCode, len;
     errCode = __DATABASE.Insert("users", "", detail);
     if(errCode != NO_ERROR) return errCode;
-    string* str = Split(detail, ',', len);
-    if(len != 7) return PARAM_NUM_MISMATCH;
-    this->id = str[0];
-    this->auth = stoi(str[1]);
-    this->name = str[2];
-    this->gender = str[3];
-    this->schoolid = str[4];
-    this->majorid = str[5];
-    this->classid = str[6];
-    __DATABASE.Insert("token", "", id + "," + "123" + "," + str[1]);
-    NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid + "/" + id);
-    errCode = _DB.DirInit();
-    if(errCode != NO_ERROR) return errCode;
-    errCode = _DB.Create("event", "id int,name text,start int64,end int64,loc int,info text");
-    if(this->auth == USER_SCHOOL){
-        _DB.Create("timetable", "id int,mon int,tue int,wed int,thur int,fri int");
-    }
-    _DB.Close();
+    int idx = detail.find_first_of(',');
+    string id = detail.substr(0,idx);
+    string auth = detail.substr(idx + 1, 1);
+    errCode = __DATABASE.Insert("token", "", id + "," + "123" + "," + auth);
     return errCode;
 }

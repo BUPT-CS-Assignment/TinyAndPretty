@@ -29,11 +29,11 @@ public:
 class Event{
 private:
     std::string id;
-    std::string name;
     std::string start;
     std::string end;
+    std::string name;
     std::string location;
-    std::string describe;
+    std::string info;
 public:
     Event(std::string id="0");
     int Parse(std::string detail);

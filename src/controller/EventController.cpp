@@ -19,23 +19,23 @@ int Event::Parse(string detail){
     //ID
     this->id = info[0];
 
-    //Name
-    this->name = info[1];
-
     //Start
-    this->start = info[2];
+    this->start = info[1];
 
     //End
-    this->end = info[3];
+    this->end = info[2];
 
     //Get Location Name
     int count;
     string retVal;
-    __DATABASE.Select("landmark","name","id="+info[4],count,retVal);
+    __DATABASE.Select("landmark","name","id="+info[3],count,retVal);
     this->location = retVal.substr(retVal.find(';')+1);
 
+    //Name
+    this->name = info[4];
+    
     //Describe
-    this->describe = info[5];
+    this->info = info[5];
 
     delete [] info;
     return NO_ERROR;
@@ -43,12 +43,13 @@ int Event::Parse(string detail){
 
 SimpleJson::Object Event::Format(){
     SimpleJson::Object J({
-        {"id",stoi(id)},
+        {"id",id.c_str()},
         {"name",name.c_str()},
         {"start",start.c_str()},
         {"end",end.c_str()},
         {"loc",location.c_str()},
-        {"describe",describe.c_str()}
+        {"info",info.c_str()}
     });
     return J;
 }
+

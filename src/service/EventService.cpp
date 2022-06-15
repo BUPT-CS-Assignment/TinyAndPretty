@@ -30,8 +30,11 @@ def_HttpEntry(API_Event,req){
         JsonResponse *JResp = new JsonResponse{j};
         JResp->appendHeader("msg","NO_ERROR");
         return JResp;
-    }else if(function == "delete"){
-        
+    }else if(function == "new"){
+        int errCode = user.addEvent(body);
+        HttpResponse* HResp = new HttpResponse{""};
+        HResp->appendHeader("msg",NEexceptionName[errCode]);
+        return HResp;
     }
     
     

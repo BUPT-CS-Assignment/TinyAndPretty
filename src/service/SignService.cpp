@@ -47,19 +47,14 @@ def_HttpEntry(API_Signin, req){
 
 
 def_HttpEntry(API_Signup, req){
-    string function(req.queryHeader("function"));
-    string userid(req.queryHeader("userid"));
-    CONSOLE_LOG(0, 1, 1, "API_Signup-Req [function='%s', userid='%s']\n", function.c_str(), userid.c_str());
-    if(function != "signup"){
-        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
-    }
-    string passwd = req.getBody();
+
+    string userid(req.queryParam("userid"));
+    CONSOLE_LOG(0, 1, 1, "API_Signup-Req [userid='%s']\n", userid.c_str());
+
+    string passwd(req.getBody());
     User user(userid);
     int res = user.Signup(passwd);
-    if(res == 0){
-        return new HttpResponse("NO_ERROR");
-    }
-    else{
-        return new HttpResponse{NEexceptionName[res]};
-    }
+    HttpResponse* HResp = new HttpResponse{""};
+    HResp->appendHeader("msg",NEexceptionName[res]);
+    return HResp;
 }

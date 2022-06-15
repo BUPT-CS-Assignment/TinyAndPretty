@@ -29,6 +29,7 @@ public:
     int     Signup(std::string& passwd);
     int     Update(std::string& value);
     int     AddNew(std::string& detail);
+    int     ChangePwd(std::string& pwd);
 
     //Event Service
     Json    getEvents();
