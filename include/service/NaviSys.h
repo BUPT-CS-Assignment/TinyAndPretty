@@ -9,8 +9,17 @@
 #include "../data/maps/shahe_bike.h"
 #include "../data/maps/shahe_walking_busy.h"
 
-#define MAX_HEIGHT 65
-#define MAX_WIDTH  105
+#include "../data/maps/xtc_walking.h"
+#include "../data/maps/xtc_bike.h"
+#include "../data/maps/xtc_walking_busy.h"
+
+
+#define SHAHE_MAX_HEIGHT 65
+#define SHAHE_MAX_WIDTH  105
+
+#define XTC_MAX_HEIGHT 110
+#define XTC_MAX_WIDTH  75
+
 #define WALKABLE   0
 #define INF 0xfffffff
 
@@ -30,4 +39,9 @@ enum EvalueMode {
 	SHORT_PATH ,
 	SHORT_TIME ,
 	SHORT_BIKE
+};
+
+enum MapValue {
+	SH,
+	XTC
 };

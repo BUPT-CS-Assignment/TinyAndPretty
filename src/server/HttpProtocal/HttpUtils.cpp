@@ -32,8 +32,10 @@ std::string getGMTtime(uint32_t offset)
 }
 
 
-std::string estimateFileType(const std::filesystem::path& p) 
+std::string estimateFileType(std::filesystem::path p) 
 {
+	if (p.extension() == ".gz") p.replace_extension();
+
 	if	   (p.extension() == ".html") 	return "text/html";
     else if(p.extension() == ".css") 	return "text/css";
 	else if(p.extension() == ".txt") 	return "text/plain";

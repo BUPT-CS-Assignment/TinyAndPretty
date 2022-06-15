@@ -251,7 +251,7 @@ FileResponse::FileResponse(fs::path _filepath , const std::string _type) : HttpR
 {
     //convert to adsulute filepath
     filepath = fs::absolute(_filepath);
-    std::cerr << "* FILE PATH : " << filepath << "\n";
+    //std::cerr << "* FILE PATH : " << filepath << "\n";
     //set file size in body
     body_len = fs::file_size(filepath);
     IFDEBUG(std::cerr << "* FILE SIZE : " << body_len << "\n");
@@ -352,7 +352,7 @@ size_t JsonResponse::stringize(uint8_t **buff)
 }
 /*---------------------------------StaticResponse---------------------------------*/
 
-std::string estimateFileType(const std::filesystem::path& p);
+std::string estimateFileType(std::filesystem::path p);
 
 EntryFunc StaticResponse = [](HttpRequest &req) 
     -> HttpResponseBase*
@@ -367,7 +367,8 @@ EntryFunc StaticResponse = [](HttpRequest &req)
 
     if (fs::exists(p)){
         FileResponse* FResp = new FileResponse{p , estimateFileType(p)};
-        // FResp->appendHeader()
+        if (p.extension() == ".gz")
+            FResp->appendHeader("Content-Encoding" ,"gzip");
         return FResp;
     }else 
         return new HttpResponse {"404 NOT FOUND" , HTTP_STATUS_404};
