@@ -67,7 +67,7 @@ def_HttpEntry(MD5Test,req){
     std::string val = "";
     std::string ans = req.getBody();
     
-    UTILSTD::CONSOLE_LOG(true,"api/md5 called [res:%s]\n",ans.c_str());
+    UTILSTD::CONSOLE_LOG(true,"* api/md5 called [res:%s]\n",ans.c_str());
 
     std::string str_md5 = md5(ans);
 
@@ -77,7 +77,7 @@ def_HttpEntry(MD5Test,req){
 }
 
 def_HttpEntry(LogCheck,req){
-    UTILSTD::CONSOLE_LOG(true,"api/log called\n");
+    UTILSTD::CONSOLE_LOG(true,"* api/log called\n");
     return new FileResponse{".server/log","text/html"};
 }
 

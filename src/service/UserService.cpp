@@ -10,7 +10,7 @@ def_HttpEntry(API_User, req)
     string userid(req.queryHeader("userid"));
     string token(req.queryHeader("token"));
 
-    CONSOLE_LOG(true,"api/user called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/user called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     string body(req.getBody());
 

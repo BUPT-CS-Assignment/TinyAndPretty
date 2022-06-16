@@ -23,7 +23,7 @@ def_HttpEntry(API_Signin, req)
 {
     string userid(req.queryHeader("userid"));
 
-    CONSOLE_LOG(true,"api/signin called [user:%s]\n",userid.c_str());
+    CONSOLE_LOG(true,"* api/signin called [user:%s]\n",userid.c_str());
 
     string passwd = req.getBody();
     User user(userid);
@@ -59,7 +59,7 @@ def_HttpEntry(API_Signup, req)
 {
     string userid(req.queryParam("userid"));
 
-    CONSOLE_LOG(true,"api/signup called [userid:%s]\n",userid.c_str());
+    CONSOLE_LOG(true,"* api/signup called [userid:%s]\n",userid.c_str());
 
     string passwd(req.getBody());
     User user(userid);

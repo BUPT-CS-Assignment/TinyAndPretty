@@ -6,7 +6,7 @@ def_HttpEntry(API_Clock , req) {
 	Json j; // used for response
 	std::string_view action { req.queryParam("action") };
 
-	CONSOLE_LOG(true,"api/clock called [action:%s]\n",action);
+	CONSOLE_LOG(true,"* api/clock called [action:%s]\n",action.data());
 
 	/* Start listening server broadcast Notification */
 	if (action == "c") {

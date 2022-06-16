@@ -19,7 +19,7 @@ def_HttpEntry(FileUpload, req)
     auto filename = req.queryForm("payload").queryFilename();
     std::string path{SRC_DIR + "/file/" + std::string{filename}};
 
-    CONSOLE_LOG(true,"api/upload called [filename:%s  path:%s]\n",filename,path.c_str());
+    CONSOLE_LOG(true,"* api/upload called [filename:%s  path:%s]\n",filename.data(),path.c_str());
 
     std::ofstream file{path , ios::binary | ios::out};
 
@@ -57,7 +57,7 @@ def_HttpEntry(API_File, req)
 
     std::ofstream file{path + filename , ios::binary | ios::out};
 
-    CONSOLE_LOG(true,"api/file called [user:%s  file:%s]",userid.c_str(),(path+filename).c_str());
+    CONSOLE_LOG(true,"* api/file called [user:%s  file:%s]",userid.c_str(),(path+filename).c_str());
 
     file << req.queryForm("file");
     file.close();

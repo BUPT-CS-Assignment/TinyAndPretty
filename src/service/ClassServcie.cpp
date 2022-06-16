@@ -13,7 +13,7 @@ def_HttpEntry(API_Class, req)
     string function(req.queryHeader("function"));
     string body = req.getBody();
 
-    CONSOLE_LOG(true,"api/class called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/class called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     if(function == "intro")
     {
@@ -78,7 +78,7 @@ def_HttpEntry(API_School, req)
     string token(req.queryHeader("token"));
     string function(req.queryHeader("function"));
 
-    CONSOLE_LOG(true,"api/school called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/school called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     if(function == "intro")
     {
@@ -99,7 +99,7 @@ def_HttpEntry(API_Major, req)
     string token(req.queryHeader("token"));
     string function(req.queryHeader("function"));
 
-    CONSOLE_LOG(true,"api/major called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/major called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     if(function == "intro")
     {

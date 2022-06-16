@@ -1,4 +1,5 @@
 #include <connect/Network/ThreadPool.h>
+#include <libs/BasicUtils.hpp>
 
 // the constructor just launches some amount of workers
 ThreadPool::ThreadPool(size_t threads)
@@ -6,7 +7,8 @@ ThreadPool::ThreadPool(size_t threads)
     if(!threads) 
         threads = std::thread::hardware_concurrency();
     
-    ::printf("Workers Maximum : %lu\n" , threads);
+    UTILSTD::CONSOLE_LOG(true,"Workers Maximum : %lu\n" , threads);
+
     for(size_t i = 0 ; i < threads ; ++i)
         workers.emplace_back( [this]
 		{

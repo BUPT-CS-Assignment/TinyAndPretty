@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libs/BasicUtils.hpp>
 
 Socket::Socket()
 {
@@ -71,7 +72,9 @@ Socket::Socket()
 		::listen(sockfd, LISTEN_Q_MAX) < 0
 	, "listen error");
 
-	::printf("Successfully Listen on %d\n" , PORT);
+    
+    UTILSTD::CONSOLE_LOG(true,"Successfully Listen on %d\n",PORT);
+
 }
 
 /* get one valid connection */

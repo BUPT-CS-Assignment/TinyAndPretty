@@ -11,7 +11,7 @@ def_HttpEntry(API_Event, req)
     std::string token(req.queryHeader("token"));
     std::string function(req.queryHeader("function"));
 
-    CONSOLE_LOG(true,"api/event called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/event called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     std::string body = req.getBody();
 

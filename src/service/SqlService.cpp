@@ -15,7 +15,7 @@ def_HttpEntry(API_SQL, req)
         return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
     }
 
-    CONSOLE_LOG(true, "api/sql called [function:%s]\n", function.c_str());
+    CONSOLE_LOG(true, "* api/sql called [function:%s]\n", function.c_str());
 
     int count;
     string res;
@@ -51,7 +51,7 @@ def_HttpEntry(API_SQL, req)
 
         J.push_back({"list",list});
 
-        CONSOLE_LOG(true, "Query OK Return %s\n", ans.c_str(), NEexceptionName[errCode].c_str());
+        CONSOLE_LOG(true, "Query OK Return %s\n", NEexceptionName[errCode].c_str());
 
         return new JsonResponse{
             J,NEexceptionName[errCode],HTTP_STATUS_200
@@ -140,7 +140,7 @@ static int id;
 def_HttpEntry(API_SQL_Test, req)
 {
 
-    CONSOLE_LOG(true, "api/sql/test called\n");
+    CONSOLE_LOG(true, "* api/sql/test called\n");
 
     id++;
     int count;
@@ -155,7 +155,7 @@ def_HttpEntry(API_SQL_Test, req)
 
     errCode = __DATABASE.Query(DataBaseTestSQL.c_str(), count, res);
     CONSOLE_LOG(true, "Testing: Query %d OK return Code %d\n", id, errCode);
-    
+
     return new HttpResponse{NEexceptionName[errCode]};
 
 }

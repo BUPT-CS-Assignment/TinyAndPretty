@@ -14,11 +14,11 @@ URLParser::URLParser()
 
 EntryFunc& URLParser::URLparse(std::string_view _url) 
 {
-    UTILSTD::CONSOLE_LOG(true,"url-request '%s'\n", _url.data());
     try {
         return url_table.at( _url );
         
     }   catch(const std::out_of_range& e) {
+        UTILSTD::CONSOLE_LOG(true,"unknow url '%s'\n", _url.data());
         return StaticResponse;
     }
 }

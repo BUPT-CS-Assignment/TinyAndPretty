@@ -11,7 +11,7 @@ def_HttpEntry(API_Course, req)
     string token(req.queryHeader("token"));
     string function(req.queryHeader("function"));
 
-    CONSOLE_LOG(true,"api/course called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/course called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     string body = req.getBody();
 
@@ -144,7 +144,7 @@ def_HttpEntry(API_Timetable, req)
     std::string token(req.queryHeader("token"));
     std::string function(req.queryHeader("function"));
 
-    CONSOLE_LOG(true,"api/timetable called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
+    CONSOLE_LOG(true,"* api/timetable called [user:%s  function:%s]\n",userid.c_str(),function.c_str());
 
     std::string body = req.getBody();
     std::string classid(req.queryParam("classid"));
