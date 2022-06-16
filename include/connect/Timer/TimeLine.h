@@ -2,10 +2,8 @@
 #define __TIME_L__
 
 #include <common.h>
-
 #include <shared_mutex>
-
-#define INIT_RATIO 1
+#include "TimerConfig.h"
 
 namespace ct = std::chrono;
 

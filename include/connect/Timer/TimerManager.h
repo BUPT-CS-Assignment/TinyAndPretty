@@ -4,8 +4,8 @@
 #include <common.h>
 #include <connect/HttpProtocal/HttpResponse.h>
 #include "../Network/ManagerBase.h"
+#include "TimerConfig.h"
 
-#define HEART_TIMEOUT 60
 
 namespace ct = std::chrono;
 using  Rep_T = std::shared_ptr<HttpResponseBase>;

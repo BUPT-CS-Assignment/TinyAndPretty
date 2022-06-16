@@ -3,7 +3,7 @@
 #include <common.h>
 #include <interfaces.h>
 
-#include "../data/maps/build_list.h"
+#include "../data/maps/navi_info.h"
 
 #include "../data/maps/shahe_walking.h"
 #include "../data/maps/shahe_bike.h"
@@ -13,12 +13,15 @@
 #include "../data/maps/xtc_bike.h"
 #include "../data/maps/xtc_walking_busy.h"
 
+#define CALC_UNITS(arr)  ( sizeof(arr)    / sizeof(arr[0][0]) )
+#define CALC_WIDTH(arr)  ( sizeof(arr[0]) / sizeof(arr[0][0]) ) 
+#define CALC_HEIGHT(arr) ( CALC_UNITS(arr) / CALC_WIDTH(arr)  )
 
-#define SHAHE_MAX_HEIGHT 65
-#define SHAHE_MAX_WIDTH  105
+constexpr int SHAHE_MAX_HEIGHT = CALC_HEIGHT(shahe_walking);
+constexpr int SHAHE_MAX_WIDTH  = CALC_WIDTH(shahe_walking);
 
-#define XTC_MAX_HEIGHT 110
-#define XTC_MAX_WIDTH  75
+constexpr int XTC_MAX_HEIGHT = CALC_HEIGHT(xtc_walking);
+constexpr int XTC_MAX_WIDTH  = CALC_WIDTH(xtc_walking);
 
 #define WALKABLE   0
 #define INF 0xfffffff

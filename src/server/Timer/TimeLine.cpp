@@ -1,6 +1,5 @@
 #include <connect/Timer/TimeLine.h>
 
-#define TIME_ZONE 8
 
 const std::vector<int>
 TimeLine::getVirtualTime(void)
@@ -27,7 +26,7 @@ TimeLine::getVirtualTime(void)
 	return {p.tm_year + 1900,
 			p.tm_mon  + 1,
 			p.tm_mday,
-			p.tm_wday + 1,
+			p.tm_wday,
 			p.tm_hour,
 			p.tm_min ,
 			p.tm_sec};

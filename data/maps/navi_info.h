@@ -3,15 +3,12 @@
 
 namespace Building {
 
-bool init_flag = false;
-
 enum BuildType {
 	BUILD ,
 	AREA  ,
 };
 
-struct Build
-{
+struct Build {
 	int id ;
 	char name[32];
 	BuildType bt;
@@ -73,9 +70,39 @@ static const Build BuildingList[] =
 {10050,	"咖啡机S"		,AREA	,72,41},
 
 };
+constexpr unsigned long arrlen = sizeof(BuildingList) / sizeof(Build);
 
-constexpr size_t arrlen = sizeof(BuildingList) / sizeof(Build);
+struct BusInfo {
+	int start_hour , start_mins;
+	int num[7];
+} ;
 
+static const BusInfo XTCBusList[] = {
+/* hour:mins | Sun | Mon | Tue | Wes | Thu | Fri | Sat | */
+{   6 , 50	  ,  0  , 2  ,  2  ,  2  ,  2  ,  2  ,  0  } ,
+{	8 , 30	  ,  0  , 2  ,  2  ,  2  ,  2  ,  2  ,  0  } ,
+{  12 , 00    ,  0  , 2  ,  2  ,  1  ,  2  ,  1  ,  0  } ,
+{  13 , 30    ,  0  , 1  ,  1  ,  1  ,  1  ,  1  ,  0  } ,
+{  14 , 20    ,  0  , 1  ,  1  ,  0  ,  1  ,  1  ,  0  } ,
+{  16 , 60    ,  0  , 1  ,  1  ,  1  ,  1  ,  0  ,  0  } 
+
+};
+
+constexpr unsigned long XTCarrlen = sizeof(XTCBusList) / sizeof(BusInfo);
+
+static const BusInfo SHBusList[] = {
+/* hour:mins | Sun | Mon | Tue | Wes | Thu | Fri | Sat | */
+{   9 , 50	  ,  0 ,  2  ,  2  ,  1  ,  2  ,  2  ,  0  } ,
+{  11 , 40	  ,  0 ,  2  ,  2  ,  2  ,  2  ,  1  ,  0  } ,
+{  13 , 00    ,  0 ,  1  ,  1  ,  2  ,  1  ,  1  ,  0  } ,
+{  15 , 45    ,  0 ,  1  ,  1  ,  0  ,  1  ,  1  ,  0  } ,
+{  17 , 10    ,  0 ,  1  ,  1  ,  1  ,  1  ,  1  ,  0  } ,
+{  18 , 25    ,  0 ,  1  ,  1  ,  1  ,  1  ,  1  ,  0  } ,
+{  21 , 10    ,  0 ,  1  ,  1  ,  0  ,  1  ,  0  ,  0  } 
+
+};
+
+constexpr unsigned long SHarrlen = sizeof(SHBusList) / sizeof(BusInfo);
 
 };
 

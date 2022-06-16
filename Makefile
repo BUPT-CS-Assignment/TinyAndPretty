@@ -68,6 +68,10 @@ ifeq ($(CONFIG_CC_DEBUG),y)
 endif
 	@echo "$(C_BLUE)Module <$(MODULES)> has been detected...$(C_END)"
 
+# word count
+wc : 
+	@find . "(" -name "*.hpp" -or -name "*.cpp" -or -name "*.h" ")" -print | xargs wc -l
+
 # remove build dictionary
 clean :
 	-rm -rf $(BUILD_DIR)
