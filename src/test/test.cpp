@@ -66,17 +66,18 @@ def_HttpEntry(Check_It , req) {
 def_HttpEntry(MD5Test,req){
     std::string val = "";
     std::string ans = req.getBody();
-    if(ans == "__NULL__"){
-        return new FileResponse{"utils/md5test.html" , "text/html"};
-    }
     
-    std::cerr<<"["<<getGMTtime(0)<<"] "<<"MD5-req: "<<ans<<std::endl;
+    UTILSTD::CONSOLE_LOG(true,"api/md5 called [res:%s]\n",ans.c_str());
+
     std::string str_md5 = md5(ans);
-    std::cerr<<"MD5 Process Result : "<<str_md5<<std::endl;
+
+    UTILSTD::CONSOLE_LOG(true,"Process Result : %s\n",str_md5.c_str());
+
     return new HttpResponse{str_md5};
 }
 
 def_HttpEntry(LogCheck,req){
+    UTILSTD::CONSOLE_LOG(true,"api/log called\n");
     return new FileResponse{".server/log","text/html"};
 }
 

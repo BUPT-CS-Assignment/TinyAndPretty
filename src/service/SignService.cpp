@@ -4,57 +4,67 @@ using namespace std;
 using namespace NEDBSTD;
 using namespace UTILSTD;
 
-def_HttpEntry(API_Access, req){
+def_HttpEntry(API_Access, req)
+{
     string level(req.queryHeader("function"));
     string userid(req.queryHeader("userid"));
     string token(req.queryHeader("token"));
-    if(TokenCheck((level == "3" ? "10000" : userid), token) != TOKEN_ACCESS){
+    if(TokenCheck((level == "3" ? "10000" : userid), token) != TOKEN_ACCESS)
+    {
         return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
     }
-    else{
+    else
+    {
         return new HttpResponse("NO_ERROR");
     }
 }
 
-def_HttpEntry(API_Signin, req){
-    string function(req.queryHeader("function"));
+def_HttpEntry(API_Signin, req)
+{
     string userid(req.queryHeader("userid"));
-    CONSOLE_LOG(0, 1, 1, "Signin-Req [function='%s', userid='%s']\n", function.c_str(), userid.c_str());
-    if(function != "signin"){
-        return new HttpResponse{"REQUEST_FUNCTION_UNKNOWN\r\n",HTTP_STATUS_400};
-    }
+
+    CONSOLE_LOG(true,"api/signin called [user:%s]\n",userid.c_str());
+
     string passwd = req.getBody();
     User user(userid);
-    int res;
-    if((res = user.Signin(passwd)) == 0){
+    int res = user.Signin(passwd);
+
+    if(res == NO_ERROR)
+    {
+        CONSOLE_LOG(true,"user %s signed in\n",userid.c_str());
         HttpResponse* resp = new HttpResponse("NO_ERROR");
         resp->appendHeader("token", TokenSign(userid));
         return resp;
     }
-    else if(res == -1){
+    else if(res == -1)
+    {
         return new HttpResponse{"PASSWORD_MISMATCH"};
     }
-    else if(res == -2){
+    else if(res == -2)
+    {
         return new HttpResponse{"WAIT_FOR_CONFIRM"};
     }
-    else if(res == 31){
+    else if(res == 31)
+    {
         return new HttpResponse{"USER_UNREGISTERED"};
     }
-    else{
+    else
+    {
         return new HttpResponse{NEexceptionName[res]};
     }
 }
 
 
-def_HttpEntry(API_Signup, req){
-
+def_HttpEntry(API_Signup, req)
+{
     string userid(req.queryParam("userid"));
-    CONSOLE_LOG(0, 1, 1, "API_Signup-Req [userid='%s']\n", userid.c_str());
+
+    CONSOLE_LOG(true,"api/signup called [userid:%s]\n",userid.c_str());
 
     string passwd(req.getBody());
     User user(userid);
-    int res = user.Signup(passwd);
-    HttpResponse* HResp = new HttpResponse{""};
-    HResp->appendHeader("msg",NEexceptionName[res]);
-    return HResp;
+
+    return new HttpResponse{
+        "",NEexceptionName[user.Signup(passwd)],HTTP_STATUS_200
+    };
 }

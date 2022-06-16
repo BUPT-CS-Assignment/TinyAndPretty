@@ -14,14 +14,12 @@ namespace UTILSTD{
     /**
      * @brief LOG info at console
      *
-     * @param returnVal return value
-     * @param timeSwitch time print flag
-     * @param level print minimal debug level
+     * @param timeSwitch print time
      * @param content printf content
      * @param ... printf args
-     * @return int returnVal
+     * @return void
      */
-    inline int CONSOLE_LOG(int returnVal, bool timeSwitch, bool outputSwitch, std::string content, ...){
+    inline void CONSOLE_LOG(bool timeSwitch, std::string content, ...){
         /* Time Print */
         if(timeSwitch == 1){
             time_t timer;
@@ -30,15 +28,12 @@ namespace UTILSTD{
             str[strlen(str) - 1] = '\0';
             printf("[%s CST] ", str);
         }
-        /* Log Print */
-        if(outputSwitch == 1){
-            va_list args;
-            va_start(args, content);
-            vprintf(content.c_str(), args);
-            va_end(args);
-        }
-        /* Return Value */
-        return returnVal;
+
+        va_list args;
+        va_start(args, content);
+        vprintf(content.c_str(), args);
+        va_end(args);
+
     }
 
 

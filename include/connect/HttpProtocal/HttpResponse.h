@@ -28,6 +28,7 @@ public :
 	explicit HttpResponse() = default;
 	explicit HttpResponse(std::string _body) ;
 	explicit HttpResponse(std::string _body , const std::string _status);
+    explicit HttpResponse(std::string _body, const std::string _msg, const std::string _status);
 
 	virtual size_t length() const override;
 	virtual size_t stringize(uint8_t **buff) override;
@@ -51,7 +52,8 @@ public :
 	/* ---- newly appended ---- */
 	/* more efficient way to tansfer static read-only file */
 	explicit FileResponse(fs::path _filepath  , const std::string _type);
-	
+	explicit FileResponse(fs::path _filepath, const std::string _type, const std::string _msg);
+
 	fs::path  getFilepath() const {return filepath;}
 	auto stringizeHeader()
 		-> std::tuple<std::shared_ptr<uint8_t> , size_t>;
@@ -65,6 +67,7 @@ class JsonResponse : public HttpResponseBase{
 public :
 	explicit JsonResponse() = default;
 	explicit JsonResponse(Json &_body);
+    explicit JsonResponse(Json &_body, const std::string _msg, const std::string _status);
 	explicit JsonResponse(Json &_body , const std::string _status);
 
 	virtual size_t length() const override;

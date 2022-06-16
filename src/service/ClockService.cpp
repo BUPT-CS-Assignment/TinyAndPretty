@@ -1,11 +1,13 @@
 #include <service/ClockSys.h>
+using namespace UTILSTD;
 
 def_HttpEntry(API_Clock , req) {
 
 	Json j; // used for response
 	std::string_view action { req.queryParam("action") };
 
-	std::cerr << "Action is : " << action << std::endl; 
+	CONSOLE_LOG(true,"api/clock called [action:%s]\n",action);
+
 	/* Start listening server broadcast Notification */
 	if (action == "c") {
 		j.push_back({"code" , TimeStatus::DUP}); // for

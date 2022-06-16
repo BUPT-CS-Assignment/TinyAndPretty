@@ -2,6 +2,7 @@
 #include <connect/Network/URLParser.h>
 #include <connect/Network/ServerBase.h>
 #include <connect/HttpProtocal/HttpException.h>
+#include <libs/BasicUtils.hpp>
 
 char *nsplit(char *str, const char *token, int n);
 static bool RequestLengthChecker(HttpRequest* re , size_t real) noexcept;
@@ -203,6 +204,13 @@ HttpResponse::HttpResponse(std::string _body, std::string _status) : HttpRespons
     appendHeader("Content-Length" , std::to_string( body.length() ));
 }
 
+HttpResponse::HttpResponse(std::string _body, std::string _msg, std::string _status) : HttpResponseBase(_status), body(std::move(_body))
+{
+    appendHeader("Content-Type", "text/html; charset=utf-8");
+    appendHeader("Content-Length" , std::to_string( body.length() ));
+    appendHeader("msg",_msg);
+}
+
 size_t HttpResponse::length() const
 {
     return (status.length() + headers->length() + body.length());
@@ -254,10 +262,26 @@ FileResponse::FileResponse(fs::path _filepath , const std::string _type) : HttpR
     //std::cerr << "* FILE PATH : " << filepath << "\n";
     //set file size in body
     body_len = fs::file_size(filepath);
-    IFDEBUG(std::cerr << "* FILE SIZE : " << body_len << "\n");
+
+    UTILSTD::CONSOLE_LOG(true,"response FILE size : %zu\n",body_len);
+    // IFDEBUG(std::cerr << "* FILE SIZE : " << body_len << "\n");
 
     appendHeader("Content-Length" , std::to_string(body_len) );
     appendHeader("Content-Type"   , _type);
+}
+
+FileResponse::FileResponse(fs::path _filepath, const std::string _type, std::string _msg){
+    //convert to adsulute filepath
+    filepath = fs::absolute(_filepath);
+    //std::cerr << "* FILE PATH : " << filepath << "\n";
+    //set file size in body
+    body_len = fs::file_size(filepath);
+    UTILSTD::CONSOLE_LOG(true,"response FILE size : %zu\n",body_len);
+    // IFDEBUG(std::cerr << "* FILE SIZE : " << body_len << "\n");
+
+    appendHeader("Content-Length" , std::to_string(body_len) );
+    appendHeader("Content-Type"   , _type);
+    appendHeader("msg",_msg);
 }
 
 size_t FileResponse::length() const 
@@ -316,6 +340,16 @@ JsonResponse::JsonResponse(Json &_body) : HttpResponseBase() , body(std::move(_b
     appendHeader("Content-Length", std::to_string(body.length()));
 
 }
+
+JsonResponse::JsonResponse(Json &_body, std::string _msg, std::string _status) : HttpResponseBase(_status), body(std::move(_body))
+{
+    body.stringize();
+    appendHeader("Content-Type"  , "application/json");
+    appendHeader("Content-Length", std::to_string(body.length()));
+    appendHeader("msg",_msg);
+
+}
+
 
 JsonResponse::JsonResponse(Json &_body, std::string _status) : HttpResponseBase(_status), body(std::move(_body))
 {

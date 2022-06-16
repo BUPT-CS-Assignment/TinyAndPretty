@@ -26,6 +26,7 @@ public:
     Json getExam(std::string& school,bool all = false);
     string getName(){return name;}
     string getTime(){return time;}
+    Json getAll();
 };
 
 class Event{

@@ -15,7 +15,7 @@ int User::Signin(string& passwd){
     string retVal;
     int errCode = __DATABASE.Select("token", "passwd", "id=" + id, count, retVal);
     if(errCode != 0){
-        return CONSOLE_LOG(errCode, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode].c_str());
+        return errCode;
     }
     retVal = retVal.substr(retVal.find(";") + 1);
     if(passwd != retVal){
@@ -25,17 +25,15 @@ int User::Signin(string& passwd){
     if(auth < USER_SCHOOL && (schoolid == "0" || classid == "0")){
         return -2;
     }
-    //info preload
-    return CONSOLE_LOG(0, 1, 1, "User '%s' Signed In\n", id.c_str());
+    return NO_ERROR;
 }
 
 int User::Signup(string& passwd){
     int errCode1 = __DATABASE.Insert("token", "", id + "," + passwd + ",0");
     if(errCode1 != NO_ERROR){
-        return CONSOLE_LOG(errCode1, 1, 1, "SQL-Error '%s'\n", NEexceptionName[errCode1].c_str());
+        return errCode1;
     }
-    int errCode2 = __DATABASE.Insert("users", "id,auth", id + "," + to_string(auth));
-    return CONSOLE_LOG(errCode2, 1, (errCode2 == NO_ERROR), "User '%s' Signed Up\n", id);
+    return __DATABASE.Insert("users", "id,auth", id + "," + to_string(auth));
 }
 
 int User::ChangePwd(std::string& pwd){
@@ -113,7 +111,7 @@ Json User::getEvents(){
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
     _DB.Mount("event");
     string condition = "id > " + id + "000 and id <" + id + "999";
-    int errCode = _DB.Select("event", "*", condition, count, ret);
+    _DB.Select("event", "*", condition, count, ret);
     _DB.Select("event", "*", "id < 10000", temp, RET);
     //Manage Info
     int length, len;
@@ -141,7 +139,7 @@ int User::addEvent(std::string& value){
     }
     string dir = USER_DIR + "/" + schoolid + "/" + classid;
     NEDB _DB(dir);
-    int count;string ret;
+
     if(_DB.Mount("event") == FILE_NOT_FOUND){
         _DB.DirInit();
         _DB.SetDefaultPageSize(2000);
@@ -153,8 +151,7 @@ int User::addEvent(std::string& value){
     NEDB DB(dir);
     DB.Mount("event");
     int errCode = DB.Insert("event","",value);
-    //  _DB.Insert("event", "", info);
-    cout << NEexceptionName[errCode] << endl;
+
     DB.Close();
     return errCode;
 }
@@ -169,9 +166,11 @@ int User::delEvent(std::string& id){
 }
 
 int User::AddNew(std::string& detail){
-    int errCode, len;
+    int errCode;
     errCode = __DATABASE.Insert("users", "", detail);
-    if(errCode != NO_ERROR) return errCode;
+    if(errCode != NO_ERROR){
+        return errCode;
+    }
     int idx = detail.find_first_of(',');
     string id = detail.substr(0,idx);
     string auth = detail.substr(idx + 1, 1);

@@ -9,7 +9,6 @@ int main(int argv, const char* argc[]){
     TimeStampReset();
     //Dir Init
     DirectoryInit();
-    UTILSTD::CONSOLE_LOG(0,1,1,"Project Directory '%s'\n",PROJECT_DIR.c_str());
     //SQL Test Init
     SQLTestGenerate();
     //Service Resource Init
