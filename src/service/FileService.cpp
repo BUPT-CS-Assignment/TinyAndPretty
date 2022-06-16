@@ -10,7 +10,7 @@ using namespace UTILSTD;
 void zipFile(std::string path)
 {
     ::signal(SIGCHLD, SIG_IGN);
-    ::system(std::string{"gzip " + path}.c_str());
+    ::system(std::string{"gzip \"" + path + "\""}.c_str());
     errno = 0;
 }
 
@@ -23,6 +23,7 @@ def_HttpEntry(FileUpload, req)
 
     std::ofstream file{path , ios::binary | ios::out};
 
+    std::cerr << std::string{req.queryForm("fil")} << endl;
     file << req.queryForm("payload");
     file.close();
 

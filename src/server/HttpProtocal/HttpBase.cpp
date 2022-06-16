@@ -112,32 +112,32 @@ FormItem::FormItem(uint8_t *_begin, uint8_t *_end)
 	std::string& disposition = headers->get("Content-Disposition" , true);
 
 	//split the filename* info
-	if (size_t t_pos = disposition.find("filename*"); 
+	if (size_t t_pos = disposition.find(" filename*"); 
 		t_pos != disposition.npos )
 	{
 		// filename = disposition.substr(t_pos + 9); // 9 : sizeof "filename="
 		// filename = filename.substr(1, filename.length() - 2); // erase ""
-		disposition = disposition.substr(0, t_pos - 2); // 2 : sizeof "; "
+		disposition = disposition.substr(0, t_pos - 1); // 2 : sizeof "; "
 	}
 
 	//split the filename info
-	if (size_t t_pos = disposition.find("filename"); 
+	if (size_t t_pos = disposition.find(" filename"); 
 		t_pos != disposition.npos )
 	{
-		filename = disposition.substr(t_pos + 9); // 9 : sizeof "filename="
+		std::cerr << t_pos << "\n";
+		filename = disposition.substr(t_pos + 10); // 10 : sizeof " filename="
 		filename = filename.substr(1, filename.length() - 2); // erase ""
-		disposition = disposition.substr(0, t_pos - 2); // 2 : sizeof "; "
+		disposition = disposition.substr(0, t_pos - 1); // 1 : sizeof ";"
 	}
 	
 	//split the key name info
-	if (size_t t_pos = disposition.find("name"); 
+	if (size_t t_pos = disposition.find(" name"); 
 		t_pos != disposition.npos )
 	{
-		name = disposition.substr(t_pos + 5); // 5 : sizeof "name="
+		name = disposition.substr(t_pos + 6); // 6 : sizeof " name="
 		name = name.substr(1, name.length() - 2);// erase ""
-		disposition = disposition.substr(0, t_pos - 2);// 2 : sizeof "; "
+		disposition = disposition.substr(0, t_pos - 1);// 1 : sizeof ";"
 	}
-	
 	//the reminder is copied to body as form item data as byte stream.
 	_begin += headers->length() + 4;
 
