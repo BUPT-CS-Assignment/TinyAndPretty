@@ -1,6 +1,7 @@
 #include <service/NaviSys.h>
 #include <queue>
 #include <algorithm>
+#include <libs/Heap.hpp>
 
 thread_local Point2D _s , _e;
 thread_local EvalueMode emode;
@@ -25,7 +26,7 @@ template<typename T>
 struct __WALKING_SWITCHER__  {
 static constexpr void* value = 
 	std::is_same<T , SHAHE_MAP>::value ? (void*)shahe_walking :
-	std::is_same<T , XTC_MAP  >::value ? (void *)xtc_walking   :
+	std::is_same<T , XTC_MAP  >::value ? (void*)xtc_walking   :
 	nullptr;
 };
 template<typename T>
@@ -57,8 +58,10 @@ static int CostFunc(const int ex , const int ey)
 					(__WALKING_BUSY_SWITCHER__<T>::value)[ex][ey]);
 	
 	case SHORT_BIKE:
-		return (! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>(__BIKING_SWITCHER__<T>::value)[ex][ey]) ? 1 :
-			   ! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>(__WALKING_SWITCHER__<T>::value)[ex][ey]) ? 5 : INF);
+		return (! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>
+						(__BIKING_SWITCHER__<T>::value)[ex][ey]) ? 1 :
+			   ! (static_cast<int (*)[__SIZE_SWITCHER__<T>::width]>
+			   			(__WALKING_SWITCHER__<T>::value)[ex][ey]) ? 5 : INF);
 
 	default: break;
 	}
@@ -113,7 +116,7 @@ static void drawPath(
 			now->parent->parent->x - now->parent->x != now->parent->x - now->x ||
 			now->parent->parent->y - now->parent->y != now->parent->y - now->y )
 		)	{__pans.push_back( *(now->parent) );
-			::printf("   -> %d : %d\n", now->parent->x,now->parent->y);
+			//::printf("   -> %d : %d\n", now->parent->x,now->parent->y);
 		}
 
 	}
@@ -127,7 +130,7 @@ static void Astar(
 	Path2D& _pans2) 
 {
 	size_t ans_cnt = 0;
-	std::priority_queue<Point2D> que;
+	Heap<Point2D> que;
 
 	int dis
 	[__SIZE_SWITCHER__<T>::height]
@@ -190,10 +193,10 @@ AstarAnalyse(const Path2D& pset)
 	return {pans1 , pans2};
 }
 
-static Json init_func() {
+static Json initPathList() {
 	Json list;
 	list.push_back({"code" , 0});
-	list.push_back({"msg" , "Query Successfully!"});
+	list.push_back({"msg" , "Query PathList Successfully!"});
 
 	std::vector<Object> dpos;
 
@@ -208,7 +211,52 @@ static Json init_func() {
 		});
 	}
 	list.push_back({"data" , dpos});
-	Building::init_flag = true;
+	return list;
+}
+
+#define INSERT_INFO(name) do { 								\
+		insert_flag = true;									\
+		list.push_back ({"nears" , {						\
+			{"hour" , name[i].start_hour} ,					\
+			{"mins" , name[i].start_mins}					\
+		}});												\
+	} while (0)
+
+#define Query_List(name, len)   do {                        \
+		for (size_t i = 0; i < len; i++) {                  \
+			if (name[i].num[now[3]] == 0) continue;			\
+			if (now[4] < name[i].start_hour)  {				\
+				INSERT_INFO(name);   						\
+				break;                       				\
+			}                                               \
+			else if (now[4] == name[i].start_hour &&        \
+					 now[5] <  name[i].start_mins) {        \
+				INSERT_INFO(name);                          \
+				break;										\
+			}                                               \
+		}                                                   \
+	} while (0)
+
+static Json initBusList(MapValue from) {
+	Json list;
+	list.push_back({"code" , 0});
+	list.push_back({"msg" , "Query BusList Successfully!"});
+
+	bool insert_flag = false;
+	auto now = Timer::getVirtualTime();
+
+	if (from == SH) {
+		Query_List(Building::SHBusList , Building::SHarrlen);
+	} else if ( from == XTC ) {
+		Query_List(Building::XTCBusList , Building::XTCarrlen);
+	}
+
+	if (!insert_flag)
+		list.push_back({"nears" , {
+			{"hour" , -1} ,
+			{"mins" , -1}
+		}});
+
 	return list;
 }
 
@@ -219,7 +267,6 @@ static Json init_func() {
 		std::vector<Object> ans1;                           \
 		for (const auto &it : p1) {                         \
 			ans1.push_back({{"x", it.y}, {"y", it.x}});     \
-			printf("1 >> %d , %d\n", it.y, it.x);           \
 		}                                                   \
 		j.push_back({"path" #i1, ans1});                    \
                                                             \
@@ -227,7 +274,6 @@ static Json init_func() {
 			std::vector<Object> ans2;                       \
 			for (const auto &it : p2) {                     \
 				ans2.push_back({{"x", it.y}, {"y", it.x}}); \
-				printf("2 >> %d , %d\n", it.y, it.x);       \
 			}                                               \
 			j.push_back({"path" #i2, ans2});                \
 		}                                                   \
@@ -235,12 +281,16 @@ static Json init_func() {
 	} while (0)
 
 def_HttpEntry(MapTest , req) {
-
-
 	std::string_view action { req.queryParam("action") };
 
 	if (action[0] == 'q') {
-		Json j = init_func();
+		Json j = initPathList();
+		return new JsonResponse {j};
+
+
+	} else if (action[0] == 'b') {
+		int mmap = std::stoi(req.queryParam("m").data());
+		Json j = initBusList((MapValue)mmap);
 		return new JsonResponse {j};
 
 	} else if (action[0] == 'r') {
@@ -265,8 +315,6 @@ def_HttpEntry(MapTest , req) {
 
 		j.push_back({"code" ,0});
 		j.push_back({"msg" ,"Calc Successfully!"});
-
-		std::cerr << mmap1 << "-" << mmap2 << "\n";
 
 		if (mmap1 == mmap2) {
 			Path2D s;

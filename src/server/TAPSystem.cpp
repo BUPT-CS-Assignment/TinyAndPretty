@@ -3,7 +3,6 @@
 
 using namespace std;
 using namespace NEDBSTD;
-using namespace BTREESTD;
 
 NEDB __DATABASE("/");
 string PROJECT_DIR = "/";
