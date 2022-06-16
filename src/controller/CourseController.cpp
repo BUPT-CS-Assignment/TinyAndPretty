@@ -185,7 +185,7 @@ Json Course::getFile(std::string& prof){
     Json J;
     vector<string> files;
     if(!(pDir = opendir(path.c_str()))) return J;
-    int num = 0;
+
     while((ptr = readdir(pDir)) != 0){
         if(strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0){
             if(ptr->d_type != DT_DIR){

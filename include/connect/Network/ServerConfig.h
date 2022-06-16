@@ -1,9 +1,9 @@
 #ifndef __SERVER_CONF__
-#define __SERVER_CONG__
+#define __SERVER_CONF__
 
 #include "../../generated/autoconf.h"
 
-#define SOCK_TYPE       SOCK_STREAM | SOCK_NONBLOCK
+/* ------------------------Auto Configure----------------------------*/
 #define PORT            CONFIG_PORT
 #define LISTEN_Q_MAX    CONFIG_LINTEN_Q_MAX
 #define RECV_TIMEOUT    {CONFIG_RECV_SECOND,CONFIG_RECV_MICROSECOND}
@@ -12,7 +12,6 @@
 #define BUFF_INIT_SIZE  CONFIG_BUFF_INIT_SIZE
 #define BUFF_MAX_SIZE   CONFIG_BUFF_MAX_SIZE // (1024*1024*128) bytes
 
-#define MAX_TOKEN		16
 
 #ifdef CONFIG_IPV4
 #define IPV_4           AF_INET
@@ -27,6 +26,8 @@
 #define ADDR_REUSE      1
 #endif
 
+/* ----------------------Manual Configure----------------------------*/
+#define SOCK_TYPE       SOCK_STREAM | SOCK_NONBLOCK
 #define SOCK_MAGICNUM 0x00
 #define HTTP_MAGICNUM 0xAA
 #define TIME_MAGICNUM 0xBB

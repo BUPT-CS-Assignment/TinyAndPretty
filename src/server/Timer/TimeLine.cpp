@@ -1,6 +1,5 @@
 #include <connect/Timer/TimeLine.h>
 
-#define TIME_ZONE 8
 
 const std::vector<int>
 TimeLine::getVirtualTime(void)

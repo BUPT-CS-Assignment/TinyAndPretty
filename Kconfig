@@ -14,7 +14,7 @@ config IPV6
   bool "IPv6"
 endchoice
 
-menu "Configure time out for recv"
+menu "Configure time out for BLOCK recv"
 config RECV_SECOND
   int "Second(s)"
   default 0
@@ -23,7 +23,7 @@ config RECV_MICROSECOND
   default 500000
 endmenu
 
-menu "Configure time out for send"
+menu "Configure time out for BLOCK send"
 config SEND_SECOND
   int "Second(s)"
   default 0
@@ -68,6 +68,23 @@ config MAX_EVENTS
   default 128
 
 endmenu
+
+menu "Timer System Options"
+
+config INIT_RATIO
+  int "Initial acceleration Ratio (1s realtime : (n)s virtualtime)"
+  default 1
+
+config TIME_ZONE
+  int "Time zone setting (UTC)"
+  default 8
+
+config HEART_TIMEOUT
+  int "The waiting interval for heart beat packet (seconds)"
+  default 60
+
+endmenu
+
 
 menu "Build Options"
 choice
