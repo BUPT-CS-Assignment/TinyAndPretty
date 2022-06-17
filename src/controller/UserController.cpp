@@ -129,10 +129,11 @@ Json User::getEvents()
     NEDB _DB(USER_DIR + "/" + schoolid + "/" + classid);
     _DB.Mount("event");
     string condition = "id > " + id + "000 and id < " + id + "999";
+    
     _DB.Select("event", "*", condition, count, ret);
-    cout << ret << endl;
+
     _DB.Select("event", "*", "id < 10000", temp, RET);
-    cout << RET << endl;
+
     //Manage Info
     int length, len;
     Json J;

@@ -215,7 +215,9 @@ Json Course::getFile(std::string& prof)
             if(ptr->d_type != DT_DIR)
             {
                 string filename(ptr->d_name);
-                files.push_back(filename);
+                if(filename != "FILE.nef" && filename != "FILE.ned"){
+                    files.push_back(filename);
+                }
             }
         }
     }

@@ -310,10 +310,10 @@ def_HttpEntry(MapTest, req)
     std::string userid(req.queryHeader("userid"));
     std::string token(req.queryHeader("token"));
     
-    if(TokenCheck(userid, token) != TOKEN_ACCESS)
-    {
-        return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
-    }
+    // if(TokenCheck(userid, token) != TOKEN_ACCESS)
+    // {
+    //     return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
+    // }
 
     CONSOLE_LOG(true, "* api/map called [user:%s  action:%s]\n", userid.c_str(), action.data());
 

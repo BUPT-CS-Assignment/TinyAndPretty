@@ -19,7 +19,7 @@ def_HttpEntry(FileUpload, req)
     auto filename = req.queryForm("payload").queryFilename();
     std::string path{SRC_DIR + "/file/" + std::string{filename}};
 
-    CONSOLE_LOG(true,"api/upload called [filename:%s  path:%s]\n",filename.data(),path.c_str());
+    CONSOLE_LOG(true, "api/upload called [filename:%s  path:%s]\n", filename.data(), path.c_str());
 
     std::ofstream file{path , ios::binary | ios::out};
 
@@ -52,17 +52,53 @@ def_HttpEntry(API_File, req)
     filename = filename + basic_name;
 
     std::string path(SRC_DIR + "/course/" + filepath);
-    path += (type == "1" ?"res/":(userid+"/"));
+    path += (type == "1" ? "res/" : (userid + "/"));
 
     NEDB _DB(path);
     _DB.DirInit();
+    if(_DB.Mount("FILE") == FILE_NOT_FOUND)
+    {
+        _DB.Create("FILE", "id int,name text,md5 longtext");
+    }
+    _DB.Close();
 
-    std::ofstream file{path + filename , ios::binary | ios::out};
+    //std::fstream file{path + filename , ios::binary | ios::out};
 
-    CONSOLE_LOG(true,"api/file called [user:%s  file:%s]\n",userid.c_str(),(path+filename).c_str());
+    CONSOLE_LOG(true, "api/file called [user:%s  file:%s]\n", userid.c_str(), (path + filename).c_str());
 
-    file << req.queryForm("file");
-    file.close();
+    string md_5 = md5(req.queryForm("file"));
+    bool flag = true;
+    NEDB DB(path);
+    DB.Mount("FILE");
+    int count, len, length; string ret;
+    DB.Select("FILE", "md5", "", count, ret);
+    if(count != 0)
+    {
+        string* md5s = Split(ret, ';', len);
+        for(int i = 1; i < len + 1; i++)
+        {
+            if(md5s[i] == md_5)
+            {
+                flag = false;
+                break;
+            }
+        }
+    }
+    
+    if(!flag)
+    {
+        DB.Close();
+
+        return new HttpResponse{
+            "","FILE EXISTED",HTTP_STATUS_200
+        };
+    }
+
+    std::ofstream ofile{path + filename , ios::binary | ios::out};
+    DB.Insert("FILE", "", to_string(count + 1) + "," + filename + "," + md_5);
+    ofile << req.queryForm("file");
+    ofile.close();
+    DB.Close();
 
     zipFile(path);
     return new HttpResponse{
