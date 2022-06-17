@@ -9,6 +9,7 @@ string Table::SelectValues(string param, string condition,int &count){
             throw ACTION_BUSY;
         }
         table_status_ = SIG_RUN;
+        // this->pages_tree_->CheckAll();
         /////
         Analyzer ANZ(this);
         ANZ.Locate(param);

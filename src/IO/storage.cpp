@@ -70,6 +70,7 @@ Table* Memorizer::TableLoad(DataBase* db, string name,int mode){
         res = fread(&table->prim_key_, 2, 1, fp);
         res = fread(&table->row_take_up_, 2, 1, fp);
         res = fread(&table->max_rows_per_page_, 2, 1, fp);
+        table->key_type_ = table->getKeyType();
         if(res < 0){
             delete table;
             throw FILE_DAMAGED;
