@@ -105,7 +105,7 @@ static bool ActiveFunc(const int ex, const int ey)
 #define diss(i , j) (abs(_e.x - i) + abs(_e.y - j))
 bool operator < (const Point2D& a, const Point2D& b)
 {
-    return a.dis + diss(a.x, a.y) > b.dis + diss(b.x, b.y);
+    return a.dis + diss(a.x, a.y) < b.dis + diss(b.x, b.y);
 }
 bool operator == (const Point2D& a, const Point2D& b)
 {
@@ -143,7 +143,7 @@ static void Astar(
     Path2D& _pans2)
 {
     size_t ans_cnt = 0;
-    std::priority_queue<Point2D> que;
+    Heap<Point2D> que;
 
     int dis
     [__SIZE_SWITCHER__<T>::height]
