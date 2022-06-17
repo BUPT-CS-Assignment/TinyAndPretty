@@ -13,11 +13,12 @@
 |Member|Jobs|
 |:---:|:---:|
 |[@Jianxff](https://github.com/Jianxff) |[NEDB](https://github.com/Jianxff/NEDB) / [Vue Page](https://github.com/Jianxff/TAP-frontend) / User Token |
-|[@LingZichao](https://github.com/LingZichao)| [HTTP Server](https://github.com/NoUITeam/TinyAndPretty/blob/main/scripts/intro.md) / [JSON](https://github.com/LingZichao/SimpleJson) / Makefile |
+|[@LingZichao](https://github.com/LingZichao)| [HTTP Server](https://github.com/LingZichao/Tasty) / [JSON](https://github.com/LingZichao/SimpleJson) / Makefile |
 |[@Kqramazov](https://github.com/Kqramazov)| MD5 / A* / Landscaping |
 
 您的每一次`issue`我们都将认真考虑，因此对于仍然存在的`BUG`或者`Advice`，欢迎您及时与我们沟通联系。
 
+最后感谢各位组员的辛勤劳动，特别鸣谢王老师在课程中的细心答疑。
 
 ## 一.目录文件说明 ##
 ```
@@ -83,11 +84,10 @@
 
 ## 二.自动化指令说明 ##
 在项目文件夹根目录下使用如下指令，可快速使用相应功能。
-* i . 编译并运行。
+* i . 编译并运行。🚥请在`Linux`环境下配置服务器！
 ```
     $ make run
 ```
-此后，在浏览器访问`http://localhost:9006`即可访问
 
 * ii . 清除`build`编译文件夹。`disrclean`可清除`menuconfig`生成的配置文件。
 ```
