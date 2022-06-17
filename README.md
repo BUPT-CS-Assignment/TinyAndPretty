@@ -13,7 +13,7 @@
 |Member|Jobs|
 |:---:|:---:|
 |[@Jianxff](https://github.com/Jianxff) |[NEDB](https://github.com/Jianxff/NEDB) / [Vue Page](https://github.com/Jianxff/TAP-frontend) / User Token |
-|[@LingZichao](https://github.com/LingZichao)|HTTP Server / [JSON](https://github.com/LingZichao/SimpleJson) / Makefile |
+|[@LingZichao](https://github.com/LingZichao)| [HTTP Server](https://github.com/NoUITeam/TinyAndPretty/blob/main/scripts/intro.md) / [JSON](https://github.com/LingZichao/SimpleJson) / Makefile |
 |[@Kqramazov](https://github.com/Kqramazov)| MD5 / A* / Landscaping |
 
 您的每一次`issue`我们都将认真考虑，因此对于仍然存在的`BUG`或者`Advice`，欢迎您及时与我们沟通联系。
