@@ -309,6 +309,7 @@ def_HttpEntry(MapTest, req)
 
     std::string userid(req.queryHeader("userid"));
     std::string token(req.queryHeader("token"));
+    
     if(TokenCheck(userid, token) != TOKEN_ACCESS)
     {
         return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
@@ -410,12 +411,13 @@ def_HttpEntry(MapTest, req)
 
         }
 
-        return new JsonResponse{j,"NO_ERROR",HTTP_STATUS_200};
+        return new JsonResponse{j};
 
     }
 
     Json j;
     j.push_back({"code" , 1});
     j.push_back({"msg" ,"Bad Params\n"});
-    return new JsonResponse{j,"NO_ERROR",HTTP_STATUS_200};
+    return new JsonResponse{j};
+
 }
