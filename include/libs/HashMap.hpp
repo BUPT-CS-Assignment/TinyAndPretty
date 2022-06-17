@@ -7,7 +7,7 @@ using namespace std;
 
 #define HASH_SIZE_DEFAULT 1024
 
-// Thread-Safe的Has
+// Thread-Safe HashMap
 template <typename K, typename V> 
 class HashNode
 {
