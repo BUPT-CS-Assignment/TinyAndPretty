@@ -315,7 +315,7 @@ def_HttpEntry(MapTest, req)
         return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
     }
 
-    // CONSOLE_LOG(true, "* api/map called [user:%s  action:%s]\n", userid.c_str(), action.data());
+    CONSOLE_LOG(true, "* api/map called [user:%s  action:%s]\n", userid.c_str(), action.data());
 
     if(action[0] == 'q')
     {
