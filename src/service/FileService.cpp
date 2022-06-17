@@ -19,7 +19,7 @@ def_HttpEntry(FileUpload, req)
     auto filename = req.queryForm("payload").queryFilename();
     std::string path{SRC_DIR + "/file/" + std::string{filename}};
 
-    CONSOLE_LOG(true,"* api/upload called [filename:%s  path:%s]\n",filename.data(),path.c_str());
+    CONSOLE_LOG(true,"api/upload called [filename:%s  path:%s]\n",filename.data(),path.c_str());
 
     std::ofstream file{path , ios::binary | ios::out};
 
@@ -35,29 +35,30 @@ def_HttpEntry(API_File, req)
     std::string userid(req.queryHeader("userid"));
     std::string token(req.queryHeader("token"));
 
-    
 
-    if(TokenCheck(userid, token) != TOKEN_ACCESS)
-    {
-        return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
-    }
+    // if(TokenCheck(userid, token) != TOKEN_ACCESS)
+    // {
+    //     return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
+    // }
 
-    string filepath(req.queryForm("filepath"));
-    string filename(req.queryForm("filename"));
-    string type(req.queryForm("type"));
     string basic_name(req.queryForm("file").queryFilename());
+    string filepath(req.queryHeader("upload_path"));
+    string filename(req.queryHeader("upload_name"));
+    string type(req.queryHeader("upload_type"));
+
     //Rename
     basic_name = basic_name.substr(basic_name.find_last_of("."));
     filename = filename + basic_name;
 
-    std::string path = SRC_DIR + "/course/" + filepath + userid + "/";
-    if(type == "1") path = path + "/res/";
+    std::string path(SRC_DIR + "/course/" + filepath);
+    path += (type == "1" ?"res/":(userid+"/"));
+
     NEDB _DB(path);
     _DB.DirInit();
 
     std::ofstream file{path + filename , ios::binary | ios::out};
 
-    CONSOLE_LOG(true,"* api/file called [user:%s  file:%s]",userid.c_str(),(path+filename).c_str());
+    CONSOLE_LOG(true,"api/file called [user:%s  file:%s]\n",userid.c_str(),(path+filename).c_str());
 
     file << req.queryForm("file");
     file.close();

@@ -18,8 +18,11 @@ HttpRequest::HttpRequest(
     const size_t len) 
 : conn(_conn)
 {
-    //std::cerr << "---------------In HttpRequest---------------" << std::endl;
+
+    IFDEBUG(std::cerr << "---------------In HttpRequest---------------" << std::endl;)
     size_t cur = 0;
+
+    IFDEBUG(std::cerr << NOW_POS << std::endl;)
 
     //split url method
     method = nsplit((char *)str, " ", 1);
@@ -87,7 +90,7 @@ HttpRequest::HttpRequest(
     }
     } catch (const HttpException &e) { ; }
 
-    //std::cerr << "---------------HttpRequest Finish---------------" << std::endl ;
+    IFDEBUG(std::cerr << "---------------HttpRequest Finish---------------\n" << std::endl;)
 }
 
 /* check whether length in header is equal to the real */

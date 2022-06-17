@@ -11,7 +11,7 @@ Event::Event(string id){
 int Event::Parse(string detail){
     int length;
     string *info = Split(detail,',',length);
-    if(detail == "" || length != 6){
+    if(detail == "" || length != 7){
         delete [] info;
         return PARAM_FORM_ERROR;
     }
@@ -25,17 +25,21 @@ int Event::Parse(string detail){
     //End
     this->end = info[2];
 
+    this->notice = info[3];
+
     //Get Location Name
     int count;
     string retVal;
-    __DATABASE.Select("landmark","name","id="+info[3],count,retVal);
+    __DATABASE.Select("landmark","name","id="+info[4],count,retVal);
     this->location = retVal.substr(retVal.find(';')+1);
 
     //Name
-    this->name = info[4];
+    this->name = info[5];
     
     //Describe
-    this->info = info[5];
+    this->info = info[6];
+
+    
 
     delete [] info;
     return NO_ERROR;
@@ -48,7 +52,8 @@ SimpleJson::Object Event::Format(){
         {"start",start.c_str()},
         {"end",end.c_str()},
         {"loc",location.c_str()},
-        {"info",info.c_str()}
+        {"info",info.c_str()},
+        {"notice",stoi(notice)}
     });
     return J;
 }

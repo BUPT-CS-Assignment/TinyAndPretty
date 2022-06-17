@@ -35,6 +35,7 @@ public:
     Json    getEvents();
     int     addEvent(std::string& value);
     int     delEvent(std::string& id);
+    int     addNotice(std::string&id,std::string& code);
 
     //Resource
 

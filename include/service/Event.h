@@ -37,6 +37,7 @@ private:
     std::string name;
     std::string location;
     std::string info;
+    std::string notice;
 public:
     Event(std::string id="0");
     int Parse(std::string detail);
