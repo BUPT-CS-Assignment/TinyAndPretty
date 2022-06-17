@@ -143,10 +143,10 @@ static void Astar(
     Path2D& _pans2)
 {
     size_t ans_cnt = 0;
-    Heap<Point2D> que;
+    std::priority_queue<Point2D> que;
 
     int dis
-        [__SIZE_SWITCHER__<T>::height]
+    [__SIZE_SWITCHER__<T>::height]
     [__SIZE_SWITCHER__<T>::width]
     {INF};
 
@@ -307,14 +307,14 @@ def_HttpEntry(MapTest, req)
 {
     std::string_view action{req.queryParam("action")};
 
-    std::string userid(req.queryHeader("userid"));
-    std::string token(req.queryHeader("token"));
-    if(TokenCheck(userid, token) != TOKEN_ACCESS)
-    {
-        return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
-    }
+    // std::string userid(req.queryHeader("userid"));
+    // std::string token(req.queryHeader("token"));
+    // if(TokenCheck(userid, token) != TOKEN_ACCESS)
+    // {
+    //     return new HttpResponse("ACCESS_DENIED", HTTP_STATUS_401);
+    // }
 
-    CONSOLE_LOG(true, "* api/map called [user:%s  action:%s]\n", userid.c_str(), action.data());
+    // CONSOLE_LOG(true, "* api/map called [user:%s  action:%s]\n", userid.c_str(), action.data());
 
     if(action[0] == 'q')
     {
