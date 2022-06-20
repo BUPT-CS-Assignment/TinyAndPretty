@@ -7,12 +7,15 @@
     🎉感谢您的驻足。如果本项目对您有帮助，请点一个✨Star表示支持~
 本项目为北京邮电大学计算机学院2022学年**数据结构课程设计**第六小组的拙作。项目涵盖了**B+Tree数据库原理与实现** 、 **Linux服务器开发实战** 、 **Vue前端设计部署** 、 **数据结构与算法**等诸多方面的全栈开发。从零开始共耗时三个月，历经近200次`commits`。模块**核心**部分精心匠造，注释文档~~全面~~、代码规范~~可靠~~；**业务**部分敏捷开发，基本囊括常见互联网业务。
 
-> 项目在线演示请戳这里👉[  NoUITeam  ](http://noui.cloud) 👈 (预览账号：2020212000/密码123)
+> 项目在线演示请戳这里👉[  Tiny & Pretty  ](http://noui.cloud) 👈 (预览账号：2020212000 / 密码123)
 > 
 > 项目部分接口请戳这里👉[  APIFox  ](https://www.apifox.cn/apidoc/shared-255bbbcd-f00c-49a0-8c43-55d8677cf172) 👈
 >
-> 项目在线文档请戳这里👉[  TXDoc.  ]() 👈
+> 项目在线文档请戳这里👉[  Design  ](https://docs.qq.com/doc/DR2p3RVZMVm93TE9J) 👈
 >
+> 网站操作指南请戳这里👉[  Instruction  ](https://docs.qq.com/doc/DR0tqR0lTSWtUTWlu) 👈
+
+
 
 主体负责人和部分细分模块如下
 |Member|Jobs|
